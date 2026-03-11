@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link,useOutletContext } from 'react-router-dom';
 import { authService } from '../../services/authService';
 
 const SignupPage = () => {
+  const { setEmail } = useOutletContext();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState({ type: '', message: '' });
@@ -35,6 +36,7 @@ const SignupPage = () => {
       setStatus({ type: '', message: '' });
       try {
         await authService.registerAdmin(values);
+        setEmail(values.adminMailId);
         
         // Success: Redirect to Verify OTP and pass the email in state
         navigate('/verify-otp', { 
@@ -53,8 +55,8 @@ const SignupPage = () => {
   });
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100 p-4">
-      <div className="w-full max-w-md p-8 bg-white shadow-xl rounded-2xl">
+    
+      <div className="w-full max-w-md p-8 bg-white shadow-xl rounded-2xl flex flex-col  justify-center">
         <div className="mb-8 text-center">
           <h2 className="text-3xl font-extrabold text-gray-900">PropManageX</h2>
           <p className="text-gray-500 mt-2">Create your admin account</p>
@@ -156,7 +158,7 @@ const SignupPage = () => {
           </Link>
         </div>
       </div>
-    </div>
+   
   );
 };
 

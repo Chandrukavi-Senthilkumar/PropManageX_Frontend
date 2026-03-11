@@ -11,7 +11,6 @@ const VerifyOtpPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Get email from previous page state (passed during signup redirect)
   const emailFromState = location.state?.email || "";
 
   const formik = useFormik({

@@ -45,7 +45,7 @@ const SetPasswordPage = () => {
                     confirmPassword: values.confirmPassword
                 };
                 await authService.setPassword(payload);
-                navigate('/dashboard');
+                navigate('/login');
             } catch (err) {
                 setStatus({ type: 'error', message: err.message });
             }
