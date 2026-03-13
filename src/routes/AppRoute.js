@@ -1,13 +1,16 @@
 import { Routes, Route } from "react-router-dom";
 import { AuthRoutes } from "./auth.routes";
+import { PropertyRoutes } from "./property.routes";
+import { User } from './user.routes';
+import { Deals } from './deals.routes'
 
 const renderRoutes = (routes) => {
   return routes.map((route, index) => {
-    // If the route has children, we need to wrap them
+
     if (route.children) {
       return (
         <Route key={route.path || index} path={route.path} element={route.element}>
-          {renderRoutes(route.children)} {/* Recursion: This handles the nested pages */}
+          {renderRoutes(route.children)} 
         </Route>
       );
     }
@@ -22,6 +25,10 @@ const renderRoutes = (routes) => {
 const AppRoutes = () => {
   const allRoutes = [
     ...AuthRoutes,
+    ...PropertyRoutes,
+    ...User,
+    ...Deals
+    
     // Add other route files here as you grow
   ];
 

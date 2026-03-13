@@ -6,25 +6,21 @@ import SetPasswordPage from '../pages/signup/SetPasswordPage';
 import Login from '../pages/login/LoginPage';
 
 export const AuthRoutes = [
-  {
-    path: "/", // Parent path
-    element: <AuthLayout />, 
-    children: [
       {
-        path: "signup", // Matches /signup
+        path: "/signup", // Matches /signup
         element: <SignupPage />
       },
       {
-        path: "verify-otp", // Matches /verify-otp
+        path: "/verify-otp", // Matches /verify-otp
         element: <VerifyOtpPage />
       },
       {
-        path: "set-password", 
+        path: "/set-password", 
         element: <SetPasswordPage />
       },{
-        path:"login",
+        path:"/login",
         element:<Login/>
       }
-    ]
-  }
+  
+  
 ];

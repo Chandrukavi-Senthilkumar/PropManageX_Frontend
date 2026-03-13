@@ -20,7 +20,7 @@ const LoginPage = () => {
       setError('');
       try {
         await authService.login(values);
-        navigate('/dashboard'); // Redirect after login
+        navigate('/Property'); // Redirect after login
       } catch (err) {
         setError(err.errors?.AdminMailId?.[0] || "Invalid email or password");
       } finally {
