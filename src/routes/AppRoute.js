@@ -3,6 +3,8 @@ import { AuthRoutes } from "./auth.routes";
 import { PropertyRoutes } from "./property.routes";
 import { User } from './user.routes';
 import { Deals } from './deals.routes'
+import { Contracts } from './contract.routes'
+import { InvoicePage } from './invoice.routes'
 
 const renderRoutes = (routes) => {
   return routes.map((route, index) => {
@@ -27,7 +29,10 @@ const AppRoutes = () => {
     ...AuthRoutes,
     ...PropertyRoutes,
     ...User,
-    ...Deals
+    ...Deals,
+    ...Contracts,
+    ...InvoicePage,
+
     
     // Add other route files here as you grow
   ];
