@@ -1,189 +1,287 @@
 import React, { useEffect, useState } from 'react';
+import { SaleService } from '../../services/dealService';
 import { unitAmenityService } from '../../services/unitAmenityService';
+import { contractService } from '../../services/contractService'; 
+import {AddContractModal} from '../../components/Modals/ContractModal';
 import { 
-  HomeIcon, 
-  SparklesIcon, 
-  ArrowLeftIcon, 
-  UserPlusIcon, 
-  CalendarIcon, 
-  BanknotesIcon 
+    MapPinIcon, 
+    BanknotesIcon, 
+    PlusIcon, 
+    ArrowLeftIcon,
+    HomeIcon,
+    UsersIcon,
+    CalendarIcon,
+    PhoneIcon,
+    EnvelopeIcon,
+    DocumentTextIcon,
+    CheckCircleIcon,
+    DocumentCheckIcon
 } from '@heroicons/react/24/outline';
 import { AddLeadModal, AddSiteVisitModal, AddDealModal } from '../../components/Modals/SalesModel';
 
 const PropertyDetailsView = ({ property, onBack }) => {
-  const [units, setUnits] = useState([]);
-  const [amenities, setAmenities] = useState([]);
-  const [loading, setLoading] = useState(true);
+    const [units, setUnits] = useState([]);
+    const [leads, setLeads] = useState([]);
+    const [allVisits, setAllVisits] = useState([]);
+    const [allDeals, setAllDeals] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [showLeadModal, setShowLeadModal] = useState(false);
+    const [activeTab, setActiveTab] = useState('units'); 
 
-  // Independent Modal States
-  const [isLeadOpen, setIsLeadOpen] = useState(false);
-  const [isVisitOpen, setIsVisitOpen] = useState(false);
-  const [isDealOpen, setIsDealOpen] = useState(false);
+    const fetchData = async () => {
+        try {
+            setLoading(true);
+            const [unitRes, leadRes] = await Promise.all([
+                unitAmenityService.getUnits({ PropertyID: property.propertyID }),
+                SaleService.getLeadsByProperty(property.propertyID)
+            ]);
+            
+            const fetchedLeads = leadRes?.data || [];
+            setUnits(unitRes?.data?.items || unitRes?.data || []);
+            setLeads(fetchedLeads);
 
-  useEffect(() => {
-    const fetchDetails = async () => {
-      try {
-        setLoading(true);
-        const [unitRes, amenityRes] = await Promise.all([
-          unitAmenityService.getUnits({ PropertyID: property.propertyID }),
-          unitAmenityService.getAmenities({ PropertyID: property.propertyID })
-        ]);
-        
-        // Handle potential .NET data wrapper variations
-        const unitData = unitRes?.data?.items || unitRes?.data || [];
-        const amenityData = amenityRes?.data?.items || amenityRes?.data || [];
-        
-        setUnits(Array.isArray(unitData) ? unitData : []);
-        setAmenities(Array.isArray(amenityData) ? amenityData : []);
-      } catch (err) {
-        console.error("Error fetching property details:", err);
-      } finally {
-        setLoading(false);
-      }
+            const visitsPromises = fetchedLeads.map(l => SaleService.getSiteVisitsByLead(l.leadID));
+            const dealsPromises = fetchedLeads.map(l => SaleService.getDealsByLead(l.leadID));
+            
+            const [visitsResults, dealsResults] = await Promise.all([
+                Promise.all(visitsPromises),
+                Promise.all(dealsPromises)
+            ]);
+
+            setAllVisits(visitsResults.flatMap((res, idx) => 
+                (res?.data || []).map(v => ({ ...v, customerName: fetchedLeads[idx].customerName }))
+            ));
+            
+            setAllDeals(dealsResults.flatMap((res, idx) => 
+                (res?.data || []).map(d => ({ ...d, customerName: fetchedLeads[idx].customerName }))
+            ));
+
+        } catch (err) {
+            console.error("Error fetching data:", err);
+        } finally {
+            setLoading(false);
+        }
     };
-    fetchDetails();
-  }, [property.propertyID]);
 
-  return (
-    <div className="space-y-8 animate-fadeIn pb-24">
-      {/* Header Navigation */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <button 
-          onClick={onBack} 
-          className="flex items-center gap-2 text-blue-600 font-bold hover:bg-blue-50 px-4 py-2 rounded-xl transition-all w-fit"
-        >
-          <ArrowLeftIcon className="w-4 h-4" /> Back to Portfolio
-        </button>
+    useEffect(() => {
+        fetchData();
+    }, [property.propertyID]);
 
-        {/* Standalone Action Buttons */}
-        <div className="flex flex-wrap gap-3">
-            <button 
-                onClick={() => setIsLeadOpen(true)}
-                className="bg-yellow-500 text-white px-5 py-2.5 rounded-2xl font-bold text-sm shadow-lg shadow-yellow-100 hover:bg-yellow-600 transition-all flex items-center gap-2 active:scale-95"
-            >
-                <UserPlusIcon className="w-4 h-4" /> New Lead
-            </button>
-            <button 
-                onClick={() => setIsVisitOpen(true)}
-                className="bg-blue-600 text-white px-5 py-2.5 rounded-2xl font-bold text-sm shadow-lg shadow-blue-100 hover:bg-blue-700 transition-all flex items-center gap-2 active:scale-95"
-            >
-                <CalendarIcon className="w-4 h-4" /> Site Visit
-            </button>
-            <button 
-                onClick={() => setIsDealOpen(true)}
-                className="bg-green-600 text-white px-5 py-2.5 rounded-2xl font-bold text-sm shadow-lg shadow-green-100 hover:bg-green-700 transition-all flex items-center gap-2 active:scale-95"
-            >
-                <BanknotesIcon className="w-4 h-4" /> Create Deal
-            </button>
-        </div>
-      </div>
-
-      {/* Property Hero Card */}
-      <div className="bg-white rounded-[40px] p-8 shadow-sm border border-gray-100 flex flex-col lg:flex-row gap-10">
-        <div className="w-full lg:w-72 h-72 rounded-[32px] overflow-hidden bg-gray-100 shrink-0">
-            <img 
-                src={property.imageUrl || 'https://placehold.co/400x400?text=Property'} 
-                className="w-full h-full object-cover" 
-                alt="" 
-            />
-        </div>
-        <div className="flex-grow py-2">
-          <div className="flex gap-2 mb-4">
-            <span className="bg-blue-50 text-blue-600 px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest">{property.type}</span>
-            <span className="bg-green-50 text-green-600 px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest">{property.status}</span>
-          </div>
-          <h2 className="text-4xl font-black text-gray-900 mb-2">{property.name}</h2>
-          <p className="text-gray-400 font-bold text-lg mb-8">{property.location}</p>
-          
-          <div className="flex gap-10">
-            <div>
-                <p className="text-gray-400 text-[10px] font-black uppercase tracking-widest mb-1">Units</p>
-                <p className="text-2xl font-black text-gray-800">{units.length}</p>
+    return (
+        <div className="space-y-8 pb-20 max-w-7xl mx-auto px-4">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <button onClick={onBack} className="flex items-center gap-2 text-blue-600 font-bold hover:underline">
+                    <ArrowLeftIcon className="w-4 h-4" /> Back to Portfolio
+                </button>
+                <div className="flex bg-gray-100 p-1.5 rounded-[20px] shadow-inner overflow-x-auto">
+                    <TabButton active={activeTab === 'units'} onClick={() => setActiveTab('units')} icon={<HomeIcon className="w-4 h-4"/>} label="Units" />
+                    <TabButton active={activeTab === 'leads'} onClick={() => setActiveTab('leads')} icon={<UsersIcon className="w-4 h-4"/>} label="Leads" />
+                    <TabButton active={activeTab === 'visits'} onClick={() => setActiveTab('visits')} icon={<MapPinIcon className="w-4 h-4"/>} label="Visits" />
+                    <TabButton active={activeTab === 'deals'} onClick={() => setActiveTab('deals')} icon={<BanknotesIcon className="w-4 h-4"/>} label="Deals" />
+                </div>
+                <button onClick={() => setShowLeadModal(true)} className="bg-gray-900 text-white px-6 py-3 rounded-2xl font-black flex items-center gap-2 shadow-xl active:scale-95 transition-all text-xs">
+                    <PlusIcon className="w-4 h-4" /> Add Lead
+                </button>
             </div>
-            <div className="h-12 w-[1px] bg-gray-100"></div>
-            <div>
-                <p className="text-gray-400 text-[10px] font-black uppercase tracking-widest mb-1">Amenities</p>
-                <p className="text-2xl font-black text-gray-800">{amenities.length}</p>
+
+            <div className="animate-fadeIn">
+                {loading ? (
+                    <div className="py-20 text-center animate-pulse">Syncing...</div>
+                ) : (
+                    <>
+                        {activeTab === 'units' && <div className="grid grid-cols-1 md:grid-cols-4 gap-6">{units.map(u => <UnitCard key={u.unitID} unit={u} />)}</div>}
+                        {activeTab === 'leads' && <div className="grid grid-cols-1 md:grid-cols-3 gap-6">{leads.map(l => <SimpleLeadCard key={l.leadID} lead={l} onUpdate={fetchData} />)}</div>}
+                        {activeTab === 'visits' && <VisitsListView visits={allVisits} />}
+                        {activeTab === 'deals' && <DealsListView deals={allDeals} />}
+                    </>
+                )}
             </div>
-          </div>
-        </div>
-      </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Units Table */}
-        <div className="lg:col-span-2 bg-white rounded-[40px] p-8 shadow-sm border border-gray-100">
-          <div className="flex items-center gap-3 mb-8">
-            <div className="p-3 bg-blue-50 rounded-2xl text-blue-600"><HomeIcon className="w-6 h-6" /></div>
-            <h3 className="text-2xl font-black text-gray-800">Unit Inventory</h3>
-          </div>
-          
-          {loading ? (
-             <p className="py-10 text-center text-gray-400 font-bold animate-pulse">Loading units...</p>
-          ) : (
-            <table className="w-full text-left">
-              <thead>
-                <tr className="text-gray-400 text-[10px] font-black uppercase tracking-widest border-b border-gray-50">
-                  <th className="pb-5 px-4">Unit #</th>
-                  <th className="pb-5 px-4">Type</th>
-                  <th className="pb-5 px-4">Price</th>
-                  <th className="pb-5 px-4 text-right">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {units.map((unit) => (
-                  <tr key={unit.unitID} className="border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-all">
-                    <td className="py-5 px-4 font-black text-gray-800">{unit.unitNumber}</td>
-                    <td className="py-5 px-4 text-gray-500 font-bold">{unit.bedroomCount} BHK</td>
-                    <td className="py-5 px-4 font-black text-blue-600">${unit.basePrice?.toLocaleString()}</td>
-                    <td className="py-5 px-4 text-right">
-                      <span className={`text-[10px] font-black px-3 py-1 rounded-full uppercase ${unit.status === 'Available' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-400'}`}>
-                          {unit.status}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
+            <AddLeadModal isOpen={showLeadModal} onClose={() => setShowLeadModal(false)} propertyID={property.propertyID} onSuccess={fetchData} />
         </div>
-
-        {/* Amenities List */}
-        <div className="bg-white rounded-[40px] p-8 shadow-sm border border-gray-100">
-          <div className="flex items-center gap-3 mb-8">
-            <div className="p-3 bg-purple-50 rounded-2xl text-purple-600"><SparklesIcon className="w-6 h-6" /></div>
-            <h3 className="text-2xl font-black text-gray-800">Amenities</h3>
-          </div>
-          <div className="space-y-4">
-            {amenities.map((amenity) => (
-              <div key={amenity.amenityID} className="p-5 bg-gray-50 rounded-3xl border border-transparent hover:border-purple-100 transition-all">
-                <p className="font-black text-gray-800">{amenity.name}</p>
-                <p className="text-xs text-gray-400 mt-1 font-medium">{amenity.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* --- STANDALONE MODALS --- */}
-      <AddLeadModal 
-        isOpen={isLeadOpen} 
-        onClose={() => setIsLeadOpen(false)} 
-        propertyID={property.propertyID} 
-      />
-      
-      <AddSiteVisitModal 
-        isOpen={isVisitOpen} 
-        onClose={() => setIsVisitOpen(false)} 
-        leadID={null} // null allows user to input Lead ID manually
-      />
-      
-      <AddDealModal 
-        isOpen={isDealOpen} 
-        onClose={() => setIsDealOpen(false)} 
-        leadID={null} // null allows user to input Lead ID manually
-      />
-    </div>
-  );
+    );
 };
+
+/* --- CONTRACT COMPONENT (Nested in Deal Card) --- */
+const ContractSection = ({ dealID }) => {
+    const [status, setStatus] = useState('idle'); // idle, loading, success
+    const [formData, setFormData] = useState({
+        contractType: 'Sales Agreement',
+        contractValue: ''
+    });
+
+    const handlePostContract = async () => {
+        if (!formData.contractValue) return alert("Please enter contract value");
+        try {
+            setStatus('loading');
+            await contractService.createContract({
+                dealID: dealID,
+                contractType: formData.contractType,
+                startDate: new Date().toISOString(),
+                endDate: new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString(), // 1 year default
+                contractValue: parseFloat(formData.contractValue)
+            });
+            setStatus('success');
+        } catch (err) {
+            setStatus('idle');
+            alert("Failed to create contract");
+        }
+    };
+
+    if (status === 'success') {
+        return (
+            <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-2xl flex items-center gap-3 text-green-700 font-bold text-xs">
+                <CheckCircleIcon className="w-5 h-5" /> Contract Created Successfully
+            </div>
+        );
+    }
+
+    return (
+        <div className="mt-4 pt-4 border-t border-gray-100">
+            <p className="text-[10px] font-black uppercase text-gray-400 mb-3 flex items-center gap-1">
+                <DocumentTextIcon className="w-3 h-3" /> Quick Contract
+            </p>
+            <div className="flex flex-col gap-2">
+                <input 
+                    type="number" 
+                    placeholder="Value ($)" 
+                    className="bg-gray-50 border-none rounded-xl px-4 py-2 text-xs font-bold focus:ring-2 focus:ring-blue-100"
+                    value={formData.contractValue}
+                    onChange={(e) => setFormData({...formData, contractValue: e.target.value})}
+                />
+                <button 
+                    onClick={handlePostContract}
+                    disabled={status === 'loading'}
+                    className="bg-blue-600 text-white py-2 rounded-xl text-[10px] font-black uppercase tracking-wider hover:bg-blue-700 transition-all disabled:opacity-50"
+                >
+                    {status === 'loading' ? 'Processing...' : 'Generate Contract'}
+                </button>
+            </div>
+        </div>
+    );
+};
+
+/* --- UPDATED DEALS LIST VIEW --- */
+// Inside PropertyDetailsView or as a sub-component:
+const DealsListView = ({ deals }) => {
+    const [selectedDeal, setSelectedDeal] = useState(null);
+
+    return (
+        <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {deals.map((d, i) => (
+                    <div key={i} className="bg-white p-8 rounded-[40px] border border-gray-100 shadow-sm flex flex-col justify-between">
+                        <div>
+                            <div className="flex justify-between items-center mb-6">
+                                <p className="text-[10px] font-black text-green-600 bg-green-50 px-3 py-1 rounded-full uppercase">{d.dealType}</p>
+                                <p className="text-[10px] font-bold text-gray-400 italic">Expected: {d.expectedClosureDate}</p>
+                            </div>
+                            <h4 className="text-xl font-black text-gray-900 mb-1">{d.customerName}</h4>
+                            <p className="text-gray-400 text-[10px] font-black uppercase mb-4 tracking-tighter">Verified Lead</p>
+                            
+                            <div className="pt-4 border-t border-gray-50">
+                                <p className="text-gray-400 text-[10px] font-black uppercase">Agreed Value</p>
+                                <p className="text-3xl font-black text-gray-900">${d.agreedValue?.toLocaleString()}</p>
+                            </div>
+                        </div>
+
+                        <button 
+                            onClick={() => setSelectedDeal(d.dealID)}
+                            className="mt-8 w-full bg-gray-900 text-white py-4 rounded-2xl text-[10px] font-black uppercase flex items-center justify-center gap-2 hover:bg-blue-600 transition-all shadow-xl"
+                        >
+                            <DocumentCheckIcon className="w-4 h-4" /> Create Contract
+                        </button>
+                    </div>
+                ))}
+            </div>
+
+            {/* Modal Trigger */}
+            {selectedDeal && (
+                <AddContractModal 
+                    isOpen={!!selectedDeal} 
+                    onClose={() => setSelectedDeal(null)} 
+                    dealID={selectedDeal} 
+                    onSuccess={() => alert("Contract Added!")} 
+                />
+            )}
+        </>
+    );
+};
+// ... (Rest of components: TabButton, UnitCard, SimpleLeadCard, VisitsListView, EmptyState remain the same)
+const SimpleLeadCard = ({ lead, onUpdate }) => {
+    const [modals, setModals] = useState({ visit: false, deal: false });
+    return (
+        <div className="bg-white p-6 rounded-[40px] border border-gray-100 shadow-sm hover:border-blue-200 transition-all flex flex-col justify-between h-full">
+            <div>
+                <div className="flex items-center gap-4 mb-6">
+                    <div className="w-16 h-16 bg-gray-900 text-white rounded-[24px] flex items-center justify-center text-2xl font-black">
+                        {lead.customerName?.charAt(0)}
+                    </div>
+                    <div>
+                        <h4 className="text-xl font-black text-gray-900">{lead.customerName}</h4>
+                        <div className="flex items-center gap-1 text-blue-600 font-bold text-[10px] uppercase">
+                            <HomeIcon className="w-3 h-3" /> Unit: {lead.unitNumber || 'TBD'}
+                        </div>
+                    </div>
+                </div>
+                <div className="space-y-3 mb-8">
+                    <div className="flex items-center gap-3 text-gray-500 bg-gray-50 p-3 rounded-2xl">
+                        <PhoneIcon className="w-4 h-4 text-gray-400" />
+                        <span className="text-xs font-bold">{lead.contactInfo || 'No phone'}</span>
+                    </div>
+                </div>
+            </div>
+            <div className="flex gap-3">
+                <button onClick={() => setModals({...modals, visit: true})} className="flex-1 bg-blue-50 text-blue-600 py-3 rounded-2xl text-[10px] font-black uppercase flex items-center justify-center gap-2 hover:bg-blue-600 hover:text-white transition-all"><MapPinIcon className="w-4 h-4" /> Visit</button>
+                <button onClick={() => setModals({...modals, deal: true})} className="flex-1 bg-green-50 text-green-600 py-3 rounded-2xl text-[10px] font-black uppercase flex items-center justify-center gap-2 hover:bg-green-600 hover:text-white transition-all"><BanknotesIcon className="w-4 h-4" /> Deal</button>
+            </div>
+            <AddSiteVisitModal isOpen={modals.visit} onClose={() => setModals({...modals, visit: false})} leadID={lead.leadID} onSuccess={onUpdate} />
+            <AddDealModal isOpen={modals.deal} onClose={() => setModals({...modals, deal: false})} leadID={lead.leadID} unitID={lead.unitID} onSuccess={onUpdate} />
+        </div>
+    );
+};
+
+const TabButton = ({ active, onClick, icon, label }) => (
+    <button onClick={onClick} className={`flex items-center gap-2 px-6 py-2.5 rounded-2xl text-xs font-black transition-all whitespace-nowrap ${active ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-400'}`}>
+        {icon} {label}
+    </button>
+);
+
+const EmptyState = ({ msg }) => (
+    <div className="col-span-full py-20 bg-white rounded-[40px] border-2 border-dashed text-center text-gray-400 italic font-bold">{msg}</div>
+);
+
+const UnitCard = ({ unit }) => (
+    <div className="bg-white p-6 rounded-[32px] border border-gray-100 shadow-sm hover:shadow-md transition-all">
+        <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center font-black mb-4">{unit.unitNumber}</div>
+        <h3 className="font-black text-xl text-gray-900">{unit.bedroomCount} BHK</h3>
+        <p className="text-gray-400 font-bold text-xs uppercase mb-4">{unit.status || 'Available'}</p>
+        <div className="pt-4 border-t border-gray-50 flex justify-between items-end">
+            <div>
+                <p className="text-[10px] text-gray-400 font-black uppercase tracking-tighter">Market Value</p>
+                <p className="text-xl font-black text-blue-600">${unit.basePrice?.toLocaleString()}</p>
+            </div>
+        </div>
+    </div>
+);
+
+const VisitsListView = ({ visits }) => (
+    <div className="bg-white rounded-[40px] border border-gray-100 overflow-hidden shadow-sm">
+        <table className="w-full text-left border-collapse">
+            <thead className="bg-gray-50 uppercase text-[10px] font-black text-gray-400 tracking-widest">
+                <tr><th className="px-8 py-6">Customer</th><th className="px-8 py-6">Visit Date</th><th className="px-8 py-6">Notes</th></tr>
+            </thead>
+            <tbody className="divide-y divide-gray-50">
+                {visits.length > 0 ? visits.map((v, i) => (
+                    <tr key={i} className="hover:bg-blue-50/30 transition-colors">
+                        <td className="px-8 py-6 font-black text-gray-900">{v.customerName}</td>
+                        <td className="px-8 py-6 font-bold text-blue-600 flex items-center gap-2"><CalendarIcon className="w-4 h-4"/> {v.visitDate}</td>
+                        <td className="px-8 py-6 text-gray-500 italic text-sm">"{v.notes}"</td>
+                    </tr>
+                )) : <tr><td colSpan="3" className="py-20 text-center"><EmptyState msg="No visits recorded." /></td></tr>}
+            </tbody>
+        </table>
+    </div>
+);
 
 export default PropertyDetailsView;
