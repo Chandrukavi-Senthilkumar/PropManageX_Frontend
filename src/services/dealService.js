@@ -24,6 +24,10 @@ export const SaleService = {
     getSiteVisitsByLead: (id) => apiClient.get(`/SiteVisit?leadID=${id}`).then(res => res.data),
     getDealsByLead: (id) => apiClient.get(`/Deal?leadID=${id}`).then(res => res.data),
 
+    //Get All API Calls
+    getAllDeals: () => apiClient.get('/Deal').then(res => res.data),
+    getAllSiteVisits: () => apiClient.get('/SiteVisit').then(res => res.data),
+
     // Create methods remain the same
     createLead: (data) => apiClient.post('/Lead', data).then(res => res.data),
     createSiteVisit: (data) => apiClient.post('/SiteVisit', data).then(res => res.data),
