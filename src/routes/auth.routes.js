@@ -1,5 +1,4 @@
 // src/routes/auth.routes.js
-import AuthLayout from '../layout/AuthLayout';
 import SignupPage from '../pages/signup/SignupPage';
 import VerifyOtpPage from '../pages/VerifyOtpPage/VerifyOtpPage';
 import SetPasswordPage from '../pages/signup/SetPasswordPage';
@@ -18,7 +17,7 @@ export const AuthRoutes = [
         path: "/set-password", 
         element: <SetPasswordPage />
       },{
-        path:"/login",
+        path:"/",
         element:<Login/>
       }
   

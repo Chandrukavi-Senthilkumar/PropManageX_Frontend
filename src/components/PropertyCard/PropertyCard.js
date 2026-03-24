@@ -1,3 +1,7 @@
+import React, { useEffect } from 'react';
+import { HomeIcon, SparklesIcon, MapPinIcon } from '@heroicons/react/24/outline';
+import { useNavigate } from 'react-router-dom';
+
 import React from 'react';
 import { HomeIcon, SparklesIcon, MapPinIcon, CheckCircleIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 
@@ -42,8 +46,10 @@ const PropertyCard = ({
           alt={name} 
           className="w-full h-full object-cover transition-transform duration-500 group-hover/image:scale-105" 
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover/image:opacity-100 transition-all duration-300 flex items-end p-4">
-          <span className="text-white text-sm font-semibold">Click to view details →</span>
+        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all flex items-center justify-center">
+             <span   onClick={handleViewDetails} className="text-white opacity-0 group-hover:opacity-100 font-bold text-sm bg-black/40 px-4 py-2 rounded-full backdrop-blur-sm transition-all">
+                View Details
+             </span>
         </div>
 
         {/* Status Badge */}

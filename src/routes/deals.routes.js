@@ -1,5 +1,5 @@
 import DashboardLayout from "../layout/DashboardLayout";
-import DealPage from "../pages/SalesPipeline/SalesPipeline"
+import DealPage from "../pages/DealListPage/DealListPage"
 
 export const Deals=[
     {

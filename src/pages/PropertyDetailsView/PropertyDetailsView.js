@@ -1,15 +1,22 @@
 import React, { useEffect, useState } from 'react';
+import { SaleService } from '../../services/dealService';
 import { unitAmenityService } from '../../services/unitAmenityService';
+import { contractService } from '../../services/contractService'; 
+import {AddContractModal} from '../../components/Modals/ContractModal';
 import { documentService } from '../../services/documentService';
 import { 
-  HomeIcon, 
-  SparklesIcon, 
-  ArrowLeftIcon, 
-  UserPlusIcon, 
-  CalendarIcon, 
-  BanknotesIcon,
-  PencilSquareIcon,
-  DocumentDuplicateIcon
+    MapPinIcon, 
+    BanknotesIcon, 
+    PlusIcon, 
+    ArrowLeftIcon,
+    HomeIcon,
+    UsersIcon,
+    CalendarIcon,
+    PhoneIcon,
+    EnvelopeIcon,
+    DocumentTextIcon,
+    CheckCircleIcon,
+    DocumentCheckIcon
 } from '@heroicons/react/24/outline';
 import { AddLeadModal, AddSiteVisitModal, AddDealModal } from '../../components/Modals/SalesModel';
 import EditPropertyModal from '../../components/Modals/EditPropertyModal';
@@ -59,7 +66,53 @@ const PropertyDetailsView = ({ property, onBack, onPropertyUpdated }) => {
       } finally {
         setLoading(false);
       }
+const PropertyDetailsView = ({ property, onBack }) => {
+    const [units, setUnits] = useState([]);
+    const [leads, setLeads] = useState([]);
+    const [allVisits, setAllVisits] = useState([]);
+    const [allDeals, setAllDeals] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [showLeadModal, setShowLeadModal] = useState(false);
+    const [activeTab, setActiveTab] = useState('units'); 
+
+    const fetchData = async () => {
+        try {
+            setLoading(true);
+            const [unitRes, leadRes] = await Promise.all([
+                unitAmenityService.getUnits({ PropertyID: property.propertyID }),
+                SaleService.getLeadsByProperty(property.propertyID)
+            ]);
+            
+            const fetchedLeads = leadRes?.data || [];
+            setUnits(unitRes?.data?.items || unitRes?.data || []);
+            setLeads(fetchedLeads);
+
+            const visitsPromises = fetchedLeads.map(l => SaleService.getSiteVisitsByLead(l.leadID));
+            const dealsPromises = fetchedLeads.map(l => SaleService.getDealsByLead(l.leadID));
+            
+            const [visitsResults, dealsResults] = await Promise.all([
+                Promise.all(visitsPromises),
+                Promise.all(dealsPromises)
+            ]);
+
+            setAllVisits(visitsResults.flatMap((res, idx) => 
+                (res?.data || []).map(v => ({ ...v, customerName: fetchedLeads[idx].customerName }))
+            ));
+            
+            setAllDeals(dealsResults.flatMap((res, idx) => 
+                (res?.data || []).map(d => ({ ...d, customerName: fetchedLeads[idx].customerName }))
+            ));
+
+        } catch (err) {
+            console.error("Error fetching data:", err);
+        } finally {
+            setLoading(false);
+        }
     };
+
+    useEffect(() => {
+        fetchData();
+    }, [property.propertyID]);
     fetchDetails();
   }, [property.propertyID]);
 
@@ -113,302 +166,118 @@ const PropertyDetailsView = ({ property, onBack, onPropertyUpdated }) => {
     setIsEditDocumentOpen(false);
   };
 
-  return (
-    <div className="space-y-8 animate-fadeIn pb-24">
-      {/* Header Navigation */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <button 
-          onClick={onBack} 
-          className="flex items-center gap-2 text-blue-600 font-bold hover:bg-blue-50 px-4 py-2 rounded-xl transition-all w-fit"
-        >
-          <ArrowLeftIcon className="w-4 h-4" /> Back to Portfolio
-        </button>
-
-        {/* Standalone Action Buttons */}
-        <div className="flex flex-wrap gap-3">
-            <button 
-                onClick={() => setIsEditOpen(true)}
-                className="bg-purple-600 text-white px-5 py-2.5 rounded-2xl font-bold text-sm shadow-lg shadow-purple-100 hover:bg-purple-700 transition-all flex items-center gap-2 active:scale-95"
-            >
-                <PencilSquareIcon className="w-4 h-4" /> Edit
-            </button>
-            <button 
-                onClick={() => setIsLeadOpen(true)}
-                className="bg-yellow-500 text-white px-5 py-2.5 rounded-2xl font-bold text-sm shadow-lg shadow-yellow-100 hover:bg-yellow-600 transition-all flex items-center gap-2 active:scale-95"
-            >
-                <UserPlusIcon className="w-4 h-4" /> New Lead
-            </button>
-            <button 
-                onClick={() => setIsVisitOpen(true)}
-                className="bg-blue-600 text-white px-5 py-2.5 rounded-2xl font-bold text-sm shadow-lg shadow-blue-100 hover:bg-blue-700 transition-all flex items-center gap-2 active:scale-95"
-            >
-                <CalendarIcon className="w-4 h-4" /> Site Visit
-            </button>
-            <button 
-                onClick={() => setIsDealOpen(true)}
-                className="bg-green-600 text-white px-5 py-2.5 rounded-2xl font-bold text-sm shadow-lg shadow-green-100 hover:bg-green-700 transition-all flex items-center gap-2 active:scale-95"
-            >
-                <BanknotesIcon className="w-4 h-4" /> Create Deal
-            </button>
-        </div>
-      </div>
-
-      {/* Property Hero Card */}
-      <div className="bg-white rounded-[40px] p-8 shadow-sm border border-gray-100 flex flex-col lg:flex-row gap-10 animate-fadeIn">
-        <div className="w-full lg:w-72 h-72 rounded-[32px] overflow-hidden bg-gray-100 shrink-0">
-            <img 
-                src={property.imageUrl || 'https://placehold.co/400x400?text=Property'} 
-                className="w-full h-full object-cover transition-transform duration-700 hover:scale-105" 
-                alt="" 
-            />
-        </div>
-        <div className="flex-grow py-2">
-          <div className="flex gap-2 mb-4">
-            <span className="bg-blue-50 text-blue-600 px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest">{property.type}</span>
-            <span className="bg-green-50 text-green-600 px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest">{property.status}</span>
-          </div>
-          <h2 className="text-4xl font-black text-gray-900 mb-2">{property.name}</h2>
-          <p className="text-gray-400 font-bold text-lg mb-8">{property.location}</p>
-
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
-              <p className="text-gray-400 uppercase text-[10px] font-black tracking-widest">Units</p>
-              <p className="text-3xl font-black text-gray-800">{units.length}</p>
-            </div>
-            <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
-              <p className="text-gray-400 uppercase text-[10px] font-black tracking-widest">Amenities</p>
-              <p className="text-3xl font-black text-gray-800">{amenities.length}</p>
-            </div>
-            <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
-              <p className="text-gray-400 uppercase text-[10px] font-black tracking-widest">Documents</p>
-              <p className="text-3xl font-black text-gray-800">{documents.length}</p>
-            </div>
-            <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
-              <p className="text-gray-400 uppercase text-[10px] font-black tracking-widest">Active Actions</p>
-              <p className="text-3xl font-black text-gray-800">{(units.filter(u => u.status?.toLowerCase() === 'leased').length) || 0}</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Units Table */}
-        <div className="lg:col-span-2 bg-white rounded-[40px] p-8 shadow-sm border border-gray-100">
-          <div className="flex items-center gap-3 mb-8">
-            <div className="p-3 bg-blue-50 rounded-2xl text-blue-600"><HomeIcon className="w-6 h-6" /></div>
-            <h3 className="text-2xl font-black text-gray-800">Unit Inventory</h3>
-          </div>
-          
-          {loading ? (
-             <p className="py-10 text-center text-gray-400 font-bold animate-pulse">Loading units...</p>
-          ) : (
-            <table className="w-full text-left">
-              <thead>
-                <tr className="text-gray-400 text-[10px] font-black uppercase tracking-widest border-b border-gray-50">
-                  <th className="pb-5 px-4">Unit #</th>
-                  <th className="pb-5 px-4">Type</th>
-                  <th className="pb-5 px-4">Price</th>
-                  <th className="pb-5 px-4">Status</th>
-                  <th className="pb-5 px-4 text-right">Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {units.map((unit) => (
-                  <tr key={unit.unitID} className="border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-all">
-                    <td className="py-5 px-4 font-black text-gray-800">{unit.unitNumber}</td>
-                    <td className="py-5 px-4 text-gray-500 font-bold">{unit.bedroomCount} BHK</td>
-                    <td className="py-5 px-4 font-black text-blue-600">${unit.basePrice?.toLocaleString()}</td>
-                    <td className="py-5 px-4">
-                      <span className={`text-[10px] font-black px-3 py-1 rounded-full uppercase ${unit.status === 'Available' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-400'}`}>
-                          {unit.status}
-                      </span>
-                    </td>
-                    <td className="py-5 px-4 text-right">
-                      <button
-                        onClick={() => {
-                          setSelectedUnitForEdit(unit);
-                          setIsEditUnitOpen(true);
-                        }}
-                        className="text-blue-600 hover:text-blue-800 font-bold text-sm hover:bg-blue-50 px-3 py-1 rounded-lg transition-all"
-                      >
-                        Edit
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
-
-        {/* Amenities List */}
-        <div className="bg-white rounded-[40px] p-8 shadow-sm border border-gray-100">
-          <div className="flex items-center gap-3 mb-8">
-            <div className="p-3 bg-purple-50 rounded-2xl text-purple-600"><SparklesIcon className="w-6 h-6" /></div>
-            <h3 className="text-2xl font-black text-gray-800">Amenities</h3>
-          </div>
-          <div className="space-y-4">
-            {amenities.map((amenity) => (
-              <div key={amenity.amenityID} className="relative p-5 bg-gray-50 rounded-3xl border border-transparent hover:border-purple-100 transition-all">
-                <button
-                  onClick={() => {
-                    setSelectedAmenityForEdit(amenity);
-                    setIsEditAmenityOpen(true);
-                  }}
-                  className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 p-1 rounded-lg hover:bg-gray-100"
-                >
-                  <PencilSquareIcon className="w-5 h-5" />
+    return (
+        <div className="space-y-8 pb-20 max-w-7xl mx-auto px-4">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <button onClick={onBack} className="flex items-center gap-2 text-blue-600 font-bold hover:underline">
+                    <ArrowLeftIcon className="w-4 h-4" /> Back to Portfolio
                 </button>
-
-                <p className="font-black text-gray-800">{amenity.name}</p>
-                <p className="text-xs text-gray-400 mt-1 font-medium">{amenity.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Documents */}
-        <div className="bg-white rounded-[40px] p-8 shadow-sm border border-gray-100">
-          <div className="flex items-center justify-between mb-8">
-            <div className="flex items-center gap-3">
-              <div className="p-3 bg-blue-50 rounded-2xl text-blue-600"><DocumentDuplicateIcon className="w-6 h-6" /></div>
-              <h3 className="text-2xl font-black text-gray-800">Documents</h3>
+                <div className="flex bg-gray-100 p-1.5 rounded-[20px] shadow-inner overflow-x-auto">
+                    <TabButton active={activeTab === 'units'} onClick={() => setActiveTab('units')} icon={<HomeIcon className="w-4 h-4"/>} label="Units" />
+                    <TabButton active={activeTab === 'leads'} onClick={() => setActiveTab('leads')} icon={<UsersIcon className="w-4 h-4"/>} label="Leads" />
+                    <TabButton active={activeTab === 'visits'} onClick={() => setActiveTab('visits')} icon={<MapPinIcon className="w-4 h-4"/>} label="Visits" />
+                </div>
+                <button onClick={() => setShowLeadModal(true)} className="bg-gray-900 text-white px-6 py-3 rounded-2xl font-black flex items-center gap-2 shadow-xl active:scale-95 transition-all text-xs">
+                    <PlusIcon className="w-4 h-4" /> Add Lead
+                </button>
             </div>
-            <button
-              onClick={() => {
-                setSelectedDocumentForEdit(null);
-                setIsEditDocumentOpen(true);
-              }}
-              className="bg-blue-600 text-white px-5 py-2.5 rounded-2xl font-bold text-sm shadow-lg shadow-blue-100 hover:bg-blue-700 transition-all"
-            >
-              Upload Document
-            </button>
-          </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-left">
-              <thead>
-                <tr className="text-gray-400 text-[10px] font-black uppercase tracking-widest border-b border-gray-50">
-                  <th className="pb-5 px-4">Type</th>
-                  <th className="pb-5 px-4">Uploaded</th>
-                  <th className="pb-5 px-4">Link</th>
-                  <th className="pb-5 px-4 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {documents.map((doc) => (
-                  <tr key={doc.documentID} className="border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-all">
-                    <td className="py-5 px-4 font-black text-gray-800">{doc.documentType}</td>
-                    <td className="py-5 px-4 text-gray-500 font-bold">{new Date(doc.uploadedDate).toLocaleDateString()}</td>
-                    <td className="py-5 px-4 font-black text-blue-600">
-                      <button
-                        onClick={async () => {
-                          try {
-                            const blob = await documentService.downloadDocument(doc.documentID);
-                            const url = window.URL.createObjectURL(blob);
-                            const a = document.createElement('a');
-                            a.href = url;
-                            const fileName = doc.uri ? doc.uri.split('/').pop() : `document-${doc.documentID}`;
-                            a.download = fileName;
-                            a.click();
-                            window.URL.revokeObjectURL(url);
-                          } catch (err) {
-                            console.error('Download failed:', err);
-                            alert('Failed to download document.');
-                          }
-                        }}
-                        className="text-blue-600 hover:text-blue-800 font-bold"
-                      >
-                        Download
-                      </button>
-                    </td>
-                    <td className="py-5 px-4 text-right">
-                      <button
-                        onClick={() => {
-                          setSelectedDocumentForEdit(doc);
-                          setIsEditDocumentOpen(true);
-                        }}
-                        className="text-blue-600 hover:text-blue-800 font-bold text-sm hover:bg-blue-50 px-3 py-1 rounded-lg transition-all mr-2"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={async () => {
-                          if (!window.confirm('Delete this document?')) return;
-                          try {
-                            await documentService.deleteDocument(doc.documentID);
-                            handleDocumentUpdate();
-                          } catch (err) {
-                            console.error('Delete failed:', err);
-                            alert('Failed to delete document.');
-                          }
-                        }}
-                        className="text-red-600 hover:text-red-800 font-bold text-sm hover:bg-red-50 px-3 py-1 rounded-lg transition-all"
-                      >
-                        Delete
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+            <div className="animate-fadeIn">
+                {loading ? (
+                    <div className="py-20 text-center animate-pulse">Syncing...</div>
+                ) : (
+                    <>
+                        {activeTab === 'units' && <div className="grid grid-cols-1 md:grid-cols-4 gap-6">{units.map(u => <UnitCard key={u.unitID} unit={u} />)}</div>}
+                        {activeTab === 'leads' && <div className="grid grid-cols-1 md:grid-cols-3 gap-6">{leads.map(l => <SimpleLeadCard key={l.leadID} lead={l} onUpdate={fetchData} />)}</div>}
+                        {activeTab === 'visits' && <VisitsListView visits={allVisits} />}
+                      
+                    </>
+                )}
+            </div>
+
+            <AddLeadModal isOpen={showLeadModal} onClose={() => setShowLeadModal(false)} propertyID={property.propertyID} onSuccess={fetchData} />
         </div>
-
-      </div>
-
-      {/* --- STANDALONE MODALS --- */}
-      <EditPropertyModal 
-        isOpen={isEditOpen} 
-        onClose={() => setIsEditOpen(false)} 
-        property={updatedProperty} 
-        onSuccess={handlePropertyUpdate}
-      />
-
-      <EditUnitModal 
-        isOpen={isEditUnitOpen} 
-        onClose={() => setIsEditUnitOpen(false)} 
-        unit={selectedUnitForEdit} 
-        onSuccess={handleUnitUpdate}
-      />
-
-      <EditAmenityModal
-        isOpen={isEditAmenityOpen}
-        onClose={() => setIsEditAmenityOpen(false)}
-        amenity={selectedAmenityForEdit}
-        onSuccess={handleAmenityUpdate}
-      />
-
-      <DocumentModal
-        isOpen={isEditDocumentOpen}
-        onClose={() => setIsEditDocumentOpen(false)}
-        document={selectedDocumentForEdit}
-        entityType="Property"
-        entityId={property.propertyID}
-        onSuccess={handleDocumentUpdate}
-      />
-
-      <AddLeadModal 
-        isOpen={isLeadOpen} 
-        onClose={() => setIsLeadOpen(false)} 
-        propertyID={property.propertyID} 
-      />
-      
-      {/* null allows user to input Lead ID manually */}
-      <AddSiteVisitModal 
-        isOpen={isVisitOpen} 
-        onClose={() => setIsVisitOpen(false)} 
-        leadID={null}
-      />
-      
-      {/* null allows user to input Lead ID manually */}
-      <AddDealModal 
-        isOpen={isDealOpen} 
-        onClose={() => setIsDealOpen(false)} 
-        leadID={null}
-      />
-    </div>
-  );
+    );
 };
+
+
+
+
+// ... (Rest of components: TabButton, UnitCard, SimpleLeadCard, VisitsListView, EmptyState remain the same)
+const SimpleLeadCard = ({ lead, onUpdate }) => {
+    const [modals, setModals] = useState({ visit: false, deal: false });
+    return (
+        <div className="bg-white p-6 rounded-[40px] border border-gray-100 shadow-sm hover:border-blue-200 transition-all flex flex-col justify-between h-full">
+            <div>
+                <div className="flex items-center gap-4 mb-6">
+                    <div className="w-16 h-16 bg-gray-900 text-white rounded-[24px] flex items-center justify-center text-2xl font-black">
+                        {lead.customerName?.charAt(0)}
+                    </div>
+                    <div>
+                        <h4 className="text-xl font-black text-gray-900">{lead.customerName}</h4>
+                        <div className="flex items-center gap-1 text-blue-600 font-bold text-[10px] uppercase">
+                            <HomeIcon className="w-3 h-3" /> Unit: {lead.unitNumber || 'TBD'}
+                        </div>
+                    </div>
+                </div>
+                <div className="space-y-3 mb-8">
+                    <div className="flex items-center gap-3 text-gray-500 bg-gray-50 p-3 rounded-2xl">
+                        <PhoneIcon className="w-4 h-4 text-gray-400" />
+                        <span className="text-xs font-bold">{lead.contactInfo || 'No phone'}</span>
+                    </div>
+                </div>
+            </div>
+            <div className="flex gap-3">
+                <button onClick={() => setModals({...modals, visit: true})} className="flex-1 bg-blue-50 text-blue-600 py-3 rounded-2xl text-[10px] font-black uppercase flex items-center justify-center gap-2 hover:bg-blue-600 hover:text-white transition-all"><MapPinIcon className="w-4 h-4" /> Visit</button>
+                <button onClick={() => setModals({...modals, deal: true})} className="flex-1 bg-green-50 text-green-600 py-3 rounded-2xl text-[10px] font-black uppercase flex items-center justify-center gap-2 hover:bg-green-600 hover:text-white transition-all"><BanknotesIcon className="w-4 h-4" /> Deal</button>
+            </div>
+            <AddSiteVisitModal isOpen={modals.visit} onClose={() => setModals({...modals, visit: false})} leadID={lead.leadID} onSuccess={onUpdate} />
+            <AddDealModal isOpen={modals.deal} onClose={() => setModals({...modals, deal: false})} leadID={lead.leadID} unitID={lead.unitID} onSuccess={onUpdate} />
+        </div>
+    );
+};
+
+const TabButton = ({ active, onClick, icon, label }) => (
+    <button onClick={onClick} className={`flex items-center gap-2 px-6 py-2.5 rounded-2xl text-xs font-black transition-all whitespace-nowrap ${active ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-400'}`}>
+        {icon} {label}
+    </button>
+);
+
+const EmptyState = ({ msg }) => (
+    <div className="col-span-full py-20 bg-white rounded-[40px] border-2 border-dashed text-center text-gray-400 italic font-bold">{msg}</div>
+);
+
+const UnitCard = ({ unit }) => (
+    <div className="bg-white p-6 rounded-[32px] border border-gray-100 shadow-sm hover:shadow-md transition-all">
+        <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center font-black mb-4">{unit.unitNumber}</div>
+        <h3 className="font-black text-xl text-gray-900">{unit.bedroomCount} BHK</h3>
+        <p className="text-gray-400 font-bold text-xs uppercase mb-4">{unit.status || 'Available'}</p>
+        <div className="pt-4 border-t border-gray-50 flex justify-between items-end">
+            <div>
+                <p className="text-[10px] text-gray-400 font-black uppercase tracking-tighter">Market Value</p>
+                <p className="text-xl font-black text-blue-600">${unit.basePrice?.toLocaleString()}</p>
+            </div>
+        </div>
+    </div>
+);
+
+const VisitsListView = ({ visits }) => (
+    <div className="bg-white rounded-[40px] border border-gray-100 overflow-hidden shadow-sm">
+        <table className="w-full text-left border-collapse">
+            <thead className="bg-gray-50 uppercase text-[10px] font-black text-gray-400 tracking-widest">
+                <tr><th className="px-8 py-6">Customer</th><th className="px-8 py-6">Visit Date</th><th className="px-8 py-6">Notes</th></tr>
+            </thead>
+            <tbody className="divide-y divide-gray-50">
+                {visits.length > 0 ? visits.map((v, i) => (
+                    <tr key={i} className="hover:bg-blue-50/30 transition-colors">
+                        <td className="px-8 py-6 font-black text-gray-900">{v.customerName}</td>
+                        <td className="px-8 py-6 font-bold text-blue-600 flex items-center gap-2"><CalendarIcon className="w-4 h-4"/> {v.visitDate}</td>
+                        <td className="px-8 py-6 text-gray-500 italic text-sm">"{v.notes}"</td>
+                    </tr>
+                )) : <tr><td colSpan="3" className="py-20 text-center"><EmptyState msg="No visits recorded." /></td></tr>}
+            </tbody>
+        </table>
+    </div>
+);
 
 export default PropertyDetailsView;

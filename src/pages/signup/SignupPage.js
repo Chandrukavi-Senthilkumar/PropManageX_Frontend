@@ -1,16 +1,16 @@
 import React, { useState } from 'react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
-import { useNavigate, Link,useOutletContext } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom'; // Removed useOutletContext
 import { authService } from '../../services/authService';
 
 const SignupPage = () => {
-  const { setEmail } = useOutletContext();
+  // REMOVED: const { setEmail } = useOutletContext(); 
+  
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState({ type: '', message: '' });
 
-  // 1. Validation Schema
   const signupSchema = Yup.object().shape({
     adminName: Yup.string()
       .min(3, 'Name must be at least 3 characters')
@@ -23,7 +23,6 @@ const SignupPage = () => {
       .required('Phone number is required'),
   });
 
-  // 2. Formik Logic
   const formik = useFormik({
     initialValues: {
       adminName: '',
@@ -36,9 +35,8 @@ const SignupPage = () => {
       setStatus({ type: '', message: '' });
       try {
         await authService.registerAdmin(values);
-        setEmail(values.adminMailId);
         
-        // Success: Redirect to Verify OTP and pass the email in state
+        // Instead of setEmail, we pass the email directly to the next page via location state
         navigate('/verify-otp', { 
           state: { email: values.adminMailId } 
         });
@@ -55,110 +53,95 @@ const SignupPage = () => {
   });
 
   return (
-    
-      <div className="w-full max-w-md p-8 bg-white shadow-xl rounded-2xl flex flex-col  justify-center">
+    // Added a wrapper div since we removed the Layout's styling
+    <div className="flex items-center justify-center min-h-screen bg-gray-100 p-4">
+      <div className="w-full max-w-md p-8 bg-white shadow-xl rounded-[40px] flex flex-col justify-center border border-gray-100">
         <div className="mb-8 text-center">
-          <h2 className="text-3xl font-extrabold text-gray-900">PropManageX</h2>
-          <p className="text-gray-500 mt-2">Create your admin account</p>
+          <h2 className="text-4xl font-black text-gray-900 tracking-tight">PropManageX</h2>
+          <p className="text-gray-400 font-bold text-sm uppercase tracking-widest mt-2">Create Admin Account</p>
         </div>
 
-        {/* Status Message */}
         {status.message && (
-          <div className={`p-4 mb-6 rounded-lg text-center text-sm font-medium ${
-            status.type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+          <div className={`p-4 mb-6 rounded-2xl text-center text-sm font-bold ${
+            status.type === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'
           }`}>
             {status.message}
           </div>
         )}
 
         <form onSubmit={formik.handleSubmit} className="space-y-5">
-          {/* Admin Name */}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1">Admin Name</label>
+            <label className="block text-[10px] font-black uppercase text-gray-400 ml-2 mb-1">Admin Name</label>
             <input
               type="text"
-              name="adminName"
               placeholder="John Doe"
               {...formik.getFieldProps('adminName')}
-              className={`w-full px-4 py-2 border rounded-lg transition-all outline-none focus:ring-2 ${
+              className={`w-full px-5 py-4 bg-gray-50 rounded-2xl transition-all outline-none border-2 ${
                 formik.touched.adminName && formik.errors.adminName 
-                ? 'border-red-500 focus:ring-red-200' 
-                : 'border-gray-300 focus:ring-blue-400'
+                ? 'border-red-200' 
+                : 'border-transparent focus:border-blue-100'
               }`}
             />
             {formik.touched.adminName && formik.errors.adminName && (
-              <p className="text-red-500 text-xs mt-1">{formik.errors.adminName}</p>
+              <p className="text-red-500 text-[10px] font-bold mt-1 ml-2">{formik.errors.adminName}</p>
             )}
           </div>
 
-          {/* Email ID */}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1">Email Address</label>
+            <label className="block text-[10px] font-black uppercase text-gray-400 ml-2 mb-1">Email Address</label>
             <input
               type="email"
-              name="adminMailId"
               placeholder="admin@propmanagex.com"
               {...formik.getFieldProps('adminMailId')}
-              className={`w-full px-4 py-2 border rounded-lg transition-all outline-none focus:ring-2 ${
+              className={`w-full px-5 py-4 bg-gray-50 rounded-2xl transition-all outline-none border-2 ${
                 formik.touched.adminMailId && formik.errors.adminMailId 
-                ? 'border-red-500 focus:ring-red-200' 
-                : 'border-gray-300 focus:ring-blue-400'
+                ? 'border-red-200' 
+                : 'border-transparent focus:border-blue-100'
               }`}
             />
             {formik.touched.adminMailId && formik.errors.adminMailId && (
-              <p className="text-red-500 text-xs mt-1">{formik.errors.adminMailId}</p>
+              <p className="text-red-500 text-[10px] font-bold mt-1 ml-2">{formik.errors.adminMailId}</p>
             )}
           </div>
 
-          {/* Phone Number */}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1">Phone Number</label>
+            <label className="block text-[10px] font-black uppercase text-gray-400 ml-2 mb-1">Phone Number</label>
             <input
               type="text"
-              name="phoneNumber"
               placeholder="9876543210"
               {...formik.getFieldProps('phoneNumber')}
-              className={`w-full px-4 py-2 border rounded-lg transition-all outline-none focus:ring-2 ${
+              className={`w-full px-5 py-4 bg-gray-50 rounded-2xl transition-all outline-none border-2 ${
                 formik.touched.phoneNumber && formik.errors.phoneNumber 
-                ? 'border-red-500 focus:ring-red-200' 
-                : 'border-gray-300 focus:ring-blue-400'
+                ? 'border-red-200' 
+                : 'border-transparent focus:border-blue-100'
               }`}
             />
             {formik.touched.phoneNumber && formik.errors.phoneNumber && (
-              <p className="text-red-500 text-xs mt-1">{formik.errors.phoneNumber}</p>
+              <p className="text-red-500 text-[10px] font-bold mt-1 ml-2">{formik.errors.phoneNumber}</p>
             )}
           </div>
 
-          {/* Submit Button */}
           <button
             type="submit"
             disabled={loading || !formik.isValid}
-            className={`w-full py-3 rounded-lg font-bold text-white shadow-lg transition-transform active:scale-95 ${
-              loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'
+            className={`w-full py-4 rounded-2xl font-black text-white shadow-xl transition-all active:scale-95 uppercase text-xs tracking-widest ${
+              loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 shadow-blue-100'
             }`}
           >
-            {loading ? (
-              <span className="flex items-center justify-center">
-                <svg className="animate-spin h-5 w-5 mr-3 text-white" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                Processing...
-              </span>
-            ) : 'Sign Up'}
+            {loading ? 'Processing...' : 'Sign Up'}
           </button>
         </form>
 
-        <div className="mt-8 text-center space-y-2">
-          <p className="text-sm text-gray-600">
-            Already have an account? <Link to="/login" className="text-blue-600 font-semibold hover:underline">Login</Link>
+        <div className="mt-8 text-center space-y-3">
+          <p className="text-xs text-gray-500 font-bold">
+            Already have an account? <Link to="/login" className="text-blue-600 hover:underline">Login</Link>
           </p>
-          <Link to="/forgot-password" title="Reset Password" className="text-xs text-red-400 hover:text-red-600 transition-colors underline">
+          <Link to="/forgot-password" underline className="block text-[10px] text-red-400 font-black uppercase tracking-widest hover:text-red-600">
             Forgot Password?
           </Link>
         </div>
       </div>
-   
+    </div>
   );
 };
 

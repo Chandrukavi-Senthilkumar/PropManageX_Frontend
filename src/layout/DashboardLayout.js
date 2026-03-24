@@ -71,13 +71,15 @@ const DashboardLayout = () => {
     { name: 'Dashboard', path: '/dashboard', icon: HomeIcon },
     { name: 'Properties', path: '/Property', icon: BuildingOfficeIcon },
     { name: 'Add Users', path: '/add-user', icon: UserGroupIcon },
-    { name: 'Deals', path: '/deals', icon: CheckBadgeIcon },
+    { name: 'Deals', path: '/deals', icon: UserGroupIcon },
+    { name: 'Contract', path: '/contract', icon: UserGroupIcon },
+    { name: 'Invoice', path: '/invoice', icon: UserGroupIcon },
     { name: 'Settings', path: '/settings', icon: Cog6ToothIcon },
   ];
 
   return (
-    <div className="flex h-screen bg-slate-100 overflow-hidden font-sans">
-      
+    <div className="flex h-screen bg-[#F8F9FA] overflow-hidden font-sans">
+
       {/* --- SIDEBAR --- */}
       <aside className={`${isSidebarOpen ? 'w-64' : 'w-20'} bg-white border-r border-slate-200 transition-all duration-300 flex flex-col z-50 shadow-sm`}>
         <div className="p-6 flex items-center gap-3 border-b border-slate-100">
