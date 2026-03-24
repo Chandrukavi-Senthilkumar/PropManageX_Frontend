@@ -5,6 +5,7 @@ import AddPropertyModal from '../../components/Modals/AddPropertyModal';
 import AddUnitModal from '../../components/Modals/AddUnitModal';
 import AddAmenityModal from '../../components/Modals/AddAmenityModal';
 import PropertyDetailsView from '../PropertyDetailsView/PropertyDetailsView';
+import { MagnifyingGlassIcon, BuildingOfficeIcon } from '@heroicons/react/24/outline';
 
 const PropertyList = () => {
     // --- State Management ---
@@ -62,13 +63,14 @@ const PropertyList = () => {
     };
 
     const filteredProperties = properties.filter(p =>
-        p.name.toLowerCase().includes(searchTerm.toLowerCase())
+        p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        p.location.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     // --- Conditional Rendering for Detail View ---
     if (viewMode === 'details' && selectedProperty) {
         return (
-            <div className="p-8 bg-gray-50 min-h-screen">
+            <div className="bg-gradient-to-br from-slate-50 to-slate-100 min-h-screen">
                 <PropertyDetailsView 
                     property={selectedProperty} 
                     onBack={() => {
@@ -82,62 +84,93 @@ const PropertyList = () => {
 
     // --- Main List View Render ---
     return (
-        <div className="p-8 bg-gray-50 min-h-screen font-sans">
-            {/* Page Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between mb-10 gap-4">
-                <div>
-                    <h1 className="text-3xl font-black text-gray-900 tracking-tight">Property Portfolio</h1>
-                    <p className="text-gray-500 font-medium">Overview of your real estate assets and performance.</p>
-                </div>
+        <div className="bg-gradient-to-br from-slate-50 to-slate-100 min-h-screen animate-fadeIn">
+            {/* Header Section */}
+            <div className="bg-white border-b border-slate-200 sticky top-0 z-50">
+                <div className="max-w-7xl mx-auto px-6 py-8">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+                        <div>
+                            <h1 className="text-3xl md:text-4xl font-bold text-slate-900">My Properties</h1>
+                            <p className="text-slate-600 mt-1">Manage your portfolio and track all assets</p>
+                        </div>
+                        <button 
+                            onClick={() => setShowPropModal(true)} 
+                            className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-6 py-3 rounded-lg font-semibold shadow-lg hover:shadow-xl transition-all flex items-center gap-2 w-fit"
+                        >
+                            <BuildingOfficeIcon className="w-5 h-5" />
+                            Add Property
+                        </button>
+                    </div>
 
-                <div className="flex items-center gap-4">
+                    {/* Search Bar */}
                     <div className="relative">
+                        <MagnifyingGlassIcon className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none" />
                         <input
                             type="text"
-                            placeholder="Search properties..."
-                            className="px-5 py-3 border border-gray-200 rounded-2xl outline-none focus:ring-2 focus:ring-blue-400 w-72 bg-white shadow-sm transition-all"
+                            placeholder="Search by property name or location..."
+                            value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
+                            className="w-full pl-12 pr-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white transition-all"
                         />
                     </div>
-                    <button 
-                        onClick={() => setShowPropModal(true)} 
-                        className="bg-blue-600 text-white px-8 py-3 rounded-2xl font-bold hover:bg-blue-700 shadow-xl shadow-blue-100 transition-all flex items-center gap-2 active:scale-95"
-                    >
-                        <span>+</span> Add Property
-                    </button>
                 </div>
             </div>
 
-            {/* Main Content Grid */}
-            {loading ? (
-                <div className="flex flex-col items-center justify-center py-40">
-                    <div className="animate-spin rounded-full h-14 w-14 border-t-4 border-blue-600 border-opacity-25 border-t-blue-600"></div>
-                    <p className="mt-4 text-gray-400 font-bold animate-pulse">Syncing Portfolio...</p>
-                </div>
-            ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {filteredProperties.length > 0 ? (
-                        filteredProperties.map((property) => (
-                            <PropertyCard
-                                key={property.propertyID}
-                                {...property}
-                                onImageClick={() => handleOpenDetails(property)}
-                                onManageUnits={(id) => handleQuickAddUnit(id)}
-                                onAddAmenity={(id) => handleQuickAddAmenity(id)}
-                            />
-                        ))
-                    ) : (
-                        <div className="col-span-full flex flex-col items-center justify-center py-32 bg-white rounded-[40px] border-2 border-dashed border-gray-100">
-                            <div className="p-5 bg-gray-50 rounded-full mb-4">
-                                <svg className="w-10 h-10 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                                </svg>
-                            </div>
-                            <p className="text-gray-400 font-bold text-lg">No properties match your search.</p>
+            {/* Content Area */}
+            <div className="max-w-7xl mx-auto px-6 py-12">
+                {loading ? (
+                    <div className="flex flex-col items-center justify-center py-32">
+                        <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
+                            <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-200 border-t-blue-600"></div>
                         </div>
-                    )}
-                </div>
-            )}
+                        <p className="text-slate-600 font-semibold">Loading properties...</p>
+                    </div>
+                ) : filteredProperties.length > 0 ? (
+                    <>
+                        <div className="mb-6 flex items-center justify-between">
+                            <h2 className="text-xl font-bold text-slate-900">
+                                {filteredProperties.length === properties.length 
+                                    ? `All Properties (${filteredProperties.length})` 
+                                    : `Search Results (${filteredProperties.length})`
+                                }
+                            </h2>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {filteredProperties.map((property) => (
+                                <PropertyCard
+                                    key={property.propertyID}
+                                    {...property}
+                                    onImageClick={() => handleOpenDetails(property)}
+                                    onManageUnits={(id) => handleQuickAddUnit(id)}
+                                    onAddAmenity={(id) => handleQuickAddAmenity(id)}
+                                />
+                            ))}
+                        </div>
+                    </>
+                ) : (
+                    <div className="text-center py-20">
+                        <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <BuildingOfficeIcon className="w-10 h-10 text-slate-400" />
+                        </div>
+                        <h3 className="text-lg font-semibold text-slate-900 mb-2">No properties found</h3>
+                        <p className="text-slate-600 mb-6">
+                            {searchTerm 
+                                ? "Try adjusting your search criteria" 
+                                : "Get started by adding your first property"
+                            }
+                        </p>
+                        {!searchTerm && (
+                            <button 
+                                onClick={() => setShowPropModal(true)}
+                                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold transition-colors inline-flex items-center gap-2"
+                            >
+                                <BuildingOfficeIcon className="w-4 h-4" />
+                                Add Your First Property
+                            </button>
+                        )}
+                    </div>
+                )}
+            </div>
 
             {/* Global Modals */}
             <AddPropertyModal

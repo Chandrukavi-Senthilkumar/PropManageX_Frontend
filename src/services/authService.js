@@ -65,6 +65,11 @@ export const authService = {
         return response.data;
     },
 
+    getCurrentUser: async () => {
+        const response = await apiClient.get('/');
+        return response.data;
+    },
+
     logout: () => {
         localStorage.clear();
         Cookies.remove('accessToken');

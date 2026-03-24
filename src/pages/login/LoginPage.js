@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
-import { useNavigate, Link } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { authService } from '../../services/authService';
 
 const LoginPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const from = location.state?.from || '/dashboard';
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -20,7 +22,9 @@ const LoginPage = () => {
       setError('');
       try {
         await authService.login(values);
-        navigate('/Property'); // Redirect after login
+        localStorage.setItem('userName', values.email);
+        localStorage.setItem('userRole', 'Administrator');
+        navigate(from);
       } catch (err) {
         setError(err.errors?.AdminMailId?.[0] || "Invalid email or password");
       } finally {

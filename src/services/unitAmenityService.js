@@ -27,8 +27,23 @@ export const unitAmenityService = {
     return response.data;
   },
 
+  getUnitById: async (id) => {
+    const response = await axios.get(`${API_BASE_URL}/Unit/${id}`, getHeaders());
+    return response.data;
+  },
+
   createUnit: async (unitData) => {
     const response = await axios.post(`${API_BASE_URL}/Unit`, unitData, getHeaders());
+    return response.data;
+  },
+
+  updateUnit: async (id, unitData) => {
+    const response = await axios.put(`${API_BASE_URL}/Unit/${id}`, unitData, getHeaders());
+    return response.data;
+  },
+
+  deleteUnit: async (id) => {
+    const response = await axios.delete(`${API_BASE_URL}/Unit/${id}`, getHeaders());
     return response.data;
   },
 
@@ -46,6 +61,21 @@ export const unitAmenityService = {
 
   createAmenity: async (amenityData) => {
     const response = await axios.post(`${API_BASE_URL}/Amenity`, amenityData, getHeaders());
+    return response.data;
+  },
+
+  getAmenityById: async (id) => {
+    const response = await axios.get(`${API_BASE_URL}/Amenity/${id}`, getHeaders());
+    return response.data;
+  },
+
+  updateAmenity: async (id, amenityData) => {
+    const response = await axios.put(`${API_BASE_URL}/Amenity/${id}`, amenityData, getHeaders());
+    return response.data;
+  },
+
+  deleteAmenity: async (id) => {
+    const response = await axios.delete(`${API_BASE_URL}/Amenity/${id}`, getHeaders());
     return response.data;
   }
 };

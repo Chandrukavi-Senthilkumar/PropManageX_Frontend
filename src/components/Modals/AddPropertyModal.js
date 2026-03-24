@@ -75,7 +75,7 @@ const AddPropertyModal = ({ isOpen, onClose, refreshList }) => {
               <select name="type" {...formik.getFieldProps('type')} className="w-full mt-1 p-3 bg-gray-50 border rounded-xl outline-none">
                 <option value="Commercial">Commercial</option>
                 <option value="Residential">Residential</option>
-                <option value="Industrial">Industrial</option>
+                {/* <option value="Industrial">Industrial</option> */}
               </select>
             </div>
             <div>

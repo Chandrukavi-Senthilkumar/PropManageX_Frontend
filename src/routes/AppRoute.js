@@ -3,6 +3,7 @@ import { AuthRoutes } from "./auth.routes";
 import { PropertyRoutes } from "./property.routes";
 import { User } from './user.routes';
 import { Deals } from './deals.routes'
+import LandingPage from '../pages/Landing/LandingPage';
 
 const renderRoutes = (routes) => {
   return routes.map((route, index) => {
@@ -24,6 +25,7 @@ const renderRoutes = (routes) => {
 
 const AppRoutes = () => {
   const allRoutes = [
+    { path: "/", element: <LandingPage /> },
     ...AuthRoutes,
     ...PropertyRoutes,
     ...User,
