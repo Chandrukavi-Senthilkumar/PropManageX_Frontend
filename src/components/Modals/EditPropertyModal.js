@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
+// fallback service path if no onSuccess hook is provided
 import { propertyService } from '../../services/propertyService';
 
 const EditPropertyModal = ({ isOpen, onClose, property, onSuccess }) => {
@@ -26,20 +27,23 @@ const EditPropertyModal = ({ isOpen, onClose, property, onSuccess }) => {
     onSubmit: async (values) => {
       setLoading(true);
       setError(null);
+      const updateData = {
+        name: values.name,
+        type: values.type,
+        location: values.location,
+        totalUnits: parseInt(values.totalUnits),
+        status: values.status,
+      };
+
       try {
-        const updateData = {
-          name: values.name,
-          type: values.type,
-          location: values.location,
-          totalUnits: parseInt(values.totalUnits),
-          status: values.status,
-        };
+        if (onSuccess) {
+          await onSuccess(updateData);
+          onClose();
+          return;
+        }
 
         const response = await propertyService.updateProperty(property.propertyID, updateData);
-        
         if (response.success || response.statusCode === 200 || response.statusCode === 204) {
-          alert('Property updated successfully!');
-          onSuccess?.();
           onClose();
         } else {
           setError(response.message || 'Failed to update property');

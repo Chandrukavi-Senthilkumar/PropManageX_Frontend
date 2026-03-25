@@ -161,9 +161,27 @@ const LandingPage = () => {
 
             {/* Right Image */}
             <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl h-96 flex items-center justify-center overflow-hidden">
-              <div className="text-center">
-                <BuildingOfficeIcon className="w-32 h-32 text-blue-200 mx-auto mb-4" />
-                <p className="text-slate-400 font-semibold">Property Dashboard Preview</p>
+              <div className="w-full h-full p-6">
+                <h3 className="text-lg font-semibold text-slate-800 mb-4 text-center">Property Dashboard Preview</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-white rounded-lg p-4 shadow-sm border border-slate-200">
+                    <div className="text-2xl font-bold text-blue-600">{liveStats.totalProperties || '0'}</div>
+                    <div className="text-sm text-slate-600">Properties</div>
+                  </div>
+                  <div className="bg-white rounded-lg p-4 shadow-sm border border-slate-200">
+                    <div className="text-2xl font-bold text-green-600">{liveStats.totalUnits || '0'}</div>
+                    <div className="text-sm text-slate-600">Units</div>
+                  </div>
+                  <div className="bg-white rounded-lg p-4 shadow-sm border border-slate-200">
+                    <div className="text-2xl font-bold text-purple-600">{liveStats.occupancyRate || '0'}%</div>
+                    <div className="text-sm text-slate-600">Occupancy</div>
+                  </div>
+                  <div className="bg-white rounded-lg p-4 shadow-sm border border-slate-200">
+                    <div className="text-2xl font-bold text-orange-600">{liveStats.totalRevenue ? `$${(liveStats.totalRevenue / 1000).toFixed(1)}K` : '$0K'}</div>
+                    <div className="text-sm text-slate-600">Revenue</div>
+                  </div>
+                </div>
+                <p className="text-xs text-slate-500 mt-4 text-center">Live data from your portfolio</p>
               </div>
             </div>
           </div>

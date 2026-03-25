@@ -1,35 +1,20 @@
-import { Navigate } from 'react-router-dom';
-import Property from '../pages/properties/PropertyList';
-import Dashboard from '../pages/Dashboard/Dashboard';
+import React from 'react';
+// Import the actual page component
+import PropertyDetailsPage from '../pages/PropertyDetailsView/PropertyDetailsPage';
 import DashboardLayout from '../layout/DashboardLayout';
-import ProtectedRoute from '../components/ProtectedRoute/ProtectedRoute';
-
+import PropertyList from '../pages/properties/PropertyList'; // Assuming you have a list page
+ 
 export const PropertyRoutes = [
   {
-    path: '/dashboard',
-    element: (
-      <ProtectedRoute>
-        <DashboardLayout />
-      </ProtectedRoute>
-    ),
+    path: "/",
+    element: <DashboardLayout />,
     children: [
-      { index: true, element: <Dashboard /> },
-      { path: 'Property', element: <Property /> },
-    ],
-  },
-  {
-    path: '/Property',
-    element: (
-      <ProtectedRoute>
-        <DashboardLayout />
-      </ProtectedRoute>
-    ),
-    children: [
-      { index: true, element: <Property /> },
-    ],
-  },
-  {
-    path: '/',
-    element: <Navigate to="/" replace />,
-  },
+      // The main list of properties
+      { path: "Property", element: <PropertyList /> },
+     
+      // The specific details page using the ID
+      { path: "Property/:id", element: <PropertyDetailsPage /> }
+    ]
+  }
 ];
+ 

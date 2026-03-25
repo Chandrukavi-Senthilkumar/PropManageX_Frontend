@@ -74,6 +74,5 @@ export const authService = {
         localStorage.clear();
         Cookies.remove('accessToken');
         Cookies.remove('refreshToken');
-        window.location.href = "/login";
     }
 };

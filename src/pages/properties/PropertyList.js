@@ -1,20 +1,21 @@
 import React, { useEffect, useState } from 'react';
-import { propertyService } from '../../services/propertyService';
+import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { fetchProperties } from '../../store/propertySlice';
 import PropertyCard from '../../components/PropertyCard/PropertyCard';
 import AddPropertyModal from '../../components/Modals/AddPropertyModal';
 import AddUnitModal from '../../components/Modals/AddUnitModal';
 import AddAmenityModal from '../../components/Modals/AddAmenityModal';
-import PropertyDetailsView from '../PropertyDetailsView/PropertyDetailsView';
 import { MagnifyingGlassIcon, BuildingOfficeIcon } from '@heroicons/react/24/outline';
 
 const PropertyList = () => {
-    // --- State Management ---
-    const [properties, setProperties] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [searchTerm, setSearchTerm] = useState("");
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
+    const properties = useSelector((state) => state.property.properties);
+    const loading = useSelector((state) => state.property.status === 'loading');
+    const error = useSelector((state) => state.property.error);
 
-    // View Switching: 'list' shows all cards, 'details' shows one property deep-dive
-    const [viewMode, setViewMode] = useState('list'); 
+    const [searchTerm, setSearchTerm] = useState("");
     const [selectedProperty, setSelectedProperty] = useState(null);
 
     // Modal Visibility
@@ -24,30 +25,13 @@ const PropertyList = () => {
 
     // --- Lifecycle ---
     useEffect(() => {
-        fetchProperties();
-    }, []);
+        dispatch(fetchProperties());
+    }, [dispatch]);
 
-    const fetchProperties = async () => {
-        try {
-            setLoading(true);
-            const response = await propertyService.getProperties();
-            // Accessing nested data: axios.data -> api.data -> items
-            const items = response?.data?.data?.items;
-            setProperties(Array.isArray(items) ? items : []);
-        } catch (err) {
-            console.error("Failed to fetch properties:", err);
-            setProperties([]);
-        } finally {
-            setLoading(false);
-        }
-    };
 
     // --- Action Handlers ---
-    
-    // Triggered only when clicking the image in PropertyCard
     const handleOpenDetails = (property) => {
-        setSelectedProperty(property);
-        setViewMode('details');
+        navigate(`/Property/${property.propertyID}`);
     };
 
     const handleQuickAddUnit = (propertyID) => {
@@ -67,17 +51,20 @@ const PropertyList = () => {
         p.location.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    // --- Conditional Rendering for Detail View ---
-    if (viewMode === 'details' && selectedProperty) {
+    // Show API error if property fetch fails.
+    if (error) {
         return (
-            <div className="bg-gradient-to-br from-slate-50 to-slate-100 min-h-screen">
-                <PropertyDetailsView 
-                    property={selectedProperty} 
-                    onBack={() => {
-                        setViewMode('list');
-                        fetchProperties(); // Refresh list in case data changed
-                    }} 
-                />
+            <div className="min-h-screen flex items-center justify-center bg-red-50">
+                <div className="bg-white p-8 rounded-2xl shadow-lg border border-red-200">
+                    <h2 className="text-xl font-bold text-red-700">Could not load properties</h2>
+                    <p className="text-sm text-red-500 mt-2">{error}</p>
+                    <button
+                        onClick={() => dispatch(fetchProperties())}
+                        className="mt-4 px-4 py-2 bg-red-500 text-white rounded-xl"
+                    >
+                        Retry
+                    </button>
+                </div>
             </div>
         );
     }

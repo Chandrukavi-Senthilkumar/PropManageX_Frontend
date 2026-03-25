@@ -47,8 +47,12 @@ const DocumentModal = ({ isOpen, onClose, document, entityType, entityId, onSucc
         }
 
         if (response.success || response.statusCode === 200 || response.statusCode === 201) {
-          alert(`Document ${document ? 'updated' : 'uploaded'} successfully!`);
-          onSuccess?.();
+          onSuccess?.({
+            ...values,
+            file: selectedFile,
+            entityType: values.entityType,
+            entityID: values.entityID,
+          });
           onClose();
         } else {
           setError(response.message || 'Failed to save document');

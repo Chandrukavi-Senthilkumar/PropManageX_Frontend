@@ -2,11 +2,13 @@ import React, { useState } from 'react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { authService } from '../../services/authService';
+import { useDispatch } from 'react-redux';
+import { loginUser, fetchCurrentUser } from '../../store/authSlice';
 
 const LoginPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const dispatch = useDispatch();
   const from = location.state?.from || '/dashboard';
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -21,12 +23,12 @@ const LoginPage = () => {
       setLoading(true);
       setError('');
       try {
-        await authService.login(values);
-        localStorage.setItem('userName', values.email);
-        localStorage.setItem('userRole', 'Administrator');
+        await dispatch(loginUser(values)).unwrap();
+        // After login, fetch user details
+        await dispatch(fetchCurrentUser()).unwrap();
         navigate(from);
       } catch (err) {
-        setError(err.errors?.AdminMailId?.[0] || "Invalid email or password");
+        setError(err.errors?.AdminMailId?.[0] || err || "Invalid email or password");
       } finally {
         setLoading(false);
       }

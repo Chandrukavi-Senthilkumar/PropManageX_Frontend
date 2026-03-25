@@ -1,9 +1,6 @@
-import React, { useEffect } from 'react';
-import { HomeIcon, SparklesIcon, MapPinIcon } from '@heroicons/react/24/outline';
-import { useNavigate } from 'react-router-dom';
-
 import React from 'react';
-import { HomeIcon, SparklesIcon, MapPinIcon, CheckCircleIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
+import { HomeIcon, SparklesIcon, MapPinIcon } from '@heroicons/react/24/outline';
+import { CheckCircleIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 
 const PropertyCard = ({ 
   propertyID, name, type, location, totalUnits, status, imageUrl, 
@@ -32,6 +29,13 @@ const PropertyCard = ({
 
   const config = statusConfig[status] || statusConfig.Inactive;
   const StatusIcon = config.icon;
+
+  const handleViewDetails = (e) => {
+    e.stopPropagation();
+    onImageClick();
+  };
+ 
+ 
 
   return (
     <div className="bg-white rounded-xl shadow-sm hover:shadow-xl border border-slate-200 overflow-hidden hover:border-blue-300 transition-all duration-300 flex flex-col h-full group animate-slide-up">

@@ -18,6 +18,6 @@ export const invoiceService = {
     // POST: Create a new invoice
     createInvoice: (data) => apiClient.post('/Invoice', data).then(res => res.data),
     
-    // GET: Fetch invoices (optional for your future use)
-    getInvoices: () => apiClient.get('/Invoice').then(res => res.data)
+    // GET: Fetch invoices (supports filters via query string)
+    getInvoices: (params = {}) => apiClient.get('/Invoice', { params }).then(res => res.data)
 };

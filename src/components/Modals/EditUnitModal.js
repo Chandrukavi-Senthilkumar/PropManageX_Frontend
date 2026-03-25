@@ -36,11 +36,14 @@ const EditUnitModal = ({ isOpen, onClose, unit, onSuccess }) => {
           status: values.status,
         };
 
+        if (onSuccess) {
+          await onSuccess(updateData);
+          onClose();
+          return;
+        }
+
         const response = await unitAmenityService.updateUnit(unit.unitID, updateData);
-        
         if (response.success || response.statusCode === 200 || response.statusCode === 204) {
-          alert('Unit updated successfully!');
-          onSuccess?.();
           onClose();
         } else {
           setError(response.message || 'Failed to update unit');

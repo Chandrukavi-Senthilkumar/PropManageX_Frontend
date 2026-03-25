@@ -23,10 +23,14 @@ const EditAmenityModal = ({ isOpen, onClose, amenity, onSuccess }) => {
       setLoading(true);
       setError(null);
       try {
+        if (onSuccess) {
+          await onSuccess(values);
+          onClose();
+          return;
+        }
+
         const response = await unitAmenityService.updateAmenity(amenity.amenityID, values);
         if (response.success || response.statusCode === 200 || response.statusCode === 204) {
-          alert('Amenity updated successfully!');
-          onSuccess?.();
           onClose();
         } else {
           setError(response.message || 'Failed to update amenity');

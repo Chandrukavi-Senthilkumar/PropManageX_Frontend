@@ -1,13 +1,12 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import { SaleService } from '../../services/dealService';
 import { unitAmenityService } from '../../services/unitAmenityService';
-import { contractService } from '../../services/contractService'; 
-import {AddContractModal} from '../../components/Modals/ContractModal';
-import { documentService } from '../../services/documentService';
-import { 
-    MapPinIcon, 
-    BanknotesIcon, 
-    PlusIcon, 
+import { contractService } from '../../services/contractService';
+import { AddContractModal } from '../../components/Modals/ContractModal';
+import {
+    MapPinIcon,
+    BanknotesIcon,
+    PlusIcon,
     ArrowLeftIcon,
     HomeIcon,
     UsersIcon,
@@ -16,91 +15,49 @@ import {
     EnvelopeIcon,
     DocumentTextIcon,
     CheckCircleIcon,
-    DocumentCheckIcon
+    DocumentCheckIcon,
+    SparklesIcon
 } from '@heroicons/react/24/outline';
 import { AddLeadModal, AddSiteVisitModal, AddDealModal } from '../../components/Modals/SalesModel';
-import EditPropertyModal from '../../components/Modals/EditPropertyModal';
-import EditUnitModal from '../../components/Modals/EditUnitModal';
-import DocumentModal from '../../components/Modals/DocumentModal';
-import EditAmenityModal from '../../components/Modals/EditAmenityModal';
 
-const PropertyDetailsView = ({ property, onBack, onPropertyUpdated }) => {
-  const [units, setUnits] = useState([]);
-  const [amenities, setAmenities] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [updatedProperty, setUpdatedProperty] = useState(property);
-  const [selectedUnitForEdit, setSelectedUnitForEdit] = useState(null);
-  const [selectedAmenityForEdit, setSelectedAmenityForEdit] = useState(null);
-  const [selectedDocumentForEdit, setSelectedDocumentForEdit] = useState(null);
-  const [documents, setDocuments] = useState([]);
-
-  // Independent Modal States
-  const [isLeadOpen, setIsLeadOpen] = useState(false);
-  const [isVisitOpen, setIsVisitOpen] = useState(false);
-  const [isDealOpen, setIsDealOpen] = useState(false);
-  const [isEditOpen, setIsEditOpen] = useState(false);
-  const [isEditUnitOpen, setIsEditUnitOpen] = useState(false);
-  const [isEditAmenityOpen, setIsEditAmenityOpen] = useState(false);
-  const [isEditDocumentOpen, setIsEditDocumentOpen] = useState(false);
-
-  useEffect(() => {
-    const fetchDetails = async () => {
-      try {
-        setLoading(true);
-        const [unitRes, amenityRes, documentRes] = await Promise.all([
-          unitAmenityService.getUnits({ PropertyID: property.propertyID }),
-          unitAmenityService.getAmenities({ PropertyID: property.propertyID }),
-          documentService.getDocuments({ EntityType: 'Property', EntityID: property.propertyID }),
-        ]);
-        
-        // Handle potential .NET data wrapper variations
-        const unitData = unitRes?.data?.items || unitRes?.data || [];
-        const amenityData = amenityRes?.data?.items || amenityRes?.data || [];
-        const documentData = documentRes?.data?.items || documentRes?.data || [];
-        
-        setUnits(Array.isArray(unitData) ? unitData : []);
-        setAmenities(Array.isArray(amenityData) ? amenityData : []);
-        setDocuments(Array.isArray(documentData) ? documentData : []);
-      } catch (err) {
-        console.error("Error fetching property details:", err);
-      } finally {
-        setLoading(false);
-      }
-const PropertyDetailsView = ({ property, onBack }) => {
-    const [units, setUnits] = useState([]);
+const PropertyDetailsView = ({ property, units: externalUnits = [], amenities: externalAmenities = [], documents: externalDocuments = [], onBack, onEditProperty, onEditUnit, onEditAmenity, onEditDocument, onUploadDocument, onRefresh }) => {
+    const [units, setUnits] = useState(externalUnits);
+    const [amenities, setAmenities] = useState(externalAmenities);
+    const [documents, setDocuments] = useState(externalDocuments);
     const [leads, setLeads] = useState([]);
     const [allVisits, setAllVisits] = useState([]);
     const [allDeals, setAllDeals] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showLeadModal, setShowLeadModal] = useState(false);
-    const [activeTab, setActiveTab] = useState('units'); 
+    const [activeTab, setActiveTab] = useState('units');
 
     const fetchData = async () => {
         try {
             setLoading(true);
-            const [unitRes, leadRes] = await Promise.all([
-                unitAmenityService.getUnits({ PropertyID: property.propertyID }),
-                SaleService.getLeadsByProperty(property.propertyID)
-            ]);
-            
+
+            const unitRes = externalUnits.length ? null : await unitAmenityService.getUnits({ PropertyID: property.propertyID });
+            const amenityRes = externalAmenities.length ? null : await unitAmenityService.getAmenities({ PropertyID: property.propertyID });
+            const leadRes = await SaleService.getLeadsByProperty(property.propertyID);
+
+            setUnits(externalUnits.length ? externalUnits : unitRes?.data?.items || unitRes?.data || []);
+            setAmenities(externalAmenities.length ? externalAmenities : amenityRes?.data?.items || amenityRes?.data || []);
             const fetchedLeads = leadRes?.data || [];
-            setUnits(unitRes?.data?.items || unitRes?.data || []);
             setLeads(fetchedLeads);
 
             const visitsPromises = fetchedLeads.map(l => SaleService.getSiteVisitsByLead(l.leadID));
             const dealsPromises = fetchedLeads.map(l => SaleService.getDealsByLead(l.leadID));
-            
+
             const [visitsResults, dealsResults] = await Promise.all([
                 Promise.all(visitsPromises),
                 Promise.all(dealsPromises)
             ]);
 
-            setAllVisits(visitsResults.flatMap((res, idx) => 
-                (res?.data || []).map(v => ({ ...v, customerName: fetchedLeads[idx].customerName }))
+            setAllVisits(visitsResults.flatMap((res, idx) =>
+                (res?.data || []).map(v => ({ ...v, customerName: fetchedLeads[idx]?.customerName }))
             ));
-            
-            setAllDeals(dealsResults.flatMap((res, idx) => 
-                (res?.data || []).map(d => ({ ...d, customerName: fetchedLeads[idx].customerName }))
+
+            setAllDeals(dealsResults.flatMap((res, idx) =>
+                (res?.data || []).map(d => ({ ...d, customerName: fetchedLeads[idx]?.customerName }))
             ));
 
         } catch (err) {
@@ -111,60 +68,21 @@ const PropertyDetailsView = ({ property, onBack }) => {
     };
 
     useEffect(() => {
+        if (!property?.propertyID) return;
         fetchData();
-    }, [property.propertyID]);
-    fetchDetails();
-  }, [property.propertyID]);
+    }, [property?.propertyID, externalUnits.length, externalAmenities.length]);
 
-  const handlePropertyUpdate = () => {
-    setUpdatedProperty(property);
-    onPropertyUpdated?.();
-  };
+    useEffect(() => {
+        setUnits(externalUnits);
+    }, [externalUnits]);
 
-  const handleUnitUpdate = () => {
-    // Refresh units list
-    const fetchUnits = async () => {
-      try {
-        const unitRes = await unitAmenityService.getUnits({ PropertyID: property.propertyID });
-        const unitData = unitRes?.data?.items || unitRes?.data || [];
-        setUnits(Array.isArray(unitData) ? unitData : []);
-      } catch (err) {
-        console.error("Error refreshing units:", err);
-      }
-    };
-    fetchUnits();
-    setIsEditUnitOpen(false);
-  };
+    useEffect(() => {
+        setAmenities(externalAmenities);
+    }, [externalAmenities]);
 
-  const handleAmenityUpdate = () => {
-    // Refresh amenities list
-    const fetchAmenities = async () => {
-      try {
-        const amenityRes = await unitAmenityService.getAmenities({ PropertyID: property.propertyID });
-        const amenityData = amenityRes?.data?.items || amenityRes?.data || [];
-        setAmenities(Array.isArray(amenityData) ? amenityData : []);
-      } catch (err) {
-        console.error("Error refreshing amenities:", err);
-      }
-    };
-    fetchAmenities();
-    setIsEditAmenityOpen(false);
-  };
-
-  const handleDocumentUpdate = () => {
-    // Refresh documents list
-    const fetchDocuments = async () => {
-      try {
-        const documentRes = await documentService.getDocuments({ EntityType: 'Property', EntityID: property.propertyID });
-        const documentData = documentRes?.data?.items || documentRes?.data || [];
-        setDocuments(Array.isArray(documentData) ? documentData : []);
-      } catch (err) {
-        console.error("Error refreshing documents:", err);
-      }
-    };
-    fetchDocuments();
-    setIsEditDocumentOpen(false);
-  };
+    useEffect(() => {
+        setDocuments(externalDocuments);
+    }, [externalDocuments]);
 
     return (
         <div className="space-y-8 pb-20 max-w-7xl mx-auto px-4">
@@ -172,13 +90,39 @@ const PropertyDetailsView = ({ property, onBack }) => {
                 <button onClick={onBack} className="flex items-center gap-2 text-blue-600 font-bold hover:underline">
                     <ArrowLeftIcon className="w-4 h-4" /> Back to Portfolio
                 </button>
-                <div className="flex bg-gray-100 p-1.5 rounded-[20px] shadow-inner overflow-x-auto">
-                    <TabButton active={activeTab === 'units'} onClick={() => setActiveTab('units')} icon={<HomeIcon className="w-4 h-4"/>} label="Units" />
-                    <TabButton active={activeTab === 'leads'} onClick={() => setActiveTab('leads')} icon={<UsersIcon className="w-4 h-4"/>} label="Leads" />
-                    <TabButton active={activeTab === 'visits'} onClick={() => setActiveTab('visits')} icon={<MapPinIcon className="w-4 h-4"/>} label="Visits" />
+
+                <div className="flex items-center gap-2">
+                    <button onClick={onRefresh} className="bg-gray-100 px-4 py-2 rounded-lg font-bold text-gray-700 hover:bg-gray-200 transition-all">
+                        Refresh
+                    </button>
+                    <button onClick={onEditProperty} className="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-blue-700 transition-all">
+                        Edit Property
+                    </button>
                 </div>
-                <button onClick={() => setShowLeadModal(true)} className="bg-gray-900 text-white px-6 py-3 rounded-2xl font-black flex items-center gap-2 shadow-xl active:scale-95 transition-all text-xs">
-                    <PlusIcon className="w-4 h-4" /> Add Lead
+            </div>
+
+            <div className="bg-white rounded-[32px] border border-gray-100 p-6 shadow-sm">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="col-span-2">
+                        <h1 className="text-2xl font-extrabold text-gray-900">{property?.name}</h1>
+                        <p className="text-sm text-gray-500 mt-1">{property?.location} • {property?.type}</p>
+                    </div>
+                    <div className="text-right">
+                        <p className="text-xs uppercase text-gray-400 tracking-widest">Status</p>
+                        <p className="text-lg font-black text-blue-700">{property?.status}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div className="flex items-center justify-between gap-3">
+                <div className="flex bg-gray-100 p-1.5 rounded-[20px] shadow-inner overflow-x-auto">
+                    <TabButton active={activeTab === 'units'} onClick={() => setActiveTab('units')} icon={<HomeIcon className="w-4 h-4" />} label={`Units (${units.length})`} />
+                    <TabButton active={activeTab === 'leads'} onClick={() => setActiveTab('leads')} icon={<UsersIcon className="w-4 h-4" />} label={`Leads (${leads.length})`} />
+                    <TabButton active={activeTab === 'amenities'} onClick={() => setActiveTab('amenities')} icon={<SparklesIcon className="w-4 h-4" />} label={`Amenities (${amenities.length})`} />
+                    <TabButton active={activeTab === 'documents'} onClick={() => setActiveTab('documents')} icon={<DocumentTextIcon className="w-4 h-4" />} label={`Documents (${documents.length})`} />
+                </div>
+                <button onClick={onUploadDocument} className="bg-green-600 text-white px-4 py-2 rounded-2xl font-semibold text-xs hover:bg-green-700 transition-all">
+                    Upload Document
                 </button>
             </div>
 
@@ -187,10 +131,60 @@ const PropertyDetailsView = ({ property, onBack }) => {
                     <div className="py-20 text-center animate-pulse">Syncing...</div>
                 ) : (
                     <>
-                        {activeTab === 'units' && <div className="grid grid-cols-1 md:grid-cols-4 gap-6">{units.map(u => <UnitCard key={u.unitID} unit={u} />)}</div>}
-                        {activeTab === 'leads' && <div className="grid grid-cols-1 md:grid-cols-3 gap-6">{leads.map(l => <SimpleLeadCard key={l.leadID} lead={l} onUpdate={fetchData} />)}</div>}
-                        {activeTab === 'visits' && <VisitsListView visits={allVisits} />}
-                      
+                        {activeTab === 'units' && (
+                            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                                {units.length ? units.map(u => (
+                                    <UnitCard key={u.unitID} unit={u} onEdit={() => onEditUnit(u)} />
+                                )) : <EmptyState msg="No units yet" />}
+                            </div>
+                        )}
+
+                        {activeTab === 'leads' && (
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                {leads.length ? leads.map(l => <SimpleLeadCard key={l.leadID} lead={l} onUpdate={fetchData} />) : <EmptyState msg="No leads yet" />}
+                            </div>
+                        )}
+
+                        {activeTab === 'amenities' && (
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                {amenities.length ? amenities.map(a => (
+                                    <AmenityCard key={a.amenityID} amenity={a} onEdit={() => onEditAmenity(a)} />
+                                )) : <EmptyState msg="No amenities yet" />}
+                            </div>
+                        )}
+
+                        {activeTab === 'documents' && (
+                            <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
+                                {documents.length ? (
+                                    <table className="w-full text-left">
+                                        <thead className="text-xs uppercase tracking-widest text-gray-400 border-b border-gray-200">
+                                            <tr>
+                                                <th className="py-3">Type</th>
+                                                <th className="py-3">File</th>
+                                                <th className="py-3">Uploaded</th>
+                                                <th className="py-3">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {documents.map((doc) => (
+                                                <tr key={doc.documentID} className="border-b border-gray-100 hover:bg-gray-50">
+                                                    <td className="py-3 text-sm text-gray-700">{doc.documentType}</td>
+                                                    <td className="py-3 text-sm text-blue-600 underline cursor-pointer" onClick={() => window.open(`http://localhost:5154/api/Document/${doc.documentID}/download`, '_blank')}>
+                                                        {doc.fileName || doc.uri?.split('/').pop() || 'View'}
+                                                    </td>
+                                                    <td className="py-3 text-sm text-gray-500">{new Date(doc.uploadedDate || doc.createdAt || Date.now()).toLocaleDateString()}</td>
+                                                    <td className="py-3 flex gap-2">
+                                                        <button className="px-3 py-1 text-xs border border-blue-200 text-blue-600 rounded-xl" onClick={() => onEditDocument(doc)}>Edit</button>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                ) : (
+                                    <EmptyState msg="No documents yet" />
+                                )}
+                            </div>
+                        )}
                     </>
                 )}
             </div>
@@ -200,10 +194,14 @@ const PropertyDetailsView = ({ property, onBack }) => {
     );
 };
 
+const AmenityCard = ({ amenity, onEdit }) => (
+    <div className="bg-white p-6 rounded-[32px] border border-gray-100 shadow-sm hover:shadow-md transition-all relative">
+        <button onClick={onEdit} className="absolute top-3 right-3 text-gray-400 hover:text-gray-700">Edit</button>
+        <h3 className="text-lg font-black text-gray-900">{amenity.name}</h3>
+        <p className="mt-2 text-sm text-gray-500">{amenity.description}</p>
+    </div>
+);
 
-
-
-// ... (Rest of components: TabButton, UnitCard, SimpleLeadCard, VisitsListView, EmptyState remain the same)
 const SimpleLeadCard = ({ lead, onUpdate }) => {
     const [modals, setModals] = useState({ visit: false, deal: false });
     return (
@@ -247,8 +245,9 @@ const EmptyState = ({ msg }) => (
     <div className="col-span-full py-20 bg-white rounded-[40px] border-2 border-dashed text-center text-gray-400 italic font-bold">{msg}</div>
 );
 
-const UnitCard = ({ unit }) => (
-    <div className="bg-white p-6 rounded-[32px] border border-gray-100 shadow-sm hover:shadow-md transition-all">
+const UnitCard = ({ unit, onEdit }) => (
+    <div className="bg-white p-6 rounded-[32px] border border-gray-100 shadow-sm hover:shadow-md transition-all relative">
+        <button onClick={onEdit} className="absolute top-3 right-3 text-gray-400 hover:text-gray-700">Edit</button>
         <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center font-black mb-4">{unit.unitNumber}</div>
         <h3 className="font-black text-xl text-gray-900">{unit.bedroomCount} BHK</h3>
         <p className="text-gray-400 font-bold text-xs uppercase mb-4">{unit.status || 'Available'}</p>
@@ -271,7 +270,7 @@ const VisitsListView = ({ visits }) => (
                 {visits.length > 0 ? visits.map((v, i) => (
                     <tr key={i} className="hover:bg-blue-50/30 transition-colors">
                         <td className="px-8 py-6 font-black text-gray-900">{v.customerName}</td>
-                        <td className="px-8 py-6 font-bold text-blue-600 flex items-center gap-2"><CalendarIcon className="w-4 h-4"/> {v.visitDate}</td>
+                        <td className="px-8 py-6 font-bold text-blue-600 flex items-center gap-2"><CalendarIcon className="w-4 h-4" /> {v.visitDate}</td>
                         <td className="px-8 py-6 text-gray-500 italic text-sm">"{v.notes}"</td>
                     </tr>
                 )) : <tr><td colSpan="3" className="py-20 text-center"><EmptyState msg="No visits recorded." /></td></tr>}

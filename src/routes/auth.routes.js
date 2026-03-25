@@ -17,7 +17,7 @@ export const AuthRoutes = [
         path: "/set-password", 
         element: <SetPasswordPage />
       },{
-        path:"/",
+        path:"/login",
         element:<Login/>
       }
   
