@@ -25,6 +25,7 @@ export const SaleService = {
     getDealsByLead: (id) => apiClient.get(`/Deal?leadID=${id}`).then(res => res.data),
 
     //Get All API Calls
+    getAllLeads: () => apiClient.get('/Lead').then(res => res.data),
     getAllDeals: () => apiClient.get('/Deal').then(res => res.data),
     getAllSiteVisits: () => apiClient.get('/SiteVisit').then(res => res.data),
 

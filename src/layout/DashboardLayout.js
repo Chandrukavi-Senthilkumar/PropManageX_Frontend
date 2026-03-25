@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { 
@@ -10,12 +10,18 @@ import {
   Bars3Icon,
   XMarkIcon,
   ArrowLeftOnRectangleIcon,
-  CheckBadgeIcon
+  CheckBadgeIcon,
+  UserPlusIcon // Added for the Add User dropdown icon
 } from '@heroicons/react/24/outline';
 import { fetchCurrentUser, logout } from '../store/authSlice';
 
 const DashboardLayout = () => {
   const [isSidebarOpen, setSidebarOpen] = useState(true);
+  
+  // NEW: State and ref for the profile dropdown
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
@@ -27,10 +33,21 @@ const DashboardLayout = () => {
     }
   }, [dispatch, isAuthenticated]);
 
+  // NEW: Effect to handle clicks outside the profile dropdown
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   const allMenuItems = [
     { name: 'Dashboard', path: '/dashboard', icon: HomeIcon, roles: ['Admin', 'FinanceAnalyst', 'Buyer', 'Tenant'] },
     { name: 'Properties', path: '/Property', icon: BuildingOfficeIcon, roles: ['Admin', 'FinanceAnalyst', 'Buyer'] },
-    { name: 'Add Users', path: '/add-user', icon: UserGroupIcon, roles: ['Admin'] },
+    /* Add Users removed from sidebar */
     { name: 'Deals', path: '/deals', icon: UserGroupIcon, roles: ['Admin', 'Buyer'] },
     { name: 'Contract', path: '/contract', icon: UserGroupIcon, roles: ['Admin', 'FinanceAnalyst'] },
     { name: 'Invoice', path: '/invoice', icon: UserGroupIcon, roles: ['Admin', 'FinanceAnalyst', 'Tenant'] },
@@ -81,28 +98,6 @@ const DashboardLayout = () => {
               </button>
             )}
 
-            {isSidebarOpen && isAuthenticated && (
-              <>
-                <button
-                  onClick={() => {
-                    dispatch(logout());
-                    navigate('/login', { state: { from: '/dashboard' } });
-                  }}
-                  className="w-full text-xs font-semibold text-red-600 hover:text-red-700 hover:bg-red-50 py-2 rounded transition-colors"
-                >
-                  Logout
-                </button>
-                {profileDetails && (
-                  <Link
-                    to="account"
-                    className="w-full text-xs font-semibold text-slate-700 hover:text-slate-900 hover:bg-white py-2 rounded transition-colors mt-2 text-center block"
-                  >
-                    View account details
-                  </Link>
-                )}
-              </>
-            )}
-
             {isSidebarOpen && isLoadingProfile && (
               <p className="text-[10px] text-slate-500 mt-2">Loading profile...</p>
             )}
@@ -129,24 +124,68 @@ const DashboardLayout = () => {
               <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
             </button>
 
-            <button
-              onClick={() => navigate('/account')}
-              className="flex items-center gap-2 px-3 py-1 bg-white border border-slate-200 rounded-lg shadow-sm hover:bg-slate-50 transition-colors"
-            >
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 overflow-hidden">
-                <img src={`https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&background=0D8ABC&color=fff`} alt="Profile" />
-              </div>
-              <div className="hidden sm:block">
-                <p className="text-sm font-semibold text-slate-800 leading-tight">{userName || 'Guest'}</p>
-                <p className="text-xs text-slate-500 leading-tight">{userRole || 'Visitor'}</p>
-              </div>
-            </button>
+            {/* NEW: Profile Dropdown Container */}
+            <div className="relative" ref={dropdownRef}>
+              <button
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                className="flex items-center gap-2 px-3 py-1 bg-white border border-slate-200 rounded-lg shadow-sm hover:bg-slate-50 transition-colors focus:outline-none"
+              >
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 overflow-hidden">
+                  <img src={`https://ui-avatars.com/api/?name=${encodeURIComponent(userName || 'Admin')}&background=0D8ABC&color=fff`} alt="Profile" />
+                </div>
+                <div className="hidden sm:block text-left">
+                  <p className="text-sm font-semibold text-slate-800 leading-tight">{userName || 'Guest'}</p>
+                  <p className="text-xs text-slate-500 leading-tight">{userRole || 'Visitor'}</p>
+                </div>
+              </button>
+
+              {/* Dropdown Menu */}
+              {isDropdownOpen && (
+                <div className="absolute right-0 mt-2 w-56 bg-white border border-slate-200 rounded-xl shadow-lg py-2 z-50 animate-fadeIn">
+                  
+                  {/* Header info inside dropdown */}
+                  <div className="px-4 py-3 border-b border-slate-100 mb-1">
+                    <p className="text-sm font-bold text-slate-800 truncate">{userName || 'Administrator'}</p>
+                    <p className="text-xs text-slate-500 truncate">{userRole || 'Admin'}</p>
+                  </div>
+
+                  {/* Add User Option (Only shows if Admin) */}
+                  {userRole === 'Admin' && (
+                    <button
+                      onClick={() => {
+                        setIsDropdownOpen(false);
+                        navigate('/add-user');
+                      }}
+                      className="w-full text-left px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-blue-50 hover:text-blue-700 flex items-center gap-3 transition-colors"
+                    >
+                      <UserPlusIcon className="w-5 h-5 text-slate-400" /> 
+                      Add User
+                    </button>
+                  )}
+
+                  {/* Logout Option */}
+                  <button
+                    onClick={() => {
+                      setIsDropdownOpen(false);
+                      dispatch(logout());
+                      navigate('/login', { state: { from: '/dashboard' } });
+                    }}
+                    className="w-full text-left px-4 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 flex items-center gap-3 transition-colors mt-1"
+                  >
+                    <ArrowLeftOnRectangleIcon className="w-5 h-5 text-red-400" /> 
+                    Logout
+                  </button>
+
+                </div>
+              )}
+            </div>
+
           </div>
         </div>
 
         {/* PAGE CONTENT CONTAINER */}
         <section className="flex-grow overflow-y-auto p-6 animate-fadeIn">
-          <Outlet /> {/* This is where PropertyList.js will render */}
+          <Outlet />
         </section>
       </main>
     </div>
