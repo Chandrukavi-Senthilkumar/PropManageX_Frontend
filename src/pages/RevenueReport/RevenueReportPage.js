@@ -17,7 +17,7 @@ import {
   updateRevenueReport,
   deleteRevenueReport,
   clearRevenueNotification,
-} from '../../store/revenueSlice';
+} from '../../redux/slices/revenueSlice';
 import { invoiceService } from '../../services/invoiceService';
 
 const initialForm = {
@@ -44,7 +44,8 @@ const getQuarter = (month) => Math.floor((month - 1) / 3) + 1;
 
 const RevenueReportPage = () => {
   const dispatch = useDispatch();
-  const { reports, status, error, notification } = useSelector((state) => state.revenue);
+  const { reports = [], status = 'idle', error = null, notification = null } =
+    useSelector((state) => state.revenue || {});
 
   const [modalOpen, setModalOpen] = useState(false);
   const [form, setForm] = useState(initialForm);

@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { propertyService } from '../services/propertyService';
-import { unitAmenityService } from '../services/unitAmenityService';
-import { documentService } from '../services/documentService';
+import { propertyService } from '../../services/propertyService';
+import { unitAmenityService } from '../../services/unitAmenityService';
+import { documentService } from '../../services/documentService';
 
 const initialState = {
   properties: [],

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { fetchProperties } from '../../store/propertySlice';
+import { fetchProperties } from '../../redux/slices/propertySlice';
 import PropertyCard from '../../components/PropertyCard/PropertyCard';
 import AddPropertyModal from '../../components/Modals/AddPropertyModal';
 import AddUnitModal from '../../components/Modals/AddUnitModal';

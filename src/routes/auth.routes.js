@@ -3,6 +3,7 @@ import SignupPage from '../pages/signup/SignupPage';
 import VerifyOtpPage from '../pages/VerifyOtpPage/VerifyOtpPage';
 import SetPasswordPage from '../pages/signup/SetPasswordPage';
 import Login from '../pages/login/LoginPage';
+import Landingpage from '../pages/Landing/LandingPage';
 
 export const AuthRoutes = [
       {
@@ -19,6 +20,9 @@ export const AuthRoutes = [
       },{
         path:"/login",
         element:<Login/>
+      },{
+        path:"/",
+        element:<Landingpage/>
       }
   
   

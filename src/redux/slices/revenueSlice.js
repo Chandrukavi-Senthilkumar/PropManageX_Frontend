@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { revenueReportService } from '../services/revenueReportService';
+import { revenueReportService } from '../../services/revenueReportService';
 
 const initialState = {
   reports: [],

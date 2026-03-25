@@ -26,7 +26,7 @@ export const authService = {
         const { accessToken, refreshToken } = data;
         localStorage.setItem('accessToken', accessToken);
         localStorage.setItem('refreshToken', refreshToken);
-        
+
         Cookies.set('accessToken', accessToken, { expires: 1, secure: true, sameSite: 'strict' });
         if (refreshToken) {
             Cookies.set('refreshToken', refreshToken, { expires: 7 });
@@ -52,10 +52,10 @@ export const authService = {
     },
 
 
-  addUser: async (userData) => {
-    const response = await apiClient.post('/add-user', userData);
-    return response.data;
-},
+    addUser: async (userData) => {
+        const response = await apiClient.post('/add-user', userData);
+        return response.data;
+    },
 
     login: async (credentials) => {
         const response = await apiClient.post('/login', credentials);
@@ -69,10 +69,22 @@ export const authService = {
         const response = await apiClient.get('/');
         return response.data;
     },
+    getCurrentAdmin: async () => {
+        const response = await apiClient.get('/');
+        // Based on your previous message, this returns an array: [ {adminName, ...} ]
+        return response.data;
+    },
 
-    logout: () => {
-        localStorage.clear();
-        Cookies.remove('accessToken');
-        Cookies.remove('refreshToken');
+    logout: async () => {
+        try {
+            await apiClient.post('/logout');
+        } catch (error) {
+            console.error("Backend logout failed:", error);
+        } finally {
+            localStorage.clear();
+            Cookies.remove('accessToken');
+            Cookies.remove('refreshToken');
+            window.location.href = '/login';
+        }
     }
 };

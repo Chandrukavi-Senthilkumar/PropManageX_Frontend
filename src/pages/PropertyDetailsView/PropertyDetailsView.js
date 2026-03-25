@@ -20,7 +20,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { AddLeadModal, AddSiteVisitModal, AddDealModal } from '../../components/Modals/SalesModel';
 
-const PropertyDetailsView = ({ property, units: externalUnits = [], amenities: externalAmenities = [], documents: externalDocuments = [], onBack, onEditProperty, onEditUnit, onEditAmenity, onEditDocument, onUploadDocument, onRefresh }) => {
+const PropertyDetailsView = ({ property, units: externalUnits = [], amenities: externalAmenities = [], documents: externalDocuments = [], onBack, onEditProperty, onEditUnit, onEditAmenity, onEditDocument, onUploadDocument }) => {
     const [units, setUnits] = useState(externalUnits);
     const [amenities, setAmenities] = useState(externalAmenities);
     const [documents, setDocuments] = useState(externalDocuments);
@@ -92,9 +92,7 @@ const PropertyDetailsView = ({ property, units: externalUnits = [], amenities: e
                 </button>
 
                 <div className="flex items-center gap-2">
-                    <button onClick={onRefresh} className="bg-gray-100 px-4 py-2 rounded-lg font-bold text-gray-700 hover:bg-gray-200 transition-all">
-                        Refresh
-                    </button>
+              
                     <button onClick={onEditProperty} className="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-blue-700 transition-all">
                         Edit Property
                     </button>

@@ -16,7 +16,7 @@ import {
   updateAmenity,
   uploadDocument,
   updateDocument,
-} from '../../store/propertySlice';
+} from '../../redux/slices/propertySlice';
 
 const PropertyDetailsPage = () => {
   const { id } = useParams();
