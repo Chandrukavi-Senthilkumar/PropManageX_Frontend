@@ -20,7 +20,7 @@ export const SaleService = {
     getVisitsByLead: (leadID) => apiClient.get(`/SiteVisit?leadID=${leadID}`).then(res => res.data),
     getDealsByLead: (leadID) => apiClient.get(`/Deal?leadID=${leadID}`).then(res => res.data),
     getLeadsByUnit: (unitID) => apiClient.get(`/Lead?unitID=${unitID}`).then(res => res.data),
-    getLeadsByProperty: (propertyID) => apiClient.get(`/Lead?propertyID=${propertyID}`).then(res => res.data),
+    getLeadsByProperty: (propertyID) => apiClient.get(`/Lead/${propertyID}`).then(res => res.data),
     getSiteVisitsByLead: (id) => apiClient.get(`/SiteVisit?leadID=${id}`).then(res => res.data),
     getDealsByLead: (id) => apiClient.get(`/Deal?leadID=${id}`).then(res => res.data),
 
@@ -32,5 +32,7 @@ export const SaleService = {
     // Create methods remain the same
     createLead: (data) => apiClient.post('/Lead', data).then(res => res.data),
     createSiteVisit: (data) => apiClient.post('/SiteVisit', data).then(res => res.data),
-    createDeal: (data) => apiClient.post('/Deal', data).then(res => res.data)
-};
+    createDeal: (data) => apiClient.post('/Deal', data).then(res => res.data),
+
+    //Update method
+    updateSiteVisit: (id, data) => apiClient.put(`/SiteVisit/${id}/notes`, data).then(res => res.data)};

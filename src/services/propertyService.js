@@ -11,21 +11,21 @@ const getHeaders = () => ({
 
 export const propertyService = {
   getProperties: async (params) => {
-    return await axios.get(API_BASE_URL, { params, ...getHeaders() });
+    // Added .then(res => res.data) to match SaleService style
+    return await axios.get(API_BASE_URL, { params, ...getHeaders() }).then(res => res.data);
   },
 
   getPropertyById: async (id) => {
-    return await axios.get(`${API_BASE_URL}/${id}`, getHeaders());
+    // Added .then(res => res.data)
+    return await axios.get(`${API_BASE_URL}/${id}`, getHeaders()).then(res => res.data);
   },
 
   createProperty: async (propertyData) => {
-    // Standard JSON POST
     const response = await axios.post(API_BASE_URL, propertyData, getHeaders());
     return response.data; 
   },
 
   updateProperty: async (id, propertyData) => {
-    // PUT request to update existing property
     const response = await axios.put(`${API_BASE_URL}/${id}`, propertyData, getHeaders());
     return response.data;
   },
@@ -34,5 +34,4 @@ export const propertyService = {
     const response = await axios.delete(`${API_BASE_URL}/${id}`, getHeaders());
     return response.data;
   },
-
 };
