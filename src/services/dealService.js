@@ -35,4 +35,5 @@ export const SaleService = {
     createDeal: (data) => apiClient.post('/Deal', data).then(res => res.data),
 
     //Update method
-    updateSiteVisit: (id, data) => apiClient.put(`/SiteVisit/${id}/notes`, data).then(res => res.data)};
+    updateSiteVisit: (id, data) => apiClient.put(`/SiteVisit/${id}/notes`, data).then(res => res.data),
+    updateDealStatus: (id, status) => apiClient.put(`/Deal/${id}/status`, { status }).then(res => res.data)};
