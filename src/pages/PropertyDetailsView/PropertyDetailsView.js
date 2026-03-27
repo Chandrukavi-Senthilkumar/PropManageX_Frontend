@@ -115,13 +115,20 @@ const PropertyDetailsView = ({ property, units: externalUnits = [], amenities: e
             <div className="flex items-center justify-between gap-3">
                 <div className="flex bg-gray-100 p-1.5 rounded-[20px] shadow-inner overflow-x-auto">
                     <TabButton active={activeTab === 'units'} onClick={() => setActiveTab('units')} icon={<HomeIcon className="w-4 h-4" />} label={`Units (${units.length})`} />
-                    <TabButton active={activeTab === 'leads'} onClick={() => setActiveTab('leads')} icon={<UsersIcon className="w-4 h-4" />} label={`Leads (${leads.length})`} />
+                    {/* <TabButton active={activeTab === 'leads'} onClick={() => setActiveTab('leads')} icon={<UsersIcon className="w-4 h-4" />} label={`Leads (${leads.length})`} /> */}
                     <TabButton active={activeTab === 'amenities'} onClick={() => setActiveTab('amenities')} icon={<SparklesIcon className="w-4 h-4" />} label={`Amenities (${amenities.length})`} />
                     <TabButton active={activeTab === 'documents'} onClick={() => setActiveTab('documents')} icon={<DocumentTextIcon className="w-4 h-4" />} label={`Documents (${documents.length})`} />
                 </div>
-                <button onClick={onUploadDocument} className="bg-green-600 text-white px-4 py-2 rounded-2xl font-semibold text-xs hover:bg-green-700 transition-all">
-                    Upload Document
-                </button>
+                
+                {/* NEW: Button Group Container */}
+                <div className="flex items-center gap-2">
+                    <button onClick={() => setShowLeadModal(true)} className="bg-gray-900 text-white px-4 py-2 rounded-2xl font-semibold text-xs flex items-center gap-2 hover:bg-black transition-all shadow-sm">
+                        <PlusIcon className="w-3 h-3" /> Add Lead
+                    </button>
+                    <button onClick={onUploadDocument} className="bg-green-600 text-white px-4 py-2 rounded-2xl font-semibold text-xs hover:bg-green-700 transition-all shadow-sm">
+                        Upload Document
+                    </button>
+                </div>
             </div>
 
             <div className="animate-fadeIn">

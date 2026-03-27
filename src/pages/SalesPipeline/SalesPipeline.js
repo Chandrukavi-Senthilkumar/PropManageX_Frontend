@@ -72,7 +72,7 @@ const SalesPipeline = () => {
         <div className="p-10 space-y-10 min-h-screen bg-gray-50/30">
             <div className="flex justify-between items-end">
                 <div>
-                    <h1 className="text-5xl font-black text-gray-900 tracking-tighter">Deals Dashboard</h1>
+                    <h1 className="text-5xl font-black text-gray-900 tracking-tighter">Pipeline</h1>
                     <p className="text-gray-400 font-bold mt-2">Track your entire sales journey from inquiry to closing.</p>
                 </div>
                 <button 
@@ -128,7 +128,7 @@ const SalesPipeline = () => {
                                             <td className="p-8 font-black text-gray-800">{item.visitDate || 'N/A'}</td>
                                             <td className="p-8">
                                                 <div className="font-bold text-gray-900 text-base">{item.customerName}</div>
-                                                {/* <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">Ref: #{item.leadID?.slice(0,8) || 'Unknown'}</div> */}
+                                                <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">Ref: #{item.leadID?.slice(0,8) || 'Unknown'}</div>
                                             </td>
                                             <td className="p-8 text-gray-500 font-medium italic">"{item.notes || 'No notes'}"</td>
                                         </>
