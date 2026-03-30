@@ -33,6 +33,14 @@ const SalesManagementPage = () => {
     const [selectedDealForUpdate, setSelectedDealForUpdate] = useState(null); 
     const [modal, setModal] = useState({ lead: false, visit: false, deal: false });
 
+    // HELPER: Check if a lead already exists in the visits array
+    const hasExistingVisit = (leadId) => {
+        if (!leadId || !data.visits) return false;
+        return data.visits.some(v => 
+            (v.leadID || v.leadId || v.LeadID)?.toLowerCase() === leadId.toLowerCase()
+        );
+    };
+
     const fetchData = async () => {
         try {
             setLoading(true);
@@ -68,7 +76,7 @@ const SalesManagementPage = () => {
             const mappedLeads = rawLeads.map(lead => {
                 const leadPropId = getPropId(lead);
                 const matchedProp = rawProps.find(p => getPropId(p) === leadPropId);
-                let propName = rawProps.length === 0 ? '❌ Props API Empty/Failed' : (matchedProp ? (matchedProp.propertyName || matchedProp.name) : 'Unknown Property');
+                let propName = rawProps.length === 0 ? 'Props API Empty/Failed' : (matchedProp ? (matchedProp.propertyName || matchedProp.name) : 'Unknown Property');
                 return { ...lead, propertyName: propName };
             });
 
@@ -105,16 +113,14 @@ const SalesManagementPage = () => {
 
     const getStatusStyle = (status) => {
         const s = (status || '').toLowerCase();
+        if (s === 'closed' || s === 'cancelled') return { dot: 'bg-red-500', text: 'text-red-600' };
+        if (s === 'won' || s === 'booked' || s === 'visitscheduled') return { dot: 'bg-green-500', text: 'text-green-600' };
         if (s === 'new' || s === 'open') return { dot: 'bg-blue-500', text: 'text-blue-600' };
-        if (s === 'closed' || s === 'won' || s === 'booked' || s === 'visitscheduled') return { dot: 'bg-green-500', text: 'text-green-600' };
-        if (s === 'cancelled') return { dot: 'bg-red-500', text: 'text-red-600' };
         return { dot: 'bg-yellow-500', text: 'text-yellow-600' }; 
     };
 
     return (
         <div className="p-8 space-y-6 bg-gray-50/30 min-h-screen">
-            
-            {/* Header Section */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                 <h1 className="text-4xl font-black text-[#5a2ab3] tracking-tight">Deals Dashboard</h1>
                 <div className="flex items-center gap-3">
@@ -134,7 +140,6 @@ const SalesManagementPage = () => {
                 </div>
             </div>
 
-            {/* Tab Switcher */}
             <div className="flex gap-8 border-b border-gray-200">
                 {['leads', 'visits', 'deals'].map((tab) => (
                     <button 
@@ -147,7 +152,6 @@ const SalesManagementPage = () => {
                 ))}
             </div>
 
-            {/* Main Table */}
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mt-4">
                 <table className="w-full text-left border-collapse">
                     <thead className="bg-gray-50/50 border-b border-gray-100">
@@ -158,8 +162,8 @@ const SalesManagementPage = () => {
                                     <th className="px-8 py-5 text-[11px] font-bold uppercase text-gray-400 tracking-wider">Contact Info</th>
                                     <th className="px-8 py-5 text-[11px] font-bold uppercase text-gray-400 tracking-wider">Interest</th>
                                     <th className="px-8 py-5 text-[11px] font-bold uppercase text-gray-400 tracking-wider">Status</th>
-                                    <th className="px-4 py-5 text-[11px] font-bold uppercase text-gray-400 tracking-wider text-center">Engagement</th>
-                                    <th className="px-8 py-5 text-[11px] font-bold uppercase text-gray-400 tracking-wider text-right">Conversion</th>
+                                    <th className="px-4 py-5 text-[11px] font-bold uppercase text-gray-400 tracking-wider text-center">Visits</th>
+                                    <th className="px-8 py-5 text-[11px] font-bold uppercase text-gray-400 tracking-wider text-right">Deals</th>
                                 </>
                             )}
                             {activeTab === 'visits' && (
@@ -185,75 +189,95 @@ const SalesManagementPage = () => {
                         {loading ? (
                             <tr><td colSpan="7" className="px-8 py-12 text-center text-gray-400 font-bold animate-pulse">Syncing pipeline data...</td></tr>
                         ) : filteredItems.length > 0 ? (
-                            filteredItems.map((item, idx) => (
-                                <tr key={idx} className="hover:bg-gray-50/50 transition-colors">
-                                    {/* COMMON: Property Cell */}
-                                    <td className="px-8 py-5">
-                                        <div className="flex flex-col items-start">
-                                            <span className="font-bold text-gray-900">{item.customerName}</span>
-                                            <span className="flex items-center gap-1.5 text-[11px] text-gray-500 font-semibold mt-1">
-                                                <BuildingOfficeIcon className="w-3.5 h-3.5 text-gray-400" />
-                                                <span className={item.propertyName?.includes('❌') ? "text-red-500 font-bold" : ""}>{item.propertyName}</span>
-                                            </span>
-                                        </div>
-                                    </td>
+                            filteredItems.map((item, idx) => {
+                                const leadId = item.leadID || item.leadId;
+                                const isVisited = hasExistingVisit(leadId);
+                                const isClosed = (item.status || '').toLowerCase() === 'closed';
 
-                                    {/* LEADS TAB CONTENT */}
-                                    {activeTab === 'leads' && (
-                                        <>
-                                            <td className="px-8 py-5 text-gray-600 text-sm font-medium">{item.contactInfo}</td>
-                                            <td className="px-8 py-5 text-gray-600 text-xs font-bold uppercase">{item.interestType || 'Buy'}</td>
-                                            <td className="px-8 py-5">
-                                                <div className="flex items-center gap-2">
-                                                    <span className={`w-2 h-2 rounded-full ${getStatusStyle(item.status).dot}`}></span>
-                                                    <span className={`text-sm font-bold ${getStatusStyle(item.status).text}`}>{item.status || 'New'}</span>
-                                                </div>
-                                            </td>
-                                            <td className="px-4 py-5 text-center">
-                                                <button onClick={() => setSelectedLeadForVisit(item.leadID || item.leadId)} className="text-[11px] font-black text-blue-600 hover:text-blue-800 uppercase tracking-tighter">+ Visit</button>
-                                            </td>
-                                            <td className="px-8 py-5 text-right">
-                                                <button onClick={() => setSelectedLeadForDeal(item)} className="bg-green-50 text-green-700 px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-wide hover:bg-green-600 hover:text-white transition-all border border-green-200">Create Deal</button>
-                                            </td>
-                                        </>
-                                    )}
+                                return (
+                                    <tr key={idx} className="hover:bg-gray-50/50 transition-colors">
+                                        <td className="px-8 py-5">
+                                            <div className="flex flex-col items-start">
+                                                <span className="font-bold text-gray-900">{item.customerName}</span>
+                                                <span className="flex items-center gap-1.5 text-[11px] text-gray-500 font-semibold mt-1">
+                                                    <BuildingOfficeIcon className="w-3.5 h-3.5 text-gray-400" />
+                                                    <span className={item.propertyName?.includes('❌') ? "text-red-500 font-bold" : ""}>{item.propertyName}</span>
+                                                </span>
+                                            </div>
+                                        </td>
 
-                                    {/* VISITS TAB CONTENT */}
-                                    {activeTab === 'visits' && (
-                                        <>
-                                            <td className="px-8 py-5 text-gray-900 font-bold text-sm whitespace-nowrap">{item.visitDate || 'N/A'}</td>
-                                            <td colSpan="4" className="px-8 py-5 text-gray-500 text-sm italic">
-                                                "{item.notes || 'No notes available'}"
-                                            </td>
-                                            <td className="px-8 py-5 text-right">
-                                                <button onClick={() => setSelectedVisitForEdit(item)} className="text-[11px] font-black text-[#7c3aed] hover:underline uppercase">Edit Notes</button>
-                                            </td>
-                                        </>
-                                    )}
+                                        {activeTab === 'leads' && (
+                                            <>
+                                                <td className="px-8 py-5 text-gray-600 text-sm font-medium">{item.contactInfo}</td>
+                                                <td className="px-8 py-5 text-gray-600 text-xs font-bold uppercase">{item.interestType || 'Buy'}</td>
+                                                <td className="px-8 py-5">
+                                                    <div className="flex items-center gap-2">
+                                                        <span className={`w-2 h-2 rounded-full ${getStatusStyle(item.status).dot}`}></span>
+                                                        <span className={`text-sm font-bold ${getStatusStyle(item.status).text}`}>{item.status || 'New'}</span>
+                                                    </div>
+                                                </td>
+                                                <td className="px-4 py-5 text-center">
+                                                    {/* PRIORITY 1: Check if Lead is Closed */}
+                                                    {isClosed ? (
+                                                        <span className="text-[10px] font-black text-red-500 bg-red-50 px-2 py-1 rounded-md uppercase border border-red-100">
+                                                            Closed
+                                                        </span>
+                                                    ) : 
+                                                    /* PRIORITY 2: Check if Visit already exists */
+                                                    isVisited ? (
+                                                        <span className="text-[10px] font-bold text-gray-400 bg-gray-100 px-2 py-1 rounded-md uppercase">
+                                                            Visit Added
+                                                        </span>
+                                                    ) : (
+                                                        <button 
+                                                            onClick={() => setSelectedLeadForVisit(leadId)} 
+                                                            className="text-[11px] font-black text-blue-600 hover:text-blue-800 uppercase tracking-tighter"
+                                                        >
+                                                            + Visit
+                                                        </button>
+                                                    )}
+                                                </td>
+                                                <td className="px-8 py-5 text-right">
+                                                    <button onClick={() => setSelectedLeadForDeal(item)} className="bg-green-50 text-green-700 px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-wide hover:bg-green-600 hover:text-white transition-all border border-green-200">Create Deal</button>
+                                                </td>
+                                            </>
+                                        )}
 
-                                    {/* DEALS TAB CONTENT */}
-                                    {activeTab === 'deals' && (
-                                        <>
-                                            <td className="px-8 py-5"><span className="bg-gray-100 text-gray-600 px-3 py-1.5 rounded-lg text-xs font-bold">{item.dealType || 'Sale'}</span></td>
-                                            <td className="px-8 py-5 text-gray-500 text-sm font-medium whitespace-nowrap">{item.expectedClosureDate || 'TBD'}</td>
-                                            <td className="px-8 py-5 font-bold text-gray-900">₹{item.agreedValue?.toLocaleString()}</td>
-                                            <td className="px-8 py-5 text-center">
-                                                <div 
-                                                    onClick={() => setSelectedDealForUpdate(item)}
-                                                    className="group flex items-center justify-center gap-2 cursor-pointer hover:bg-gray-100 py-1.5 px-3 rounded-xl transition-all border border-transparent hover:border-gray-200"
-                                                >
-                                                    <span className={`w-2 h-2 rounded-full ${getStatusStyle(item.status).dot}`}></span>
-                                                    <span className={`text-sm font-bold ${getStatusStyle(item.status).text}`}>{item.status || 'Open'}</span>
-                                                    <PencilSquareIcon className="w-3.5 h-3.5 text-gray-300 group-hover:text-[#7c3aed] transition-colors" />
-                                                </div>
-                                            </td>
-                                            <td className="px-8 py-5 text-right">
-                                                <button onClick={() => setSelectedDeal(item.dealID || item.dealId)} className="text-[10px] font-black text-[#7c3aed] uppercase hover:underline whitespace-nowrap">Contract</button>
-                                            </td>
-                                        </>
-                                    )}
-                                </tr>
-                            ))
+                                        {activeTab === 'visits' && (
+                                            <>
+                                                <td className="px-8 py-5 text-gray-900 font-bold text-sm whitespace-nowrap">{item.visitDate || 'N/A'}</td>
+                                                <td colSpan="4" className="px-8 py-5 text-gray-500 text-sm italic">
+                                                    "{item.notes || 'No notes available'}"
+                                                </td>
+                                                <td className="px-8 py-5 text-right">
+                                                    <button onClick={() => setSelectedVisitForEdit(item)} className="text-[11px] font-black text-[#7c3aed] hover:underline uppercase">Edit Notes</button>
+                                                </td>
+                                            </>
+                                        )}
+
+                                        {activeTab === 'deals' && (
+                                            <>
+                                                <td className="px-8 py-5"><span className="bg-gray-100 text-gray-600 px-3 py-1.5 rounded-lg text-xs font-bold">{item.dealType || 'Sale'}</span></td>
+                                                <td className="px-8 py-5 text-gray-500 text-sm font-medium whitespace-nowrap">{item.expectedClosureDate || 'TBD'}</td>
+                                                <td className="px-8 py-5 font-bold text-gray-900">₹{item.agreedValue?.toLocaleString()}</td>
+                                                <td className="px-8 py-5 text-center">
+                                                    <div 
+                                                        onClick={() => setSelectedDealForUpdate(item)}
+                                                        className="group flex items-center justify-center gap-2 cursor-pointer hover:bg-gray-100 py-1.5 px-3 rounded-xl transition-all border border-transparent hover:border-gray-200"
+                                                    >
+                                                        <span className={`w-2 h-2 rounded-full ${getStatusStyle(item.status).dot}`}></span>
+                                                        <span className={`text-sm font-bold ${getStatusStyle(item.status).text}`}>{item.status || 'Open'}</span>
+                                                        <PencilSquareIcon className="w-3.5 h-3.5 text-gray-300 group-hover:text-[#7c3aed] transition-colors" />
+                                                    </div>
+                                                </td>
+                                                <td className="px-8 py-5 text-right">
+                                                    <button onClick={() => setSelectedDeal(item.dealID || item.dealId)} className="text-[10px] font-black text-[#7c3aed] uppercase hover:underline whitespace-nowrap">Contract</button>
+                                                </td>
+                                            </>
+                                        )}
+                                    </tr>
+                                );
+                            })
                         ) : (
                             <tr><td colSpan="7" className="px-8 py-12 text-center text-gray-400 font-bold">No results found in {activeTab}.</td></tr>
                         )}
@@ -261,7 +285,7 @@ const SalesManagementPage = () => {
                 </table>
             </div>
 
-            {/* Modals Section */}
+            {/* Modals */}
             <UpdateDealStatusModal isOpen={!!selectedDealForUpdate} onClose={() => setSelectedDealForUpdate(null)} deal={selectedDealForUpdate} onSuccess={fetchData} />
             <AddLeadModal isOpen={modal.lead} onClose={() => setModal({...modal, lead: false})} onSuccess={fetchData} />
             <AddSiteVisitModal isOpen={!!selectedLeadForVisit} onClose={() => setSelectedLeadForVisit(null)} leadID={selectedLeadForVisit} onSuccess={fetchData} />
