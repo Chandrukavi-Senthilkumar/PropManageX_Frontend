@@ -41,6 +41,14 @@ const SalesManagementPage = () => {
         );
     };
 
+    // HELPER: Check if a lead already exists in the deals array
+    const hasExistingDeal = (leadId) => {
+        if (!leadId || !data.deals) return false;
+        return data.deals.some(d => 
+            (d.leadID || d.leadId || d.LeadID)?.toLowerCase() === leadId.toLowerCase()
+        );
+    };
+
     const fetchData = async () => {
         try {
             setLoading(true);
@@ -73,11 +81,26 @@ const SalesManagementPage = () => {
                 return id ? String(id).toLowerCase() : null;
             };
 
+            // STITCHING: Map Property Names and sync Lead Status with Deal status
             const mappedLeads = rawLeads.map(lead => {
-                const leadPropId = getPropId(lead);
-                const matchedProp = rawProps.find(p => getPropId(p) === leadPropId);
-                let propName = rawProps.length === 0 ? 'Props API Empty/Failed' : (matchedProp ? (matchedProp.propertyName || matchedProp.name) : 'Unknown Property');
-                return { ...lead, propertyName: propName };
+                const leadId = getLeadId(lead);
+                const matchedProp = rawProps.find(p => getPropId(p) === getPropId(lead));
+                
+                // Find if this lead has a deal that is Booked or Cancelled
+                const leadDeal = rawDeals.find(d => getLeadId(d) === leadId);
+                const dealStatus = (leadDeal?.status || '').toLowerCase();
+                
+                // LOGIC: If associated deal is Booked/Cancelled, force Lead status to "Closed"
+                let finalStatus = lead.status;
+                if (dealStatus === 'booked' || dealStatus === 'cancelled') {
+                    finalStatus = 'Closed';
+                }
+
+                return { 
+                    ...lead, 
+                    status: finalStatus,
+                    propertyName: matchedProp ? (matchedProp.propertyName || matchedProp.name) : 'Unknown Property' 
+                };
             });
 
             const mappedVisits = rawVisits.map(visit => {
@@ -121,6 +144,8 @@ const SalesManagementPage = () => {
 
     return (
         <div className="p-8 space-y-6 bg-gray-50/30 min-h-screen">
+            
+            {/* Header Section */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                 <h1 className="text-4xl font-black text-[#5a2ab3] tracking-tight">Deals Dashboard</h1>
                 <div className="flex items-center gap-3">
@@ -140,6 +165,7 @@ const SalesManagementPage = () => {
                 </div>
             </div>
 
+            {/* Tab Switcher */}
             <div className="flex gap-8 border-b border-gray-200">
                 {['leads', 'visits', 'deals'].map((tab) => (
                     <button 
@@ -152,6 +178,7 @@ const SalesManagementPage = () => {
                 ))}
             </div>
 
+            {/* Main Table */}
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mt-4">
                 <table className="w-full text-left border-collapse">
                     <thead className="bg-gray-50/50 border-b border-gray-100">
@@ -192,6 +219,7 @@ const SalesManagementPage = () => {
                             filteredItems.map((item, idx) => {
                                 const leadId = item.leadID || item.leadId;
                                 const isVisited = hasExistingVisit(leadId);
+                                const isDealed = hasExistingDeal(leadId);
                                 const isClosed = (item.status || '').toLowerCase() === 'closed';
 
                                 return (
@@ -217,28 +245,20 @@ const SalesManagementPage = () => {
                                                     </div>
                                                 </td>
                                                 <td className="px-4 py-5 text-center">
-                                                    {/* PRIORITY 1: Check if Lead is Closed */}
                                                     {isClosed ? (
-                                                        <span className="text-[10px] font-black text-red-500 bg-red-50 px-2 py-1 rounded-md uppercase border border-red-100">
-                                                            Closed
-                                                        </span>
-                                                    ) : 
-                                                    /* PRIORITY 2: Check if Visit already exists */
-                                                    isVisited ? (
-                                                        <span className="text-[10px] font-bold text-gray-400 bg-gray-100 px-2 py-1 rounded-md uppercase">
-                                                            Visit Added
-                                                        </span>
+                                                        <span className="text-[10px] font-black text-red-500 bg-red-50 px-2 py-1 rounded-md uppercase border border-red-100">Closed</span>
+                                                    ) : isVisited ? (
+                                                        <span className="text-[10px] font-bold text-gray-400 bg-gray-100 px-2 py-1 rounded-md uppercase">Visit Added</span>
                                                     ) : (
-                                                        <button 
-                                                            onClick={() => setSelectedLeadForVisit(leadId)} 
-                                                            className="text-[11px] font-black text-blue-600 hover:text-blue-800 uppercase tracking-tighter"
-                                                        >
-                                                            + Visit
-                                                        </button>
+                                                        <button onClick={() => setSelectedLeadForVisit(leadId)} className="text-[11px] font-black text-blue-600 hover:text-blue-800 uppercase tracking-tighter">+ Visit</button>
                                                     )}
                                                 </td>
                                                 <td className="px-8 py-5 text-right">
-                                                    <button onClick={() => setSelectedLeadForDeal(item)} className="bg-green-50 text-green-700 px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-wide hover:bg-green-600 hover:text-white transition-all border border-green-200">Create Deal</button>
+                                                    {isDealed ? (
+                                                        <span className="text-[10px] font-bold text-gray-400 bg-gray-100 px-3 py-1.5 rounded-xl uppercase border border-gray-200">Deal Created</span>
+                                                    ) : (
+                                                        <button onClick={() => setSelectedLeadForDeal(item)} className="bg-green-50 text-green-700 px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-wide hover:bg-green-600 hover:text-white transition-all border border-green-200">Create Deal</button>
+                                                    )}
                                                 </td>
                                             </>
                                         )}
@@ -246,9 +266,7 @@ const SalesManagementPage = () => {
                                         {activeTab === 'visits' && (
                                             <>
                                                 <td className="px-8 py-5 text-gray-900 font-bold text-sm whitespace-nowrap">{item.visitDate || 'N/A'}</td>
-                                                <td colSpan="4" className="px-8 py-5 text-gray-500 text-sm italic">
-                                                    "{item.notes || 'No notes available'}"
-                                                </td>
+                                                <td colSpan="4" className="px-8 py-5 text-gray-500 text-sm italic">"{item.notes || 'No notes available'}"</td>
                                                 <td className="px-8 py-5 text-right">
                                                     <button onClick={() => setSelectedVisitForEdit(item)} className="text-[11px] font-black text-[#7c3aed] hover:underline uppercase">Edit Notes</button>
                                                 </td>
@@ -257,14 +275,11 @@ const SalesManagementPage = () => {
 
                                         {activeTab === 'deals' && (
                                             <>
-                                                <td className="px-8 py-5"><span className="bg-gray-100 text-gray-600 px-3 py-1.5 rounded-lg text-xs font-bold">{item.dealType || 'Sale'}</span></td>
+                                                <td className="px-8 py-5 text-gray-600 text-xs font-bold uppercase">{item.dealType || 'Sale'}</td>
                                                 <td className="px-8 py-5 text-gray-500 text-sm font-medium whitespace-nowrap">{item.expectedClosureDate || 'TBD'}</td>
                                                 <td className="px-8 py-5 font-bold text-gray-900">₹{item.agreedValue?.toLocaleString()}</td>
                                                 <td className="px-8 py-5 text-center">
-                                                    <div 
-                                                        onClick={() => setSelectedDealForUpdate(item)}
-                                                        className="group flex items-center justify-center gap-2 cursor-pointer hover:bg-gray-100 py-1.5 px-3 rounded-xl transition-all border border-transparent hover:border-gray-200"
-                                                    >
+                                                    <div onClick={() => setSelectedDealForUpdate(item)} className="group flex items-center justify-center gap-2 cursor-pointer hover:bg-gray-100 py-1.5 px-3 rounded-xl transition-all border border-transparent hover:border-gray-200">
                                                         <span className={`w-2 h-2 rounded-full ${getStatusStyle(item.status).dot}`}></span>
                                                         <span className={`text-sm font-bold ${getStatusStyle(item.status).text}`}>{item.status || 'Open'}</span>
                                                         <PencilSquareIcon className="w-3.5 h-3.5 text-gray-300 group-hover:text-[#7c3aed] transition-colors" />
@@ -285,7 +300,7 @@ const SalesManagementPage = () => {
                 </table>
             </div>
 
-            {/* Modals */}
+            {/* Modals Section */}
             <UpdateDealStatusModal isOpen={!!selectedDealForUpdate} onClose={() => setSelectedDealForUpdate(null)} deal={selectedDealForUpdate} onSuccess={fetchData} />
             <AddLeadModal isOpen={modal.lead} onClose={() => setModal({...modal, lead: false})} onSuccess={fetchData} />
             <AddSiteVisitModal isOpen={!!selectedLeadForVisit} onClose={() => setSelectedLeadForVisit(null)} leadID={selectedLeadForVisit} onSuccess={fetchData} />
@@ -296,4 +311,4 @@ const SalesManagementPage = () => {
     );
 };
 
-export default SalesManagementPage;
+export default SalesManagementPage;     
