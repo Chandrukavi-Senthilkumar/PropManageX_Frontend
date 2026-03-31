@@ -71,7 +71,10 @@ export const authService = {
     },
     getCurrentAdmin: async () => {
         const response = await apiClient.get('/');
-        // Based on your previous message, this returns an array: [ {adminName, ...} ]
+        return response.data;
+    },
+    forgotPassword: async (email) => {
+        const response = await apiClient.post('/forgot-password', { email });
         return response.data;
     },
 

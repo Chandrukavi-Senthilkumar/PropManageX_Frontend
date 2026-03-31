@@ -108,7 +108,7 @@ const LoginPage = () => {
             New to the platform? <Link to="/signup" className="text-blue-600 hover:underline">Create Account</Link>
           </p>
           <Link to="/forgot-password" underline className="block text-[10px] text-red-400 font-black uppercase tracking-widest hover:text-red-600">
-            Reset Password
+            Forgot Password
           </Link>
         </div>
       </div>

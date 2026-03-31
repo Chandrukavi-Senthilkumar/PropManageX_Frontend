@@ -4,6 +4,7 @@ import VerifyOtpPage from '../pages/VerifyOtpPage/VerifyOtpPage';
 import SetPasswordPage from '../pages/signup/SetPasswordPage';
 import Login from '../pages/login/LoginPage';
 import Landingpage from '../pages/Landing/LandingPage';
+import ForgotPassword from '../pages/login/ForgotPassword';
 
 export const AuthRoutes = [
       {
@@ -23,6 +24,9 @@ export const AuthRoutes = [
       },{
         path:"/",
         element:<Landingpage/>
+      },{
+        path:"/forgot-password",
+        element:<ForgotPassword/>
       }
   
   

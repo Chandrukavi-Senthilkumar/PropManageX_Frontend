@@ -1,21 +1,13 @@
-﻿import React, { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { SaleService } from '../../services/dealService';
 import { unitAmenityService } from '../../services/unitAmenityService';
-import { contractService } from '../../services/contractService';
-import { AddContractModal } from '../../components/Modals/ContractModal';
 import {
     MapPinIcon,
     BanknotesIcon,
-    PlusIcon,
     ArrowLeftIcon,
     HomeIcon,
-    UsersIcon,
-    CalendarIcon,
     PhoneIcon,
-    EnvelopeIcon,
     DocumentTextIcon,
-    CheckCircleIcon,
-    DocumentCheckIcon,
     SparklesIcon
 } from '@heroicons/react/24/outline';
 import { AddLeadModal, AddSiteVisitModal, AddDealModal } from '../../components/Modals/SalesModel';
@@ -115,7 +107,6 @@ const PropertyDetailsView = ({ property, units: externalUnits = [], amenities: e
             <div className="flex items-center justify-between gap-3">
                 <div className="flex bg-gray-100 p-1.5 rounded-[20px] shadow-inner overflow-x-auto">
                     <TabButton active={activeTab === 'units'} onClick={() => setActiveTab('units')} icon={<HomeIcon className="w-4 h-4" />} label={`Units (${units.length})`} />
-                    <TabButton active={activeTab === 'leads'} onClick={() => setActiveTab('leads')} icon={<UsersIcon className="w-4 h-4" />} label={`Leads (${leads.length})`} />
                     <TabButton active={activeTab === 'amenities'} onClick={() => setActiveTab('amenities')} icon={<SparklesIcon className="w-4 h-4" />} label={`Amenities (${amenities.length})`} />
                     <TabButton active={activeTab === 'documents'} onClick={() => setActiveTab('documents')} icon={<DocumentTextIcon className="w-4 h-4" />} label={`Documents (${documents.length})`} />
                 </div>
@@ -258,23 +249,6 @@ const UnitCard = ({ unit, onEdit }) => (
     </div>
 );
 
-const VisitsListView = ({ visits }) => (
-    <div className="bg-white rounded-[40px] border border-gray-100 overflow-hidden shadow-sm">
-        <table className="w-full text-left border-collapse">
-            <thead className="bg-gray-50 uppercase text-[10px] font-black text-gray-400 tracking-widest">
-                <tr><th className="px-8 py-6">Customer</th><th className="px-8 py-6">Visit Date</th><th className="px-8 py-6">Notes</th></tr>
-            </thead>
-            <tbody className="divide-y divide-gray-50">
-                {visits.length > 0 ? visits.map((v, i) => (
-                    <tr key={i} className="hover:bg-blue-50/30 transition-colors">
-                        <td className="px-8 py-6 font-black text-gray-900">{v.customerName}</td>
-                        <td className="px-8 py-6 font-bold text-blue-600 flex items-center gap-2"><CalendarIcon className="w-4 h-4" /> {v.visitDate}</td>
-                        <td className="px-8 py-6 text-gray-500 italic text-sm">"{v.notes}"</td>
-                    </tr>
-                )) : <tr><td colSpan="3" className="py-20 text-center"><EmptyState msg="No visits recorded." /></td></tr>}
-            </tbody>
-        </table>
-    </div>
-);
+
 
 export default PropertyDetailsView;
