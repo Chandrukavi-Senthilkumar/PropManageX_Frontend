@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { fetchAdminProfile } from '../redux/slices/adminSlice'; 
 import {
   BuildingOfficeIcon,
+  BuildingOffice2Icon,
   UserGroupIcon,
   Cog6ToothIcon,
   BellIcon,
@@ -32,7 +33,6 @@ const DashboardLayout = () => {
     }
   }, [dispatch, profile]);
 
-  // Handle clicks outside the profile dropdown
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -49,6 +49,7 @@ const DashboardLayout = () => {
     { name: 'Contract', path: '/contract', icon: UserGroupIcon },
     { name: 'Invoice', path: '/invoice', icon: UserGroupIcon },
     { name: 'Revenue Reports', path: '/revenues', icon: CheckBadgeIcon },
+    { name: 'My Property', path: '/my-property', icon: BuildingOffice2Icon }, 
   ];
 
   return (
@@ -78,7 +79,6 @@ const DashboardLayout = () => {
         </nav>
       </aside>
 
-      {/* --- MAIN CONTENT AREA --- */}
       <main className="flex-grow flex flex-col min-w-0 overflow-hidden">
         <div className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8 z-40 shadow-sm relative">
           <div className="flex items-center gap-4">
@@ -93,26 +93,20 @@ const DashboardLayout = () => {
               <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
             </button>
 
-            {/* Profile Dropdown Container */}
             <div className="relative" ref={dropdownRef}>
               <button
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                 className="flex items-center gap-2 px-3 py-1 bg-white border border-slate-200 rounded-lg shadow-sm hover:bg-slate-50 transition-colors focus:outline-none"
               >
                 <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 overflow-hidden flex items-center justify-center text-white font-black uppercase tracking-tighter">
-                  {/* Dynamic Avatar using initials if image isn't available */}
                   {profile?.adminName ? (
                     <img src={`https://ui-avatars.com/api/?name=${profile.adminName}&background=0D8ABC&color=fff`} alt="Profile" />
-                  ) : (
-                    "..."
-                  )}
+                  ) : ( "..." )}
                 </div>
                 <div className="hidden sm:block text-left">
-                  {/* --- DYNAMIC NAME --- */}
                   <p className="text-sm font-semibold text-slate-800 leading-tight">
                     {loading ? "Loading..." : profile?.adminName || "User"}
                   </p>
-                  {/* --- DYNAMIC ROLE --- */}
                   <p className="text-xs text-slate-500 leading-tight">
                     {profile?.role || "Administrator"}
                   </p>
@@ -122,7 +116,6 @@ const DashboardLayout = () => {
               {isDropdownOpen && (
                 <div className="absolute right-0 mt-2 w-56 bg-white border border-slate-200 rounded-xl shadow-lg py-2 z-50">
                   <div className="px-4 py-3 border-b border-slate-100 mb-1">
-                    {/* --- DYNAMIC DROPDOWN HEADER --- */}
                     <p className="text-sm font-bold text-slate-800 truncate">{profile?.adminName}</p>
                     <p className="text-xs text-slate-500 truncate">{profile?.adminEmail}</p>
                   </div>
@@ -152,6 +145,7 @@ const DashboardLayout = () => {
         </div>
 
         <section className="flex-grow overflow-y-auto p-6">
+          {/* Outlet is where MyProperty will render */}
           <Outlet />
         </section>
       </main>
@@ -159,4 +153,4 @@ const DashboardLayout = () => {
   );
 };
 
-export default DashboardLayout;
+export default DashboardLayout; 
