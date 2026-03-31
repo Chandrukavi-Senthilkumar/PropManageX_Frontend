@@ -81,7 +81,7 @@ const DocumentModal = ({ isOpen, onClose, document, entityType, entityId, onSucc
           </div>
           <div>
             <h2 className="text-2xl font-bold text-gray-800">{document ? 'Edit Document' : 'Upload Document'}</h2>
-            <p className="text-sm text-gray-400">Attach a file and select the document type.</p>
+            <p className="text-sm text-gray-400">Only PDF or image files are allowed..</p>
           </div>
         </div>
 
@@ -102,7 +102,6 @@ const DocumentModal = ({ isOpen, onClose, document, entityType, entityId, onSucc
               <option value="Agreement">Agreement</option>
               <option value="KYC">KYC</option>
               <option value="Approval">Approval</option>
-              <option value="Other">Other</option>
             </select>
             {formik.touched.documentType && formik.errors.documentType && (
               <p className="text-red-500 text-xs mt-1">{formik.errors.documentType}</p>

@@ -1,12 +1,12 @@
-﻿import React, { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { SaleService } from '../../services/dealService';
 import { unitAmenityService } from '../../services/unitAmenityService';
 import {
     MapPinIcon,
     BanknotesIcon,
-    PlusIcon,
     ArrowLeftIcon,
     HomeIcon,
+    PhoneIcon,
     DocumentTextIcon,
     XMarkIcon,
     SparklesIcon
@@ -259,5 +259,7 @@ const UnitCard = ({ unit, onEdit, isBooked, onBook }) => (
         </div>
     </div>
 );
+
+
 
 export default PropertyDetailsView;

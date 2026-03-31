@@ -136,9 +136,6 @@ const SignupPage = () => {
           <p className="text-xs text-gray-500 font-bold">
             Already have an account? <Link to="/login" className="text-blue-600 hover:underline">Login</Link>
           </p>
-          <Link to="/forgot-password" underline className="block text-[10px] text-red-400 font-black uppercase tracking-widest hover:text-red-600">
-            Forgot Password?
-          </Link>
         </div>
       </div>
     </div>
