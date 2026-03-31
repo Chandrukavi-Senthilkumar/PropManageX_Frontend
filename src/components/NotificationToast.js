@@ -1,23 +1,26 @@
 import React, { useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { clearNotification } from '../redux/slices/propertySlice';
 
-const NotificationToast = () => {
-  const dispatch = useDispatch();
-  const notification = useSelector((state) => state.property.notification);
-
+/**
+ * @param {Object|null} notification
+ * @param {{ type: 'success' | 'error', message: string }} notification
+ * @param {Function} onClose
+ */
+const NotificationToast = ({ notification, onClose }) => {
   useEffect(() => {
-    if (notification) {
-      const timer = setTimeout(() => {
-        dispatch(clearNotification());
-      }, 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [notification, dispatch]);
+    if (!notification) return;
+
+    const timer = setTimeout(() => {
+      onClose();
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, [notification, onClose]);
 
   if (!notification) return null;
 
-  const baseStyles = 'fixed bottom-4 right-4 px-5 py-3 rounded-xl shadow-xl text-sm font-bold z-[999] transition-all';
+  const baseStyles =
+    'fixed bottom-4 right-4 px-5 py-3 rounded-xl shadow-xl text-sm font-bold z-[999] transition-all';
+
   const typeStyles =
     notification.type === 'success'
       ? 'bg-green-600 text-white'
@@ -27,7 +30,7 @@ const NotificationToast = () => {
     <div className={`${baseStyles} ${typeStyles}`}>
       {notification.message}
       <button
-        onClick={() => dispatch(clearNotification())}
+        onClick={onClose}
         className="ml-4 font-normal underline"
       >
         Dismiss

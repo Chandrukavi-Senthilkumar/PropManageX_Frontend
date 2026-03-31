@@ -1,34 +1,29 @@
-﻿import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState,} from 'react';
+
 import { useParams, useNavigate } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
+
 import PropertyDetailsView from './PropertyDetailsView';
 import EditPropertyModal from '../../components/Modals/EditPropertyModal';
 import EditUnitModal from '../../components/Modals/EditUnitModal';
 import EditAmenityModal from '../../components/Modals/EditAmenityModal';
 import DocumentModal from '../../components/Modals/DocumentModal';
-import {
-  fetchPropertyById,
-  fetchUnitsByPropertyId,
-  fetchAmenitiesByPropertyId,
-  fetchDocumentsByPropertyId,
-  updateProperty,
-  updateUnit,
-  updateAmenity,
-  uploadDocument,
-  updateDocument,
-} from '../../redux/slices/propertySlice';
+
+import { propertyService } from '../../services/propertyService';
+import { unitAmenityService } from '../../services/unitAmenityService';
+import { documentService } from '../../services/documentService';
 
 const PropertyDetailsPage = () => {
+
   const { id } = useParams();
   const navigate = useNavigate();
-  const dispatch = useDispatch();
 
-  const property = useSelector((state) => state.property.selectedProperty);
-  const units = useSelector((state) => state.property.units);
-  const amenities = useSelector((state) => state.property.amenities);
-  const documents = useSelector((state) => state.property.documents);
-  const status = useSelector((state) => state.property.status);
-  const error = useSelector((state) => state.property.error);
+  const [property, setProperty] = useState(null);
+  const [units, setUnits] = useState([]);
+  const [amenities, setAmenities] = useState([]);
+  const [documents, setDocuments] = useState([]);
+
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const [isEditPropertyOpen, setIsEditPropertyOpen] = useState(false);
   const [selectedUnitForEdit, setSelectedUnitForEdit] = useState(null);
@@ -36,43 +31,55 @@ const PropertyDetailsPage = () => {
   const [selectedDocumentForEdit, setSelectedDocumentForEdit] = useState(null);
   const [isDocumentModalOpen, setIsDocumentModalOpen] = useState(false);
 
-  useEffect(() => {
-    if (!id) return;
-    dispatch(fetchPropertyById(id));
-    dispatch(fetchUnitsByPropertyId(id));
-    dispatch(fetchAmenitiesByPropertyId(id));
-    dispatch(fetchDocumentsByPropertyId(id));
-  }, [dispatch, id]);
 
-  const doRefreshData = () => {
-    if (!id) return;
-    dispatch(fetchPropertyById(id));
-    dispatch(fetchUnitsByPropertyId(id));
-    dispatch(fetchAmenitiesByPropertyId(id));
-    dispatch(fetchDocumentsByPropertyId(id));
+  const loadPropertyData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const propertyRes = await propertyService.getPropertyById(id);
+      setProperty(propertyRes?.data || propertyRes);
+
+      const unitsRes = await unitAmenityService.getUnits({ PropertyID: id });
+      setUnits(unitsRes?.data?.items || []);
+
+      const amenitiesRes = await unitAmenityService.getAmenities({ PropertyID: id });
+      setAmenities(amenitiesRes?.data?.items || []);
+
+      const docsRes = await documentService.getDocuments({
+        EntityType: 'Property',
+        EntityID: id,
+      });
+      setDocuments(docsRes?.data?.items || []);
+    } catch (err) {
+      setError(err.message || 'Failed to load property details');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  if (status === 'loading' || !property) {
+
+  useEffect(() => {
+    if (id) {
+      loadPropertyData();
+    }
+  }, [id]);
+
+
+  if (loading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50">
-        <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4"></div>
-        <p className="text-gray-500 font-black animate-pulse uppercase tracking-widest text-xs">
-          Fetching Asset Data...
-        </p>
+      <div className="min-h-screen flex items-center justify-center">
+        <p>Loading property...</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-red-50">
-        <div className="bg-white p-8 rounded-xl shadow-lg border border-red-200">
-          <h2 className="text-lg font-black text-red-600">Error</h2>
-          <p className="mt-2 text-red-500">{error}</p>
-          <button
-            onClick={doRefreshData}
-            className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg"
-          >
+      <div className="min-h-screen flex items-center justify-center">
+        <div>
+          <p className="text-red-600">{error}</p>
+          <button onClick={loadPropertyData} className="mt-4 px-4 py-2 bg-red-600 text-white rounded">
             Retry
           </button>
         </div>
@@ -80,8 +87,9 @@ const PropertyDetailsPage = () => {
     );
   }
 
+
   return (
-    <div className="min-h-screen bg-gray-50/50 p-8">
+    <div className="min-h-screen bg-gray-50 p-8">
       <PropertyDetailsView
         property={property}
         units={units}
@@ -91,20 +99,25 @@ const PropertyDetailsPage = () => {
         onEditProperty={() => setIsEditPropertyOpen(true)}
         onEditUnit={setSelectedUnitForEdit}
         onEditAmenity={setSelectedAmenityForEdit}
-        onEditDocument={(doc) => { setSelectedDocumentForEdit(doc); setIsDocumentModalOpen(true); }}
-        onUploadDocument={() => { setSelectedDocumentForEdit(null); setIsDocumentModalOpen(true); }}
-        onRefresh={doRefreshData}
+        onEditDocument={(doc) => {
+          setSelectedDocumentForEdit(doc);
+          setIsDocumentModalOpen(true);
+        }}
+        onUploadDocument={() => {
+          setSelectedDocumentForEdit(null);
+          setIsDocumentModalOpen(true);
+        }}
+        onRefresh={loadPropertyData}
       />
 
       <EditPropertyModal
         isOpen={isEditPropertyOpen}
         onClose={() => setIsEditPropertyOpen(false)}
         property={property}
-        onSuccess={(values) => {
-          dispatch(updateProperty({ id, data: values })).then(() => {
-            doRefreshData();
-            setIsEditPropertyOpen(false);
-          });
+        onSuccess={async (values) => {
+          await propertyService.updateProperty(id, values);
+          await loadPropertyData();
+          setIsEditPropertyOpen(false);
         }}
       />
 
@@ -112,13 +125,10 @@ const PropertyDetailsPage = () => {
         isOpen={Boolean(selectedUnitForEdit)}
         onClose={() => setSelectedUnitForEdit(null)}
         unit={selectedUnitForEdit}
-        onSuccess={(values) => {
-          if (selectedUnitForEdit) {
-            dispatch(updateUnit({ unitId: selectedUnitForEdit.unitID, data: values, propertyId: id })).then(() => {
-              doRefreshData();
-              setSelectedUnitForEdit(null);
-            });
-          }
+        onSuccess={async (values) => {
+          await unitAmenityService.updateUnit(selectedUnitForEdit.unitID, values);
+          await loadPropertyData();
+          setSelectedUnitForEdit(null);
         }}
       />
 
@@ -126,13 +136,13 @@ const PropertyDetailsPage = () => {
         isOpen={Boolean(selectedAmenityForEdit)}
         onClose={() => setSelectedAmenityForEdit(null)}
         amenity={selectedAmenityForEdit}
-        onSuccess={(values) => {
-          if (selectedAmenityForEdit) {
-            dispatch(updateAmenity({ amenityId: selectedAmenityForEdit.amenityID, data: values, propertyId: id })).then(() => {
-              doRefreshData();
-              setSelectedAmenityForEdit(null);
-            });
-          }
+        onSuccess={async (values) => {
+          await unitAmenityService.updateAmenity(
+            selectedAmenityForEdit.amenityID,
+            values
+          );
+          await loadPropertyData();
+          setSelectedAmenityForEdit(null);
         }}
       />
 
@@ -142,21 +152,10 @@ const PropertyDetailsPage = () => {
         document={selectedDocumentForEdit}
         entityType="Property"
         entityId={id}
-        onSuccess={(values) => {
-          if (selectedDocumentForEdit) {
-            dispatch(updateDocument({ documentId: selectedDocumentForEdit.documentID, entityId: id, values }))
-              .then(() => {
-                doRefreshData();
-                setSelectedDocumentForEdit(null);
-                setIsDocumentModalOpen(false);
-              });
-          } else {
-            dispatch(uploadDocument({ entityType: 'Property', entityId: id, values }))
-              .then(() => {
-                doRefreshData();
-                setIsDocumentModalOpen(false);
-              });
-          }
+        onSuccess={async () => {
+          await loadPropertyData();
+          setIsDocumentModalOpen(false);
+          setSelectedDocumentForEdit(null);
         }}
       />
     </div>
