@@ -2,13 +2,13 @@ import React, { useState } from 'react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { authService } from '../../services/authService'; // Direct Service Import
+import { authService } from '../../services/authService';
 
 const LoginPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   
-  // Redirect back to where they were going, or the Properties page
+  // Redirect back to where they were going, or the Property page
   const from = location.state?.from || '/Property';
   
   const [loading, setLoading] = useState(false);
@@ -20,23 +20,20 @@ const LoginPage = () => {
         password: '' 
     },
     validationSchema: Yup.object({
-      email: Yup.string().email('Invalid email').required('Required'),
-      password: Yup.string().required('Required'),
+      email: Yup.string().email('Invalid email address').required('Email is required'),
+      password: Yup.string().required('Password is required'),
     }),
     onSubmit: async (values) => {
       setLoading(true);
       setError('');
       try {
-        // 1. Call the login service directly
-        // This service handles Cookies.set and localStorage inside authService.login
+        // Call the login service directly
         const response = await authService.login({
             email: values.email,
             password: values.password
         });
 
         if (response) {
-            // 2. Navigation
-            // The DashboardLayout will handle the fetchAdminProfile via the service on load
             navigate(from, { replace: true });
         }
       } catch (err) {
@@ -51,67 +48,81 @@ const LoginPage = () => {
     },
   });
 
+  // Helper to render field-specific validation errors
+  const renderError = (fieldName) => (
+    formik.touched[fieldName] && formik.errors[fieldName] ? (
+      <div className="text-red-500 text-[10px] font-bold mt-1 ml-1">
+        {formik.errors[fieldName]}
+      </div>
+    ) : null
+  );
+
   return (
-    <div className="flex items-center justify-center min-h-screen bg-[#F8F9FA] p-4 font-sans">
-      <div className="w-full max-w-md p-10 bg-white shadow-2xl rounded-[40px] border border-gray-100">
-        <div className="text-center mb-8">
-            <h2 className="text-4xl font-black text-gray-900 tracking-tight">PropManage<span className="text-blue-600">X</span></h2>
-            <p className="text-gray-400 font-bold text-xs uppercase tracking-widest mt-2">Admin Portal Login</p>
+    <div className="animate-fade-in-up">
+      <h2 className="text-4xl font-bold text-gray-900 mb-2">Welcome Back</h2>
+      <p className="text-gray-500 mb-8 font-medium">Let's login to grab amazing deals</p>
+
+      {/* Global Backend Error Alert */}
+      {error && (
+        <div className="p-4 mb-6 bg-red-50 text-red-600 rounded-xl text-xs font-bold uppercase text-center border border-red-100 animate-shake">
+          {error}
         </div>
-        
-        {error && (
-            <div className="p-4 mb-6 bg-red-50 text-red-700 rounded-2xl text-xs font-black uppercase text-center border border-red-100 animate-shake">
-                {error}
-            </div>
-        )}
+      )}
 
-        <form onSubmit={formik.handleSubmit} className="space-y-6">
-          <div>
-            <label className="block text-[10px] font-black uppercase text-gray-400 ml-2 mb-1">Email Address</label>
-            <input
-              type="email"
+      <form onSubmit={formik.handleSubmit} className="space-y-4">
+        {/* Email Field */}
+        <div className="flex flex-col">
+          <div className={`bg-[#F3F4F6] p-3 rounded-xl border transition-all ${
+            formik.touched.email && formik.errors.email ? 'border-red-400' : 'border-transparent focus-within:border-[#5B3E59]'
+          }`}>
+            <label className="block text-[10px] uppercase font-bold text-gray-400 mb-1 ml-1">Email</label>
+            <input 
+              type="email" 
               {...formik.getFieldProps('email')}
-              placeholder="admin@propmanagex.com"
-              className="w-full px-6 py-4 bg-gray-50 border-2 border-transparent rounded-2xl outline-none focus:border-blue-100 focus:bg-white transition-all font-bold text-gray-800"
+              className="w-full bg-transparent outline-none text-sm font-semibold px-1"
+              placeholder="rownok@gmail.com"
             />
-            {formik.touched.email && formik.errors.email && (
-                <p className="text-red-500 text-[10px] font-bold mt-1 ml-2">{formik.errors.email}</p>
-            )}
           </div>
+          {renderError('email')}
+        </div>
 
-          <div>
-            <label className="block text-[10px] font-black uppercase text-gray-400 ml-2 mb-1">Password</label>
-            <input
-              type="password"
-              {...formik.getFieldProps('password')}
-              placeholder="••••••••"
-              className="w-full px-6 py-4 bg-gray-50 border-2 border-transparent rounded-2xl outline-none focus:border-blue-100 focus:bg-white transition-all font-bold text-gray-800"
-            />
-             {formik.touched.password && formik.errors.password && (
-                <p className="text-red-500 text-[10px] font-bold mt-1 ml-2">{formik.errors.password}</p>
-            )}
+        {/* Password Field */}
+        <div className="flex flex-col">
+          <div className={`bg-[#F3F4F6] p-3 rounded-xl border transition-all ${
+            formik.touched.password && formik.errors.password ? 'border-red-400' : 'border-transparent focus-within:border-[#5B3E59]'
+          }`}>
+             <label className="block text-[10px] uppercase font-bold text-gray-400 mb-1 ml-1">Password</label>
+             <input 
+               type="password" 
+               {...formik.getFieldProps('password')}
+               className="w-full bg-transparent outline-none text-sm font-semibold px-1"
+               placeholder="************"
+             />
           </div>
+          {renderError('password')}
+        </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className={`w-full py-5 rounded-2xl font-black text-white shadow-xl transition-all active:scale-95 uppercase text-xs tracking-widest ${
-              loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-gray-900 hover:bg-blue-600 shadow-blue-100'
-            }`}
-          >
-            {loading ? 'Authenticating...' : 'Login to Dashboard'}
-          </button>
-        </form>
-
-        <div className="mt-8 text-center space-y-3">
-          <p className="text-xs text-gray-500 font-bold">
-            New to the platform? <Link to="/signup" className="text-blue-600 hover:underline">Create Account</Link>
-          </p>
-          <Link to="/forgot-password" underline className="block text-[10px] text-red-400 font-black uppercase tracking-widest hover:text-red-600">
-            Forgot Password
+        <div className="flex justify-between items-center text-xs px-1">
+          <label className="flex items-center gap-2 cursor-pointer font-medium text-gray-600">
+            <input type="checkbox" className="accent-[#5B3E59] w-4 h-4" /> Remember me
+          </label>
+          <Link to="/forgot-password" title="Forgot Password?" className="text-gray-900 font-bold hover:underline">
+            Forgot Password?
           </Link>
         </div>
-      </div>
+
+        <button 
+          type="submit" 
+          disabled={loading}
+          className="w-full bg-[#5B3E59] text-white py-4 rounded-xl font-bold mt-4 hover:bg-[#4A3248] transition-all shadow-lg shadow-purple-100 disabled:bg-gray-400"
+        >
+          {loading ? 'Logging in...' : 'Login'}
+        </button>
+      </form>
+
+      <p className="mt-8 text-center text-sm">
+        Don't have an account? <Link to="/signup" className="text-[#5B3E59] font-bold hover:underline">Sign Up</Link>
+      </p>
     </div>
   );
 };

@@ -7,8 +7,6 @@ export const User = [
         element: <DashboardLayout />,
         children: [
             { path: "add-user", element: <AddUser /> },
-            
-
         ]
     }
 ];

@@ -6,9 +6,10 @@ export const InvoicePage=[
     {
     path: "/",
     element: <DashboardLayout />,
+    protected: true,
     children: [
-      { path: "invoice", element: <Invoice /> },
-      {path:"revenues" ,element:<RevenueReports />}
+      { path: "invoice", element: <Invoice />, protected: true },
+      { path: "revenues", element: <RevenueReports />, protected: true }
 
     ]
   }

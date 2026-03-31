@@ -6,8 +6,9 @@ export const Contracts=[
     {
     path: "/",
     element: <DashboardLayout />,
+    protected: true,
     children: [
-      { path: "contract", element: <Contract /> },
+      { path: "contract", element: <Contract /> ,protected: true},
       // Add other internal pages here
     ]
   }

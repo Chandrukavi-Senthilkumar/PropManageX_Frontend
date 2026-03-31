@@ -8,12 +8,13 @@ export const PropertyRoutes = [
   {
     path: "/",
     element: <DashboardLayout />,
+   protected: true,
     children: [
       // The main list of properties
-      { path: "Property", element: <PropertyList /> },
+      { path: "Property", element: <PropertyList />,protected: true },
      
       // The specific details page using the ID
-      { path: "Property/:id", element: <PropertyDetailsPage /> }
+      { path: "Property/:id", element: <PropertyDetailsPage /> ,protected: true},
     ]
   }
 ];

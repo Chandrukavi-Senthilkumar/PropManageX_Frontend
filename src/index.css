@@ -88,3 +88,16 @@ body {
   }
 }
 
+
+/* Custom subtle scrollbar for the form side */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 5px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #E5E7EB;
+  border-radius: 10px;
+}
+

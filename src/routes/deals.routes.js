@@ -5,8 +5,9 @@ export const Deals=[
     {
     path: "/",
     element: <DashboardLayout />,
+    protected: true,
     children: [
-      { path: "deals", element: <DealPage /> },
+      { path: "deals", element: <DealPage /> ,protected: true},
       // Add other internal pages here
     ]
   }

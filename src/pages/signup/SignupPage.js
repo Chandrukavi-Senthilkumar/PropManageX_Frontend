@@ -1,20 +1,18 @@
 import React, { useState } from 'react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
-import { useNavigate, Link } from 'react-router-dom'; // Removed useOutletContext
+import { useNavigate, Link } from 'react-router-dom';
 import { authService } from '../../services/authService';
 
 const SignupPage = () => {
-  // REMOVED: const { setEmail } = useOutletContext(); 
-  
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState({ type: '', message: '' });
 
   const signupSchema = Yup.object().shape({
     adminName: Yup.string()
-      .min(3, 'Name must be at least 3 characters')
-      .required('Admin Name is required'),
+      .min(3, 'Name is too short')
+      .required('Full Name is required'),
     adminMailId: Yup.string()
       .email('Invalid email address')
       .required('Email is required'),
@@ -24,27 +22,25 @@ const SignupPage = () => {
   });
 
   const formik = useFormik({
-    initialValues: {
-      adminName: '',
-      adminMailId: '',
-      phoneNumber: '',
+    initialValues: { 
+      adminName: '', 
+      adminMailId: '', 
+      phoneNumber: '' 
     },
     validationSchema: signupSchema,
+    validateOnBlur: true,
+    validateOnChange: true,
     onSubmit: async (values) => {
       setLoading(true);
-      setStatus({ type: '', message: '' });
+      setStatus({ type: '', message: '' }); // Clear previous errors
       try {
         await authService.registerAdmin(values);
-        
-        // Instead of setEmail, we pass the email directly to the next page via location state
-        navigate('/verify-otp', { 
-          state: { email: values.adminMailId } 
-        });
-        
+        // Navigate to OTP verification passing the email in state
+        navigate('/verify-otp', { state: { email: values.adminMailId } });
       } catch (err) {
         setStatus({ 
           type: 'error', 
-          message: err.message || "Signup failed. Please check your details." 
+          message: err.response?.data?.message || err.message || "Signup failed." 
         });
       } finally {
         setLoading(false);
@@ -52,92 +48,90 @@ const SignupPage = () => {
     },
   });
 
-  return (
-    // Added a wrapper div since we removed the Layout's styling
-    <div className="flex items-center justify-center min-h-screen bg-gray-100 p-4">
-      <div className="w-full max-w-md p-8 bg-white shadow-xl rounded-[40px] flex flex-col justify-center border border-gray-100">
-        <div className="mb-8 text-center">
-          <h2 className="text-4xl font-black text-gray-900 tracking-tight">PropManageX</h2>
-          <p className="text-gray-400 font-bold text-sm uppercase tracking-widest mt-2">Create Admin Account</p>
-        </div>
-
-        {status.message && (
-          <div className={`p-4 mb-6 rounded-2xl text-center text-sm font-bold ${
-            status.type === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'
-          }`}>
-            {status.message}
-          </div>
-        )}
-
-        <form onSubmit={formik.handleSubmit} className="space-y-5">
-          <div>
-            <label className="block text-[10px] font-black uppercase text-gray-400 ml-2 mb-1">Admin Name</label>
-            <input
-              type="text"
-              placeholder="John Doe"
-              {...formik.getFieldProps('adminName')}
-              className={`w-full px-5 py-4 bg-gray-50 rounded-2xl transition-all outline-none border-2 ${
-                formik.touched.adminName && formik.errors.adminName 
-                ? 'border-red-200' 
-                : 'border-transparent focus:border-blue-100'
-              }`}
-            />
-            {formik.touched.adminName && formik.errors.adminName && (
-              <p className="text-red-500 text-[10px] font-bold mt-1 ml-2">{formik.errors.adminName}</p>
-            )}
-          </div>
-
-          <div>
-            <label className="block text-[10px] font-black uppercase text-gray-400 ml-2 mb-1">Email Address</label>
-            <input
-              type="email"
-              placeholder="admin@propmanagex.com"
-              {...formik.getFieldProps('adminMailId')}
-              className={`w-full px-5 py-4 bg-gray-50 rounded-2xl transition-all outline-none border-2 ${
-                formik.touched.adminMailId && formik.errors.adminMailId 
-                ? 'border-red-200' 
-                : 'border-transparent focus:border-blue-100'
-              }`}
-            />
-            {formik.touched.adminMailId && formik.errors.adminMailId && (
-              <p className="text-red-500 text-[10px] font-bold mt-1 ml-2">{formik.errors.adminMailId}</p>
-            )}
-          </div>
-
-          <div>
-            <label className="block text-[10px] font-black uppercase text-gray-400 ml-2 mb-1">Phone Number</label>
-            <input
-              type="text"
-              placeholder="9876543210"
-              {...formik.getFieldProps('phoneNumber')}
-              className={`w-full px-5 py-4 bg-gray-50 rounded-2xl transition-all outline-none border-2 ${
-                formik.touched.phoneNumber && formik.errors.phoneNumber 
-                ? 'border-red-200' 
-                : 'border-transparent focus:border-blue-100'
-              }`}
-            />
-            {formik.touched.phoneNumber && formik.errors.phoneNumber && (
-              <p className="text-red-500 text-[10px] font-bold mt-1 ml-2">{formik.errors.phoneNumber}</p>
-            )}
-          </div>
-
-          <button
-            type="submit"
-            disabled={loading || !formik.isValid}
-            className={`w-full py-4 rounded-2xl font-black text-white shadow-xl transition-all active:scale-95 uppercase text-xs tracking-widest ${
-              loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 shadow-blue-100'
-            }`}
-          >
-            {loading ? 'Processing...' : 'Sign Up'}
-          </button>
-        </form>
-
-        <div className="mt-8 text-center space-y-3">
-          <p className="text-xs text-gray-500 font-bold">
-            Already have an account? <Link to="/login" className="text-blue-600 hover:underline">Login</Link>
-          </p>
-        </div>
+  // Helper to render error messages
+  const renderError = (fieldName) => (
+    formik.touched[fieldName] && formik.errors[fieldName] ? (
+      <div className="text-red-500 text-[10px] font-bold mt-1 ml-1 animate-pulse">
+        {formik.errors[fieldName]}
       </div>
+    ) : null
+  );
+
+  return (
+    <div className="animate-fade-in-up">
+      <h2 className="text-4xl font-bold text-gray-900 mb-2">Create Account</h2>
+      <p className="text-gray-500 mb-5 font-medium">Join us to manage your properties better</p>
+
+      {/* Backend/Global Error Message */}
+      {status.message && (
+        <div className={`p-4 mb-6 rounded-xl text-xs font-bold uppercase text-center border ${
+          status.type === 'error' ? 'bg-red-50 text-red-600 border-red-100' : 'bg-green-50 text-green-600 border-green-100'
+        }`}>
+          {status.message}
+        </div>
+      )}
+
+      <form onSubmit={formik.handleSubmit} className="space-y-4">
+        {/* Full Name Field */}
+        <div className="flex flex-col">
+          <div className={`bg-[#F3F4F6] p-3 rounded-xl border transition-all ${
+            formik.touched.adminName && formik.errors.adminName ? 'border-red-400' : 'border-transparent focus-within:border-[#5B3E59]'
+          }`}>
+            <label className="block text-[10px] uppercase font-bold text-gray-400 mb-1 ml-1">Full Name</label>
+            <input 
+              type="text" 
+              {...formik.getFieldProps('adminName')}
+              className="w-full bg-transparent outline-none text-sm font-semibold px-1"
+              placeholder="John Doe"
+            />
+          </div>
+          {renderError('adminName')}
+        </div>
+
+        {/* Email Field */}
+        <div className="flex flex-col">
+          <div className={`bg-[#F3F4F6] p-3 rounded-xl border transition-all ${
+            formik.touched.adminMailId && formik.errors.adminMailId ? 'border-red-400' : 'border-transparent focus-within:border-[#5B3E59]'
+          }`}>
+            <label className="block text-[10px] uppercase font-bold text-gray-400 mb-1 ml-1">Email Address</label>
+            <input 
+              type="email" 
+              {...formik.getFieldProps('adminMailId')}
+              className="w-full bg-transparent outline-none text-sm font-semibold px-1"
+              placeholder="admin@havenix.com"
+            />
+          </div>
+          {renderError('adminMailId')}
+        </div>
+
+        {/* Phone Number Field */}
+        <div className="flex flex-col">
+          <div className={`bg-[#F3F4F6] p-3 rounded-xl border transition-all ${
+            formik.touched.phoneNumber && formik.errors.phoneNumber ? 'border-red-400' : 'border-transparent focus-within:border-[#5B3E59]'
+          }`}>
+            <label className="block text-[10px] uppercase font-bold text-gray-400 mb-1 ml-1">Phone Number</label>
+            <input 
+              type="text" 
+              {...formik.getFieldProps('phoneNumber')}
+              className="w-full bg-transparent outline-none text-sm font-semibold px-1"
+              placeholder="9876543210"
+            />
+          </div>
+          {renderError('phoneNumber')}
+        </div>
+
+        <button 
+          type="submit" 
+          disabled={loading || !formik.isValid}
+          className="w-full bg-[#5B3E59] text-white py-4 rounded-xl font-bold mt-4 hover:bg-[#4A3248] transition-all shadow-lg shadow-purple-100 disabled:bg-gray-300 disabled:shadow-none"
+        >
+          {loading ? 'Creating Account...' : 'Sign Up'}
+        </button>
+      </form>
+
+      <p className="mt-8 text-center text-sm">
+        Already have an account? <Link to="/login" className="text-[#5B3E59] font-bold hover:underline">Login</Link>
+      </p>
     </div>
   );
 };

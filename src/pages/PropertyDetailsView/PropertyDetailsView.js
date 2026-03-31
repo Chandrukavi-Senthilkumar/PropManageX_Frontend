@@ -8,7 +8,8 @@ import {
     HomeIcon,
     PhoneIcon,
     DocumentTextIcon,
-    SparklesIcon
+    SparklesIcon,
+    PlusIcon
 } from '@heroicons/react/24/outline';
 import { AddLeadModal, AddSiteVisitModal, AddDealModal } from '../../components/Modals/SalesModel';
 

@@ -14,44 +14,49 @@ const AddPropertyModal = ({ isOpen, onClose, refreshList }) => {
       location: '',
       totalUnits: 0,
       status: 'Active',
-      Image:''
+      Image: ''
     },
     validationSchema: Yup.object({
       name: Yup.string().required('Property name is required'),
       location: Yup.string().required('Location is required'),
       totalUnits: Yup.number().min(1, 'At least 1 unit').required('Required'),
     }),
-  onSubmit: async (values) => {
-  setLoading(true);
-  try {
-    // Use FormData to handle the image file + text fields
-    const formData = new FormData();
-    formData.append('Name', values.name);
-    formData.append('Type', values.type);
-    formData.append('Location', values.location);
-    formData.append('TotalUnits', values.totalUnits);
-    formData.append('Status', values.status);
-    
-    if (selectedFile) {
-      formData.append('Image', selectedFile);
+ onSubmit: async (values) => {
+    setLoading(true);
+    try {
+        const formData = new FormData();
+        
+        // Ensure these keys match your Backend Model exactly
+        formData.append('Name', values.name);
+        formData.append('Type', values.type);
+        formData.append('Location', values.location);
+        formData.append('TotalUnits', values.totalUnits);
+        formData.append('Status', values.status);
+        
+        // Check if selectedFile exists and append it
+        if (selectedFile) {
+            // Note: If your backend property is 'Image', use 'Image'
+            formData.append('Image', selectedFile); 
+        }
+
+        // Debug: Log the FormData to verify (FormData doesn't log easily, so use this:)
+        for (let pair of formData.entries()) {
+            console.log(pair[0]+ ': ' + pair[1]); 
+        }
+
+        const createResponse = await propertyService.createProperty(formData);
+        
+        // Success Logic
+        alert("Property created successfully!");
+        refreshList();
+        onClose();
+        
+    } catch (err) {
+        console.error("Upload Failed:", err);
+        alert(err.response?.data?.message || "Failed to save property.");
+    } finally {
+        setLoading(false);
     }
-
-    // Pass the formData object instead of raw values
-    const createResponse = await propertyService.createProperty(formData);
-    
-    // Check your console to see exactly where the ID is: console.log(createResponse)
-    const propertyId = createResponse?.propertyID || createResponse?.data?.propertyID;
-
-
-    alert("Property created successfully!");
-    refreshList(); // Uncommented this so your list actually updates
-    onClose();
-  } catch (err) {
-    console.error("Upload Flow Failed:", err);
-    alert(err.message || "Failed to save property data.");
-  } finally {
-    setLoading(false);
-  }
 }
   });
 
@@ -61,7 +66,7 @@ const AddPropertyModal = ({ isOpen, onClose, refreshList }) => {
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-[32px] w-full max-w-lg p-10 shadow-2xl">
         <h2 className="text-2xl font-bold mb-6 text-gray-800">Add Property</h2>
-        
+
         <form onSubmit={formik.handleSubmit} className="space-y-5">
           {/* Text Inputs */}
           <div>
@@ -91,10 +96,15 @@ const AddPropertyModal = ({ isOpen, onClose, refreshList }) => {
 
           {/* Image Upload Area */}
           <div className="relative border-2 border-dashed border-gray-200 rounded-2xl p-6 text-center hover:bg-gray-50 transition-colors">
-            <input 
-              type="file" 
-              accept="image/*" 
-              onChange={(e) => setSelectedFile(e.target.files[0])}
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => {
+                const file = e.target.files[0];
+                setSelectedFile(file);
+                // Optional: Update formik just to keep it aware
+                formik.setFieldValue('Image', file);
+              }}
               className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
             />
             <div className="space-y-1">
