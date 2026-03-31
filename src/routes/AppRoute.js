@@ -2,13 +2,13 @@ import { Routes, Route } from "react-router-dom";
 import { AuthRoutes } from "./auth.routes";
 import { PropertyRoutes } from "./property.routes";
 import { User } from './user.routes';
-import { Deals } from './deals.routes'
-import { Contracts } from './contract.routes'
-import { InvoicePage } from './invoice.routes'
- 
+import { Deals } from './deals.routes';
+import { Contracts } from './contract.routes';
+import { InvoicePage } from './invoice.routes';
+import { MyPropertyRoutes } from './myproperty.routes'; 
+
 const renderRoutes = (routes) => {
   return routes.map((route, index) => {
- 
     if (route.children) {
       return (
         <Route key={route.path || index} path={route.path} element={route.element}>
@@ -16,14 +16,12 @@ const renderRoutes = (routes) => {
         </Route>
       );
     }
- 
-    // Standard flat route
     return (
       <Route key={route.path || index} path={route.path} element={route.element} />
     );
   });
 };
- 
+
 const AppRoutes = () => {
   const allRoutes = [
     ...AuthRoutes,
@@ -32,10 +30,9 @@ const AppRoutes = () => {
     ...Deals,
     ...Contracts,
     ...InvoicePage,
- 
-
+    ...MyPropertyRoutes, 
   ];
- 
+
   return (
     <div className="containerStyle">
       <div className="innerContainerStyle">
@@ -46,6 +43,5 @@ const AppRoutes = () => {
     </div>
   );
 };
- 
+
 export default AppRoutes;
- 
