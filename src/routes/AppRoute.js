@@ -6,6 +6,7 @@ import { User } from './user.routes';
 import { Deals } from './deals.routes';
 import { Contracts } from './contract.routes';
 import { InvoicePage } from './invoice.routes';
+import { MyPropertyRoutes } from './my-property.routes';
 
 const renderRoutes = (routes) => {
     return routes.map((route, index) => {
@@ -33,6 +34,7 @@ const AppRoutes = () => {
     const allRoutes = [
         ...AuthRoutes,      
         ...PropertyRoutes,  
+        ...MyPropertyRoutes,
         ...User,           
         ...Deals,          
         ...Contracts,      

@@ -1,12 +1,13 @@
 ﻿import { useEffect, useState } from 'react';
 import { SaleService } from '../../services/dealService';
 import { unitAmenityService } from '../../services/unitAmenityService';
+import { bookingService } from '../../services/bookingService';
 import {
     MapPinIcon,
     BanknotesIcon,
     ArrowLeftIcon,
     HomeIcon,
-    PhoneIcon,
+    PlusIcon,
     DocumentTextIcon,
     XMarkIcon,
     SparklesIcon
@@ -53,7 +54,7 @@ const PropertyDetailsView = ({ property, units: externalUnits = [], amenities: e
     const [activeTab, setActiveTab] = useState('units');
     
     // Track bookings locally for this session
-    const [bookedUnits, setBookedUnits] = useState({});
+    
     const [bookingModal, setBookingModal] = useState({ isOpen: false, unitID: null });
 
     const openBookingModal = (unitID) => {
@@ -61,15 +62,17 @@ const PropertyDetailsView = ({ property, units: externalUnits = [], amenities: e
     };
 
     const confirmBooking = async () => {
-        if (bookingModal.unitID) {
-            // 1. Update UI state immediately
-            setBookedUnits(prev => ({ ...prev, [bookingModal.unitID]: true }));
-            setBookingModal({ isOpen: false, unitID: null });
-            
-            // Note: If you have an API to update status, call it here:
-            // await unitAmenityService.updateUnitStatus(bookingModal.unitID, "Booked");
-        }
-    };
+  try {
+    await bookingService.bookUnit(bookingModal.unitID);
+
+    // ✅ Refetch units from backend
+    await fetchData();
+
+    setBookingModal({ isOpen: false, unitID: null });
+  } catch (err) {
+    alert(err.response?.data?.message || 'Already booked');
+  }
+};
 
     const fetchData = async () => {
         try {
@@ -146,8 +149,7 @@ const PropertyDetailsView = ({ property, units: externalUnits = [], amenities: e
                             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                                 {units.length ? units.map(u => {
                                     // Check if the unit is locally booked or has a booked status from the API
-                                    const isBooked = !!bookedUnits[u.unitID] || u.status?.toLowerCase() === 'booked';
-                                    return (
+                                        const isBooked = u.isBooked === true || u.status === 'Booked';                                    return (
                                         <UnitCard 
                                             key={u.unitID} 
                                             unit={u} 

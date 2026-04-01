@@ -1,40 +1,37 @@
 import React, { useEffect } from 'react';
+import { XMarkIcon } from '@heroicons/react/24/outline';
 
-/**
- * @param {Object|null} notification
- * @param {{ type: 'success' | 'error', message: string }} notification
- * @param {Function} onClose
- */
 const NotificationToast = ({ notification, onClose }) => {
   useEffect(() => {
     if (!notification) return;
 
-    const timer = setTimeout(() => {
-      onClose();
-    }, 3000);
-
+    const timer = setTimeout(onClose, 3000);
     return () => clearTimeout(timer);
   }, [notification, onClose]);
 
   if (!notification) return null;
 
-  const baseStyles =
-    'fixed bottom-4 right-4 px-5 py-3 rounded-xl shadow-xl text-sm font-bold z-[999] transition-all';
-
-  const typeStyles =
+  const borderColor =
     notification.type === 'success'
-      ? 'bg-green-600 text-white'
-      : 'bg-red-600 text-white';
+      ? 'border-green-500'
+      : 'border-red-500';
 
   return (
-    <div className={`${baseStyles} ${typeStyles}`}>
-      {notification.message}
-      <button
-        onClick={onClose}
-        className="ml-4 font-normal underline"
+    <div className="fixed top-20 right-6 z-[9999] animate-slide-in">
+      <div
+        className={`bg-white border-l-4 ${borderColor} shadow-xl rounded-xl px-4 py-3 w-[320px] flex items-start gap-3`}
       >
-        Dismiss
-      </button>
+        <p className="text-sm font-medium text-slate-800 flex-1">
+          {notification.message}
+        </p>
+
+        <button
+          onClick={onClose}
+          className="text-slate-400 hover:text-slate-600"
+        >
+          <XMarkIcon className="w-5 h-5" />
+        </button>
+      </div>
     </div>
   );
 };

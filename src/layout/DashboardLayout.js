@@ -15,6 +15,7 @@ import {
   UserPlusIcon
 } from '@heroicons/react/24/outline';
 import { authService } from '../services/authService';
+import { showSuccess } from '../redux/slices/notificationSlice';
 
 const DashboardLayout = () => {
   const [isSidebarOpen, setSidebarOpen] = useState(true);
@@ -88,10 +89,16 @@ const DashboardLayout = () => {
           </div>
 
           <div className="flex items-center gap-4">
-            <button className="p-2 hover:bg-slate-100 rounded-lg text-slate-600 transition-colors relative">
-              <BellIcon className="w-6 h-6" />
-              <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-            </button>
+          <button
+  onClick={() =>
+    dispatch(showSuccess('No new notifications'))
+  }
+  className="p-2 hover:bg-slate-100 rounded-lg text-slate-600 transition-colors relative"
+>
+  <BellIcon className="w-6 h-6" />
+  <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+</button>
+
 
             <div className="relative" ref={dropdownRef}>
               <button
