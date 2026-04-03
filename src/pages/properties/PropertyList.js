@@ -129,3 +129,7 @@ const PropertyList = () => {
 };
 
 export default PropertyList;
+
+//propertyID: 1,
+//name: "Sunset Villas",
+//location: "123 Main St, Springfield",
