@@ -14,7 +14,6 @@ const getHeaders = () => ({
 });
 
 export const bookingService = {
-  // ✅ Book a unit
   bookUnit: async (unitId) => {
     const response = await axios.post(
       API_BASE_URL,
@@ -24,8 +23,8 @@ export const bookingService = {
     return response.data;
   },
 
-  // ✅ Get my bookings
-  getMyBookings: async () => {
+
+  getBookedUnits: async () => {
     const response = await axios.get(
       `${API_BASE_URL}/my-bookings`,
       getHeaders()
