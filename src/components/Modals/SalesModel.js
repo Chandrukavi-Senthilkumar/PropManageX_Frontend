@@ -28,7 +28,7 @@ const ModalWrapper = ({ isOpen, onClose, title, children }) => {
   );
 };
 
-export const UpdateDealStatusModal = ({ isOpen, onClose, deal, onSuccess }) => {
+export const UpdateDealStatusModal = ({ isOpen, onClose, deal, onSuccess, showToast }) => {
     const formik = useFormik({
         initialValues: { status: deal?.status || 'Open' },
         enableReinitialize: true,
@@ -38,9 +38,12 @@ export const UpdateDealStatusModal = ({ isOpen, onClose, deal, onSuccess }) => {
         onSubmit: async (values) => {
             try {
                 await SaleService.updateDealStatus(deal.dealID || deal.dealId, values.status);
+                if (showToast) showToast('Deal status updated successfully!', 'success');
                 if (onSuccess) onSuccess();
                 onClose();
-            } catch (err) { alert("Update failed"); }
+            } catch (err) { 
+                if (showToast) showToast('Failed to update deal status', 'error');
+            }
         }
     });
 
@@ -77,7 +80,7 @@ export const UpdateDealStatusModal = ({ isOpen, onClose, deal, onSuccess }) => {
     );
 };
 
-export const AddLeadModal = ({ isOpen, onClose, propertyID, unitID, onSuccess }) => {
+export const AddLeadModal = ({ isOpen, onClose, propertyID, unitID, onSuccess, showToast }) => {
   const formik = useFormik({
     initialValues: { propertyID: propertyID || '', unitID: unitID || '', customerName: '', contactInfo: '', interestType: 'Buy', status: 'New' },
     enableReinitialize: true,
@@ -90,9 +93,12 @@ export const AddLeadModal = ({ isOpen, onClose, propertyID, unitID, onSuccess })
         const payload = { ...values, createdDate: formatToBackendDate(new Date().toISOString()) };
         await SaleService.createLead(payload);
         resetForm();
+        if (showToast) showToast('Lead captured successfully!', 'success');
         if (onSuccess) onSuccess(); 
         onClose(); 
-      } catch (err) { alert("Error creating lead"); }
+      } catch (err) { 
+        if (showToast) showToast('Failed to capture lead', 'error');
+      }
     }
   });
 
@@ -144,7 +150,7 @@ export const AddLeadModal = ({ isOpen, onClose, propertyID, unitID, onSuccess })
   );
 };
 
-export const AddSiteVisitModal = ({ isOpen, onClose, leadID, onSuccess }) => {
+export const AddSiteVisitModal = ({ isOpen, onClose, leadID, onSuccess, showToast }) => {
   const formik = useFormik({
     initialValues: { leadID, visitDate: '', notes: '' },
     enableReinitialize: true,
@@ -156,9 +162,12 @@ export const AddSiteVisitModal = ({ isOpen, onClose, leadID, onSuccess }) => {
         const payload = { ...values, visitDate: formatToBackendDate(values.visitDate) };
         await SaleService.createSiteVisit(payload);
         resetForm();
+        if (showToast) showToast('Site visit scheduled successfully!', 'success');
         if (onSuccess) onSuccess();
         onClose();
-      } catch (err) { alert("Error scheduling visit"); }
+      } catch (err) { 
+        if (showToast) showToast('Failed to schedule visit', 'error');
+      }
     }
   });
 
@@ -196,7 +205,7 @@ export const AddSiteVisitModal = ({ isOpen, onClose, leadID, onSuccess }) => {
   );
 };
 
-export const EditSiteVisitModal = ({ isOpen, onClose, visit, onSuccess }) => {
+export const EditSiteVisitModal = ({ isOpen, onClose, visit, onSuccess, showToast }) => {
   const formik = useFormik({
     initialValues: { visitID: visit?.visitID || '', leadID: visit?.leadID || '', visitDate: visit?.visitDate || '', notes: visit?.notes || '' },
     enableReinitialize: true,
@@ -208,9 +217,12 @@ export const EditSiteVisitModal = ({ isOpen, onClose, visit, onSuccess }) => {
         const payload = { visitID: values.visitID, leadID: values.leadID, visitDate: values.visitDate, notes: values.notes };
         await SaleService.updateSiteVisit(values.visitID, payload);
         resetForm();
+        if (showToast) showToast('Visit notes updated successfully!', 'success');
         if (onSuccess) onSuccess();
         onClose();
-      } catch (err) { alert("Error updating notes"); }
+      } catch (err) { 
+        if (showToast) showToast('Failed to update notes', 'error');
+      }
     }
   });
 
@@ -244,7 +256,7 @@ export const EditSiteVisitModal = ({ isOpen, onClose, visit, onSuccess }) => {
   );
 };
 
-export const AddDealModal = ({ isOpen, onClose, lead, onSuccess }) => {
+export const AddDealModal = ({ isOpen, onClose, lead, onSuccess, showToast }) => {
   const formik = useFormik({
     initialValues: { leadID: lead?.leadID || lead?.leadId || '', unitID: lead?.unitID || lead?.unitId || '', dealType: 'Sale', agreedValue: '', expectedClosureDate: '', status: 'Open' },
     enableReinitialize: true,
@@ -257,9 +269,12 @@ export const AddDealModal = ({ isOpen, onClose, lead, onSuccess }) => {
         const payload = { ...values, expectedClosureDate: formatToBackendDate(values.expectedClosureDate) };
         await SaleService.createDeal(payload);
         resetForm();
+        if (showToast) showToast('Deal created successfully!', 'success');
         if (onSuccess) onSuccess();
         onClose();
-      } catch (err) { alert("Error creating deal"); }
+      } catch (err) { 
+        if (showToast) showToast('Failed to create deal', 'error');
+      }
     }
   });
 

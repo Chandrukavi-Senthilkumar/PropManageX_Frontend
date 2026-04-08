@@ -11,7 +11,7 @@ import {
     ChartBarIcon,
     PhoneIcon,
     PencilSquareIcon,
-    BriefcaseIcon // Added for the Deals metric card
+    BriefcaseIcon 
 } from '@heroicons/react/24/outline';
 import { AddContractModal } from '../../components/Modals/ContractModal';
 import { 
@@ -21,6 +21,7 @@ import {
     EditSiteVisitModal, 
     UpdateDealStatusModal 
 } from '../../components/Modals/SalesModel';
+import Toast from '../../components/Toast/Toast';
 
 const SalesManagementPage = () => {
     const [activeTab, setActiveTab] = useState('leads'); 
@@ -35,7 +36,16 @@ const SalesManagementPage = () => {
     const [selectedDealForUpdate, setSelectedDealForUpdate] = useState(null); 
     const [modal, setModal] = useState({ lead: false, visit: false, deal: false });
 
-    // HELPER Functions (Preserved)
+    const [toast, setToast] = useState({ 
+        visible: false, 
+        message: '', 
+        type: 'success' 
+    });
+
+    const showToast = (message, type = 'success') => {
+        setToast({ visible: true, message, type });
+    };
+
     const hasExistingVisit = (leadId) => {
         if (!leadId || !data.visits) return false;
         return data.visits.some(v => (v.leadID || v.leadId || v.LeadID)?.toLowerCase() === leadId.toLowerCase());
@@ -114,7 +124,12 @@ const SalesManagementPage = () => {
             });
             
             setData({ leads: mappedLeads, deals: mappedDeals, visits: mappedVisits });
-        } catch (err) { console.error(err); } finally { setLoading(false); }
+        } catch (err) { 
+            console.error(err); 
+            showToast('Failed to load dashboard data', 'error');
+        } finally { 
+            setLoading(false); 
+        }
     };
 
     useEffect(() => { fetchData(); }, []);
@@ -142,7 +157,7 @@ const SalesManagementPage = () => {
     return (
         <div className="bg-[#fcfaf8] min-h-screen font-sans pb-20">
             
-            {/* HERO SECTION - Matched to the dark charcoal of the reference image */}
+            {/* HERO SECTION */}
             <div className="bg-[#222222] px-8 pt-16 pb-24 text-center rounded-b-[40px] relative shadow-lg">
                 <h1 className="text-4xl md:text-5xl font-black text-white tracking-tight">Deals Dashboard</h1>
                 <p className="text-slate-300 text-sm font-medium mt-4 max-w-2xl mx-auto">
@@ -191,11 +206,11 @@ const SalesManagementPage = () => {
                     </button>
                 </div>
 
-                {/* METRIC STATS - Changed 'Hot Leads' to 'Total Deals' */}
+                {/* METRIC STATS */}
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                     {[
                         { label: 'Total Leads', val: data.leads.length, icon: CalendarIcon, color: 'text-[#5B3E59]', bg: 'bg-[#F6F1F3]' },
-                        { label: 'Total Deals', val: data.deals.length, icon: BriefcaseIcon, color: 'text-orange-600', bg: 'bg-orange-50' }, // <--- UPDATED HERE
+                        { label: 'Total Deals', val: data.deals.length, icon: BriefcaseIcon, color: 'text-orange-600', bg: 'bg-orange-50' }, 
                         { label: 'Site Visits', val: data.visits.length, icon: BuildingOfficeIcon, color: 'text-emerald-600', bg: 'bg-emerald-50' },
                         { label: 'Conversion', val: 'Active', icon: ChartBarIcon, color: 'text-blue-600', bg: 'bg-blue-50' },
                     ].map((stat, i) => (
@@ -323,12 +338,21 @@ const SalesManagementPage = () => {
             </div>
 
             {/* Modals Section */}
-            <UpdateDealStatusModal isOpen={!!selectedDealForUpdate} onClose={() => setSelectedDealForUpdate(null)} deal={selectedDealForUpdate} onSuccess={fetchData} />
-            <AddLeadModal isOpen={modal.lead} onClose={() => setModal({...modal, lead: false})} onSuccess={fetchData} />
-            <AddSiteVisitModal isOpen={!!selectedLeadForVisit} onClose={() => setSelectedLeadForVisit(null)} leadID={selectedLeadForVisit} onSuccess={fetchData} />
-            <EditSiteVisitModal isOpen={!!selectedVisitForEdit} onClose={() => setSelectedVisitForEdit(null)} visit={selectedVisitForEdit} onSuccess={fetchData} />
-            <AddDealModal isOpen={!!selectedLeadForDeal} onClose={() => setSelectedLeadForDeal(null)} lead={selectedLeadForDeal} onSuccess={fetchData} />
-            <AddContractModal isOpen={!!selectedDeal} onClose={() => setSelectedDeal(null)} dealID={selectedDeal} onSuccess={fetchData} />
+            <UpdateDealStatusModal isOpen={!!selectedDealForUpdate} onClose={() => setSelectedDealForUpdate(null)} deal={selectedDealForUpdate} onSuccess={fetchData} showToast={showToast} />
+            <AddLeadModal isOpen={modal.lead} onClose={() => setModal({...modal, lead: false})} onSuccess={fetchData} showToast={showToast} />
+            <AddSiteVisitModal isOpen={!!selectedLeadForVisit} onClose={() => setSelectedLeadForVisit(null)} leadID={selectedLeadForVisit} onSuccess={fetchData} showToast={showToast} />
+            <EditSiteVisitModal isOpen={!!selectedVisitForEdit} onClose={() => setSelectedVisitForEdit(null)} visit={selectedVisitForEdit} onSuccess={fetchData} showToast={showToast} />
+            <AddDealModal isOpen={!!selectedLeadForDeal} onClose={() => setSelectedLeadForDeal(null)} lead={selectedLeadForDeal} onSuccess={fetchData} showToast={showToast} />
+            <AddContractModal isOpen={!!selectedDeal} onClose={() => setSelectedDeal(null)} dealID={selectedDeal} onSuccess={fetchData} showToast={showToast} />
+            
+            {/* TOAST RENDER */}
+            {toast.visible && (
+                <Toast 
+                    message={toast.message} 
+                    type={toast.type} 
+                    onClose={() => setToast({ ...toast, visible: false })} 
+                />
+            )}
         </div>
     );
 };
