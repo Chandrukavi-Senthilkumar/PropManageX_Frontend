@@ -1,7 +1,8 @@
 import {
+  BuildingOfficeIcon,
   MapPinIcon,
-  HomeIcon,
-  SparklesIcon
+  HomeModernIcon,
+  Squares2X2Icon,
 } from '@heroicons/react/24/outline';
 
 const PropertyCard = ({
@@ -13,74 +14,113 @@ const PropertyCard = ({
   imageUrl,
   onImageClick,
   onManageUnits,
-  onAddAmenity
+  onAddAmenity,
 }) => {
   return (
-    <div className="bg-white rounded-3xl shadow-md hover:shadow-lg transition-shadow overflow-hidden">
+    <div className="bg-white rounded-[32px] border border-stone-100 shadow-sm hover:shadow-xl transition-all flex flex-col group overflow-hidden">
 
-      {/* IMAGE */}
-      <div
-        onClick={onImageClick}
-        className="h-48 bg-gray-100 relative cursor-pointer"
-      >
-        {imageUrl}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
-        <div className="absolute bottom-4 left-4 right-4 text-white">
-          <h3 className="text-lg font-bold">{name}</h3>
-          <p className="flex items-center gap-1 text-sm opacity-90">
-            <MapPinIcon className="w-4 h-4" />
-            {location}
-          </p>
-        </div>
-      </div>
+      {/* Top Accent Bar */}
+      <div className="h-1.5 w-full bg-[#5B3E59]" />
 
-      {/* CONTENT */}
-      <div className="p-6 space-y-4">
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <p className="text-xs text-gray-500 uppercase">Property Type</p>
-            <p className="font-semibold">{type}</p>
+      <div className="p-8 space-y-6">
+
+        {/* HEADER */}
+        <div className="flex items-center gap-4">
+          <div
+            className="w-14 h-14 rounded-2xl
+                       bg-gradient-to-br from-[#5B3E59] to-[#7d5d7a]
+                       flex items-center justify-center
+                       text-white font-black text-xl shadow-lg uppercase"
+          >
+            {name?.charAt(0)}
           </div>
-          <div>
-            <p className="text-xs text-gray-500 uppercase">Total Units</p>
-            <p className="font-semibold">{totalUnits}</p>
+
+          <div className="min-w-0">
+            <h3 className="text-lg font-black text-stone-900 truncate">
+              {name}
+            </h3>
+            <p className="text-[11px] font-bold text-stone-500 uppercase tracking-widest flex items-center gap-1.5 mt-1">
+              <MapPinIcon className="w-3.5 h-3.5 text-stone-400" />
+              {location}
+            </p>
           </div>
         </div>
 
-        {/* VIEW */}
-        <button
+        {/* IMAGE */}
+        <div
           onClick={onImageClick}
-          className="w-full py-3 rounded-xl
-                     bg-[#F3EEF2] text-[#5B3E59]
-                     hover:bg-[#5B3E59] hover:text-white
-                     transition-all font-semibold"
+          className="relative h-44 rounded-2xl overflow-hidden border border-stone-100 cursor-pointer group"
         >
-          View Property
-        </button>
+          <img
+            src={imageUrl}
+            alt={name}
+            className="w-full h-full object-cover
+                       group-hover:scale-105 transition-transform duration-300"
+          />
+          <div className="absolute inset-0 bg-black/10 group-hover:bg-black/20 transition-colors" />
+        </div>
+
+        {/* INFO PANEL */}
+        <div className="bg-[#fcfbf9] p-5 rounded-2xl border border-stone-100 space-y-4">
+
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-stone-600">
+              <BuildingOfficeIcon className="w-4 h-4 text-stone-400" />
+              <span className="text-sm font-black">{type}</span>
+            </div>
+
+            <div className="flex items-center gap-2 text-stone-600">
+              <Squares2X2Icon className="w-4 h-4 text-stone-400" />
+              <span className="text-sm font-black">
+                {totalUnits} Units
+              </span>
+            </div>
+          </div>
+
+        </div>
 
         {/* ACTIONS */}
-        <div className="grid grid-cols-2 gap-3">
+        <div className="flex gap-3 pt-2">
+
+          <button
+            onClick={onImageClick}
+            className="
+              flex-1 py-4 rounded-2xl
+              bg-[#5B3E59] hover:bg-[#4a3248]
+              text-white font-black text-[10px]
+              uppercase tracking-[0.2em]
+              transition-all shadow-xl shadow-stone-200/50
+            "
+          >
+            View Property
+          </button>
+
           <button
             onClick={() => onManageUnits(propertyID)}
-            className="flex items-center justify-center gap-2 py-2.5 rounded-xl
-                       bg-[#F3EEF2] text-[#5B3E59]
-                       hover:bg-[#5B3E59] hover:text-white
-                       transition font-semibold"
+            className="
+              p-4 rounded-2xl
+              border border-stone-200
+              text-stone-500 hover:bg-stone-50
+              transition-all
+            "
+            title="Add / Manage Units"
           >
-            <HomeIcon className="w-4 h-4" />
-            Add Unit
+            <HomeModernIcon className="w-5 h-5" />
           </button>
 
           <button
             onClick={() => onAddAmenity(propertyID)}
-            className="flex items-center justify-center gap-2 py-2.5 rounded-xl
-                       bg-[#F3EEF2] text-[#5B3E59]
-                       hover:bg-[#5B3E59] hover:text-white
-                       transition font-semibold"
+            className="
+              p-4 rounded-2xl
+              border border-stone-200
+              text-stone-500 hover:bg-stone-50
+              transition-all
+            "
+            title="Add Amenities"
           >
-            <SparklesIcon className="w-4 h-4" />
-            Amenity
+            <Squares2X2Icon className="w-5 h-5" />
           </button>
+
         </div>
       </div>
     </div>

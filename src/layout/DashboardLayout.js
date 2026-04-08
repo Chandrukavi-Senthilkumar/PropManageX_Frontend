@@ -58,7 +58,7 @@ const DashboardLayout = () => {
         className={`${isSidebarOpen ? 'w-64' : 'w-20'} bg-white shadow-md transition-all duration-300`}
       >
         <div className="px-4 py-6 flex justify-center bg-[#FAF6F9]">
-          <div className="w-12 h-12 bg-[#5B3E57] rounded-xl
+          <div className="w-12 h-12 bg-[#846E83] rounded-xl
                           flex items-center justify-center
                           text-white font-bold text-lg shadow">
             P
@@ -113,7 +113,7 @@ const DashboardLayout = () => {
                              hover:bg-[#E9E1E8]
                              transition shadow-sm"
                 >
-                  <div className="w-9 h-9 bg-[#5B3E59]
+                  <div className="w-9 h-9 bg-[#846E83]
                                   rounded-full text-white
                                   font-bold flex items-center justify-center">
                     {profile?.adminName?.[0] || 'U'}

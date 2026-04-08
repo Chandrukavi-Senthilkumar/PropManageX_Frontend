@@ -44,7 +44,7 @@ const Dashboard = () => {
 
           <button
             onClick={() => setShowPropModal(true)}
-            className="mt-6 bg-[#5B3E59] hover:bg-[#4A3248] px-6 py-3 rounded-xl font-bold inline-flex gap-2 items-center"
+            className="mt-6 bg-[#846E83] hover:bg-[#4A3248] px-6 py-3 rounded-xl font-bold inline-flex gap-2 items-center"
           >
             <BuildingOfficeIcon className="w-5 h-5" />
             Add Property

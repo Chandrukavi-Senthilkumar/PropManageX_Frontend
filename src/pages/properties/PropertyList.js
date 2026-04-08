@@ -79,7 +79,7 @@ const PropertyList = () => {
           <button
             onClick={() => setShowAdd(true)}
             className="mt-10 inline-flex items-center gap-3
-                       bg-[#5B3E59] hover:bg-[#4A3248]
+                       bg-[#846E83] hover:bg-[#4A3248]
                        text-white px-8 py-4 rounded-2xl
                        font-semibold shadow-md hover:shadow-lg transition-all"
           >
