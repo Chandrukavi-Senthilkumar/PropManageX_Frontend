@@ -1,107 +1,126 @@
-import React from 'react';
-import { HomeIcon, SparklesIcon, MapPinIcon } from '@heroicons/react/24/outline';
-import { CheckCircleIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
+import {
+  BuildingOfficeIcon,
+  MapPinIcon,
+  HomeModernIcon,
+  Squares2X2Icon,
+} from '@heroicons/react/24/outline';
 
-const PropertyCard = ({ 
-  propertyID, name, type, location, totalUnits, status, imageUrl, 
-  onImageClick, onManageUnits, onAddAmenity 
+const PropertyCard = ({
+  propertyID,
+  name,
+  location,
+  type,
+  totalUnits,
+  imageUrl,
+  onImageClick,
+  onManageUnits,
+  onAddAmenity,
 }) => {
-  const statusConfig = {
-    Active: { 
-      bg: "bg-gradient-to-r from-green-50 to-green-100", 
-      text: "text-green-700",
-      badge: "bg-green-100 text-green-700",
-      icon: CheckCircleIcon
-    },
-    Inactive: { 
-      bg: "bg-gradient-to-r from-slate-50 to-slate-100", 
-      text: "text-slate-700",
-      badge: "bg-slate-100 text-slate-700",
-      icon: ExclamationTriangleIcon
-    },
-    UnderMaintenance: { 
-      bg: "bg-gradient-to-r from-amber-50 to-amber-100", 
-      text: "text-amber-700",
-      badge: "bg-amber-100 text-amber-700",
-      icon: ExclamationTriangleIcon
-    }
-  };
-
-  const config = statusConfig[status] || statusConfig.Inactive;
-  const StatusIcon = config.icon;
-
-  const handleViewDetails = (e) => {
-    e.stopPropagation();
-    onImageClick();
-  };
- 
- 
-
   return (
-    <div className="bg-white rounded-xl shadow-sm hover:shadow-xl border border-slate-200 overflow-hidden hover:border-blue-300 transition-all duration-300 flex flex-col h-full group animate-slide-up">
-      
-      {/* Image Section with Overlay */}
-      <div 
-        onClick={onImageClick} 
-        className="h-48 w-full bg-slate-200 relative cursor-pointer group/image overflow-hidden"
-      >
-        <img 
-          src={imageUrl || 'https://placehold.co/400x200?text=Property'} 
-          alt={name} 
-          className="w-full h-full object-cover transition-transform duration-500 group-hover/image:scale-105" 
-        />
-        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all flex items-center justify-center">
-             <span   onClick={handleViewDetails} className="text-white opacity-0 group-hover:opacity-100 font-bold text-sm bg-black/40 px-4 py-2 rounded-full backdrop-blur-sm transition-all">
-                View Details
-             </span>
-        </div>
+    <div className="bg-white rounded-[32px] border border-stone-100 shadow-sm hover:shadow-xl transition-all flex flex-col group overflow-hidden">
 
-        {/* Status Badge */}
-        <div className={`absolute top-4 right-4 px-3 py-1.5 rounded-full text-xs font-bold uppercase shadow-lg backdrop-blur-sm flex items-center gap-1 ${config.badge}`}>
-          <StatusIcon className="w-3.5 h-3.5" />
-          {status}
-        </div>
-      </div>
+      {/* Top Accent Bar */}
+      <div className="h-1.5 w-full bg-[#5B3E59]" />
 
-      {/* Content Section */}
-      <div className="p-5 flex-grow flex flex-col">
-        {/* Title & Location */}
-        <div className="mb-4">
-          <h3 className="text-lg font-bold text-slate-900 truncate hover:text-blue-600 transition-colors">{name}</h3>
-          <p className="text-slate-500 text-sm flex items-center gap-1.5 mt-2">
-            <MapPinIcon className="w-4 h-4 flex-shrink-0" />
-            <span className="truncate">{location}</span>
-          </p>
-        </div>
+      <div className="p-8 space-y-6">
 
-        {/* Type and Units Info */}
-        <div className="grid grid-cols-2 gap-2 mb-4 pb-4 border-b border-slate-100">
-          <div className="bg-slate-50 rounded-lg p-2.5">
-            <p className="text-xs font-semibold text-slate-600 uppercase tracking-wider">Type</p>
-            <p className="text-sm font-bold text-slate-900 mt-1">{type}</p>
+        {/* HEADER */}
+        <div className="flex items-center gap-4">
+          <div
+            className="w-14 h-14 rounded-2xl
+                       bg-gradient-to-br from-[#5B3E59] to-[#7d5d7a]
+                       flex items-center justify-center
+                       text-white font-black text-xl shadow-lg uppercase"
+          >
+            {name?.charAt(0)}
           </div>
-          <div className="bg-blue-50 rounded-lg p-2.5">
-            <p className="text-xs font-semibold text-blue-600 uppercase tracking-wider">Units</p>
-            <p className="text-sm font-bold text-blue-900 mt-1">{totalUnits}</p>
+
+          <div className="min-w-0">
+            <h3 className="text-lg font-black text-stone-900 truncate">
+              {name}
+            </h3>
+            <p className="text-[11px] font-bold text-stone-500 uppercase tracking-widest flex items-center gap-1.5 mt-1">
+              <MapPinIcon className="w-3.5 h-3.5 text-stone-400" />
+              {location}
+            </p>
           </div>
         </div>
 
-        {/* Action Buttons */}
-        <div className="grid grid-cols-2 gap-3 mt-auto">
-          <button 
+        {/* IMAGE */}
+        <div
+          onClick={onImageClick}
+          className="relative h-44 rounded-2xl overflow-hidden border border-stone-100 cursor-pointer group"
+        >
+          <img
+            src={imageUrl}
+            alt={name}
+            className="w-full h-full object-cover
+                       group-hover:scale-105 transition-transform duration-300"
+          />
+          <div className="absolute inset-0 bg-black/10 group-hover:bg-black/20 transition-colors" />
+        </div>
+
+        {/* INFO PANEL */}
+        <div className="bg-[#fcfbf9] p-5 rounded-2xl border border-stone-100 space-y-4">
+
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-stone-600">
+              <BuildingOfficeIcon className="w-4 h-4 text-stone-400" />
+              <span className="text-sm font-black">{type}</span>
+            </div>
+
+            <div className="flex items-center gap-2 text-stone-600">
+              <Squares2X2Icon className="w-4 h-4 text-stone-400" />
+              <span className="text-sm font-black">
+                {totalUnits} Units
+              </span>
+            </div>
+          </div>
+
+        </div>
+
+        {/* ACTIONS */}
+        <div className="flex gap-3 pt-2">
+
+          <button
+            onClick={onImageClick}
+            className="
+              flex-1 py-4 rounded-2xl
+              bg-[#5B3E59] hover:bg-[#4a3248]
+              text-white font-black text-[10px]
+              uppercase tracking-[0.2em]
+              transition-all shadow-xl shadow-stone-200/50
+            "
+          >
+            View Property
+          </button>
+
+          <button
             onClick={() => onManageUnits(propertyID)}
-            className="flex items-center justify-center gap-2 bg-blue-50 hover:bg-blue-500 text-blue-600 hover:text-white px-3 py-2.5 rounded-lg text-xs font-semibold transition-all duration-200 border border-blue-200 hover:border-blue-500"
+            className="
+              p-4 rounded-2xl
+              border border-stone-200
+              text-stone-500 hover:bg-stone-50
+              transition-all
+            "
+            title="Add / Manage Units"
           >
-            <HomeIcon className="w-4 h-4" />
-            Units
+            <HomeModernIcon className="w-5 h-5" />
           </button>
-          <button 
+
+          <button
             onClick={() => onAddAmenity(propertyID)}
-            className="flex items-center justify-center gap-2 bg-purple-50 hover:bg-purple-500 text-purple-600 hover:text-white px-3 py-2.5 rounded-lg text-xs font-semibold transition-all duration-200 border border-purple-200 hover:border-purple-500"
+            className="
+              p-4 rounded-2xl
+              border border-stone-200
+              text-stone-500 hover:bg-stone-50
+              transition-all
+            "
+            title="Add Amenities"
           >
-            <SparklesIcon className="w-4 h-4" />
-            Amenities
+            <Squares2X2Icon className="w-5 h-5" />
           </button>
+
         </div>
       </div>
     </div>

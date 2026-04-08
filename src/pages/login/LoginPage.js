@@ -37,11 +37,16 @@ const LoginPage = () => {
             navigate(from, { replace: true });
         }
       } catch (err) {
-        // Handle the specific error structure from your .NET backend
-        const errorMessage = err.response?.data?.errors?.email?.[0] || 
-                           err.response?.data?.message || 
-                           "Invalid email or password";
-        setError(errorMessage);
+  const errors = err.response?.data?.errors;
+
+  if (errors) {
+    formik.setErrors({
+      email: errors.email?.[0],
+      password: errors.password?.[0],
+    });
+  } else {
+    setError("Invalid email or password");
+  }
       } finally {
         setLoading(false);
       }

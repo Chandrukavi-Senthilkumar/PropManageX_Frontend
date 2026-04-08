@@ -157,8 +157,8 @@ const SalesManagementPage = () => {
     return (
         <div className="bg-[#fcfaf8] min-h-screen font-sans pb-20">
             
-            {/* HERO SECTION */}
-            <div className="bg-[#222222] px-8 pt-16 pb-24 text-center rounded-b-[40px] relative shadow-lg">
+            {/* HERO SECTION - Matched to the dark charcoal of the reference image */}
+            <div className="bg-[#FAF6F9] px-8 pt-16 pb-24 text-center rounded-b-[40px] relative shadow-lg">
                 <h1 className="text-4xl md:text-5xl font-black text-white tracking-tight">Deals Dashboard</h1>
                 <p className="text-slate-300 text-sm font-medium mt-4 max-w-2xl mx-auto">
                     Monitor, manage, and convert your real-estate prospects seamlessly — all in one place.
