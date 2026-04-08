@@ -2,13 +2,16 @@ import React, { useEffect, useState } from 'react';
 import { SaleService } from '../../services/dealService';
 import { propertyService } from '../../services/propertyService';
 import { 
-    BanknotesIcon, 
-    CalendarDaysIcon, 
     ArrowPathIcon,
     MagnifyingGlassIcon,
-    UserGroupIcon,
     BuildingOfficeIcon,
-    PencilSquareIcon
+    UserGroupIcon,
+    FireIcon,
+    CalendarIcon,
+    ChartBarIcon,
+    PhoneIcon,
+    PencilSquareIcon,
+    BriefcaseIcon // Added for the Deals metric card
 } from '@heroicons/react/24/outline';
 import { AddContractModal } from '../../components/Modals/ContractModal';
 import { 
@@ -25,7 +28,6 @@ const SalesManagementPage = () => {
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
     
-    // Action States
     const [selectedDeal, setSelectedDeal] = useState(null);
     const [selectedLeadForVisit, setSelectedLeadForVisit] = useState(null); 
     const [selectedLeadForDeal, setSelectedLeadForDeal] = useState(null);
@@ -33,30 +35,25 @@ const SalesManagementPage = () => {
     const [selectedDealForUpdate, setSelectedDealForUpdate] = useState(null); 
     const [modal, setModal] = useState({ lead: false, visit: false, deal: false });
 
-    // HELPER: Check if a lead already exists in the visits array
+    // HELPER Functions (Preserved)
     const hasExistingVisit = (leadId) => {
         if (!leadId || !data.visits) return false;
-        return data.visits.some(v => 
-            (v.leadID || v.leadId || v.LeadID)?.toLowerCase() === leadId.toLowerCase()
-        );
+        return data.visits.some(v => (v.leadID || v.leadId || v.LeadID)?.toLowerCase() === leadId.toLowerCase());
     };
 
-    // HELPER: Check if a lead already exists in the deals array
     const hasExistingDeal = (leadId) => {
         if (!leadId || !data.deals) return false;
-        return data.deals.some(d => 
-            (d.leadID || d.leadId || d.LeadID)?.toLowerCase() === leadId.toLowerCase()
-        );
+        return data.deals.some(d => (d.leadID || d.leadId || d.LeadID)?.toLowerCase() === leadId.toLowerCase());
     };
 
     const fetchData = async () => {
         try {
             setLoading(true);
             const [leadsRes, dealsRes, visitsRes, propsRes] = await Promise.all([
-                SaleService.getAllLeads().catch(err => { console.error("Leads error:", err); return null; }),
-                SaleService.getAllDeals().catch(err => { console.error("Deals error:", err); return null; }),
-                SaleService.getAllSiteVisits().catch(err => { console.error("Visits error:", err); return null; }),
-                propertyService.getProperties().catch(err => { console.error("Props error:", err); return null; }) 
+                SaleService.getAllLeads().catch(err => null),
+                SaleService.getAllDeals().catch(err => null),
+                SaleService.getAllSiteVisits().catch(err => null),
+                propertyService.getProperties().catch(err => null) 
             ]);
             
             const getArray = (res) => {
@@ -72,30 +69,18 @@ const SalesManagementPage = () => {
             const rawVisits = getArray(visitsRes);
             const rawProps = getArray(propsRes);
 
-            const getPropId = (obj) => {
-                const id = obj?.propertyID || obj?.propertyId || obj?.PropertyID || obj?.id || obj?.Id;
-                return id ? String(id).toLowerCase() : null;
-            };
             const getLeadId = (obj) => {
                 const id = obj?.leadID || obj?.leadId || obj?.LeadID || obj?.id || obj?.Id;
                 return id ? String(id).toLowerCase() : null;
             };
 
-            // STITCHING: Map Property Names and sync Lead Status with Deal status
             const mappedLeads = rawLeads.map(lead => {
                 const leadId = getLeadId(lead);
-                const matchedProp = rawProps.find(p => getPropId(p) === getPropId(lead));
-                
-                // Find if this lead has a deal that is Booked or Cancelled
+                const matchedProp = rawProps.find(p => String(p.propertyID || p.id).toLowerCase() === String(lead.propertyID || lead.propertyId).toLowerCase());
                 const leadDeal = rawDeals.find(d => getLeadId(d) === leadId);
                 const dealStatus = (leadDeal?.status || '').toLowerCase();
-                
-                // LOGIC: If associated deal is Booked/Cancelled, force Lead status to "Closed"
                 let finalStatus = lead.status;
-                if (dealStatus === 'booked' || dealStatus === 'cancelled') {
-                    finalStatus = 'Closed';
-                }
-
+                if (dealStatus === 'booked' || dealStatus === 'cancelled') finalStatus = 'Closed';
                 return { 
                     ...lead, 
                     status: finalStatus,
@@ -106,21 +91,30 @@ const SalesManagementPage = () => {
             const mappedVisits = rawVisits.map(visit => {
                 const visitLeadId = getLeadId(visit);
                 const matchedLead = mappedLeads.find(l => getLeadId(l) === visitLeadId);
-                return { ...visit, customerName: matchedLead ? matchedLead.customerName : 'Unknown Lead', propertyName: matchedLead ? matchedLead.propertyName : 'Unknown Property' };
+                return { 
+                    ...visit, 
+                    customerName: matchedLead ? matchedLead.customerName : 'Unknown Lead', 
+                    propertyName: matchedLead ? matchedLead.propertyName : 'Unknown Property',
+                    contactInfo: matchedLead ? matchedLead.contactInfo : 'N/A',
+                    interestType: matchedLead ? matchedLead.interestType : 'BUY',
+                    fullLead: matchedLead 
+                };
             });
 
             const mappedDeals = rawDeals.map(deal => {
                 const dealLeadId = getLeadId(deal);
                 const matchedLead = mappedLeads.find(l => getLeadId(l) === dealLeadId);
-                return { ...deal, customerName: matchedLead ? matchedLead.customerName : 'Unknown Lead', propertyName: matchedLead ? matchedLead.propertyName : 'Unknown Property' };
+                return { 
+                    ...deal, 
+                    customerName: matchedLead ? matchedLead.customerName : 'Unknown Lead', 
+                    propertyName: matchedLead ? matchedLead.propertyName : 'Unknown Property',
+                    contactInfo: matchedLead ? matchedLead.contactInfo : 'N/A',
+                    interestType: matchedLead ? matchedLead.interestType : 'BUY'
+                };
             });
             
             setData({ leads: mappedLeads, deals: mappedDeals, visits: mappedVisits });
-        } catch (err) {
-            console.error("Error fetching sales data:", err);
-        } finally {
-            setLoading(false);
-        }
+        } catch (err) { console.error(err); } finally { setLoading(false); }
     };
 
     useEffect(() => { fetchData(); }, []);
@@ -134,170 +128,198 @@ const SalesManagementPage = () => {
         return (item.customerName?.toLowerCase().includes(search) || item.propertyName?.toLowerCase().includes(search));
     });
 
-    const getStatusStyle = (status) => {
+    const getStatusStyles = (status) => {
         const s = (status || '').toLowerCase();
-        if (s === 'closed' || s === 'cancelled') return { dot: 'bg-red-500', text: 'text-red-600' };
-        if (s === 'won' || s === 'booked' || s === 'visitscheduled') return { dot: 'bg-green-500', text: 'text-green-600' };
-        if (s === 'new' || s === 'open') return { dot: 'bg-blue-500', text: 'text-blue-600' };
-        return { dot: 'bg-yellow-500', text: 'text-yellow-600' }; 
+        switch(s) {
+            case 'closed': return 'bg-red-50 text-red-600 border border-red-100';
+            case 'negotiating': return 'bg-orange-50 text-orange-600 border border-orange-100';
+            case 'visitscheduled': return 'bg-green-50 text-green-600 border border-green-100';
+            case 'new': return 'bg-blue-50 text-blue-600 border border-blue-100';
+            default: return 'bg-stone-50 text-stone-600 border border-stone-200';
+        }
     };
 
     return (
-        <div className="p-8 space-y-6 bg-gray-50/30 min-h-screen">
+        <div className="bg-[#fcfaf8] min-h-screen font-sans pb-20">
             
-            {/* Header Section */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-                <h1 className="text-4xl font-black text-[#5a2ab3] tracking-tight">Deals Dashboard</h1>
-                <div className="flex items-center gap-3">
-                    <div className="relative">
-                        <MagnifyingGlassIcon className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+            {/* HERO SECTION - Matched to the dark charcoal of the reference image */}
+            <div className="bg-[#222222] px-8 pt-16 pb-24 text-center rounded-b-[40px] relative shadow-lg">
+                <h1 className="text-4xl md:text-5xl font-black text-white tracking-tight">Deals Dashboard</h1>
+                <p className="text-slate-300 text-sm font-medium mt-4 max-w-2xl mx-auto">
+                    Monitor, manage, and convert your real-estate prospects seamlessly — all in one place.
+                </p>
+            </div>
+
+            {/* MAIN CONTENT CONTAINER */}
+            <div className="max-w-7xl mx-auto px-6 -mt-10 relative z-10 space-y-12">
+                
+                {/* FLOATING FILTER BAR */}
+                <div className="bg-white p-3 rounded-full shadow-xl shadow-stone-200 flex flex-col md:flex-row justify-between items-center gap-4 border border-stone-100">
+                    
+                    {/* Search Input */}
+                    <div className="relative w-full md:w-1/3 ml-2">
+                        <MagnifyingGlassIcon className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-stone-400" />
                         <input 
                             type="text" 
-                            placeholder="Search..." 
-                            className="pl-12 pr-6 py-2.5 bg-white border border-gray-200 rounded-xl outline-none w-72 shadow-sm focus:ring-2 focus:ring-[#7c3aed]/20 transition-all text-sm font-medium"
+                            placeholder="Search by entity name..." 
+                            className="pl-12 pr-4 py-3 bg-transparent outline-none w-full text-sm font-medium text-slate-700 placeholder:text-stone-400"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
                     </div>
-                    <button onClick={fetchData} className="p-2.5 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 active:scale-95 transition-all shadow-sm">
-                        <ArrowPathIcon className={`w-5 h-5 text-gray-600 ${loading ? 'animate-spin' : ''}`} />
+
+                    {/* Tab Navigation Pill */}
+                    <div className="flex bg-stone-50 p-1.5 rounded-full border border-stone-100">
+                        {['leads', 'visits', 'deals'].map((tab) => (
+                            <button 
+                                key={tab}
+                                onClick={() => setActiveTab(tab)}
+                                className={`px-8 py-2.5 rounded-full text-xs font-black uppercase tracking-widest transition-all ${
+                                    activeTab === tab 
+                                    ? 'bg-[#5B3E59] text-white shadow-md' 
+                                    : 'text-stone-500 hover:text-[#5B3E59] hover:bg-stone-200/50'
+                                }`}
+                            >
+                                {tab}
+                            </button>
+                        ))}
+                    </div>
+
+                    {/* Refresh Button */}
+                    <button onClick={fetchData} className="p-3 mr-2 bg-[#F6F1F3] text-[#5B3E59] rounded-full hover:bg-stone-200 transition-all">
+                        <ArrowPathIcon className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
                     </button>
                 </div>
-            </div>
 
-            {/* Tab Switcher */}
-            <div className="flex gap-8 border-b border-gray-200">
-                {['leads', 'visits', 'deals'].map((tab) => (
-                    <button 
-                        key={tab}
-                        onClick={() => setActiveTab(tab)}
-                        className={`pb-3 text-sm font-bold capitalize transition-all border-b-2 ${activeTab === tab ? 'border-[#7c3aed] text-[#7c3aed]' : 'border-transparent text-gray-400 hover:text-gray-700'}`}
-                    >
-                        {tab}
-                    </button>
-                ))}
-            </div>
+                {/* METRIC STATS - Changed 'Hot Leads' to 'Total Deals' */}
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    {[
+                        { label: 'Total Leads', val: data.leads.length, icon: CalendarIcon, color: 'text-[#5B3E59]', bg: 'bg-[#F6F1F3]' },
+                        { label: 'Total Deals', val: data.deals.length, icon: BriefcaseIcon, color: 'text-orange-600', bg: 'bg-orange-50' }, // <--- UPDATED HERE
+                        { label: 'Site Visits', val: data.visits.length, icon: BuildingOfficeIcon, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+                        { label: 'Conversion', val: 'Active', icon: ChartBarIcon, color: 'text-blue-600', bg: 'bg-blue-50' },
+                    ].map((stat, i) => (
+                        <div key={i} className="bg-white p-6 rounded-[28px] shadow-sm border border-stone-100 flex items-center justify-between hover:shadow-md transition-shadow">
+                            <div>
+                                <p className="text-stone-400 text-[10px] font-black uppercase tracking-widest">{stat.label}</p>
+                                <h3 className="text-2xl font-black text-stone-800 mt-1">{stat.val}</h3>
+                            </div>
+                            <div className={`p-3.5 ${stat.bg} ${stat.color} rounded-2xl`}>
+                                <stat.icon className="w-6 h-6" />
+                            </div>
+                        </div>
+                    ))}
+                </div>
 
-            {/* Main Table */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mt-4">
-                <table className="w-full text-left border-collapse">
-                    <thead className="bg-gray-50/50 border-b border-gray-100">
-                        <tr>
-                            <th className="px-8 py-5 text-[11px] font-bold uppercase text-gray-400 tracking-wider">Customer / Property</th>
-                            {activeTab === 'leads' && (
-                                <>
-                                    <th className="px-8 py-5 text-[11px] font-bold uppercase text-gray-400 tracking-wider">Contact Info</th>
-                                    <th className="px-8 py-5 text-[11px] font-bold uppercase text-gray-400 tracking-wider">Interest</th>
-                                    <th className="px-8 py-5 text-[11px] font-bold uppercase text-gray-400 tracking-wider">Status</th>
-                                    <th className="px-4 py-5 text-[11px] font-bold uppercase text-gray-400 tracking-wider text-center">Visits</th>
-                                    <th className="px-8 py-5 text-[11px] font-bold uppercase text-gray-400 tracking-wider text-right">Deals</th>
-                                </>
-                            )}
-                            {activeTab === 'visits' && (
-                                <>
-                                    <th className="px-8 py-5 text-[11px] font-bold uppercase text-gray-400 tracking-wider">Visit Date</th>
-                                    <th colSpan="4" className="px-8 py-5 text-[11px] font-bold uppercase text-gray-400 tracking-wider">Notes</th>
-                                    <th className="px-8 py-5 text-[11px] font-bold uppercase text-gray-400 tracking-wider text-right">Action</th>
-                                </>
-                            )}
-                            {activeTab === 'deals' && (
-                                <>
-                                    <th className="px-8 py-5 text-[11px] font-bold uppercase text-gray-400 tracking-wider">Type</th>
-                                    <th className="px-8 py-5 text-[11px] font-bold uppercase text-gray-400 tracking-wider">Expected Close</th>
-                                    <th className="px-8 py-5 text-[11px] font-bold uppercase text-gray-400 tracking-wider">Agreed Value</th>
-                                    <th className="px-8 py-5 text-[11px] font-bold uppercase text-gray-400 tracking-wider text-center">Status</th>
-                                    <th className="px-8 py-5 text-[11px] font-bold uppercase text-gray-400 tracking-wider text-right">Action</th>
-                                </>
-                            )}
-                        </tr>
-                    </thead>
-                    
-                    <tbody className="divide-y divide-gray-50">
-                        {loading ? (
-                            <tr><td colSpan="7" className="px-8 py-12 text-center text-gray-400 font-bold animate-pulse">Syncing pipeline data...</td></tr>
-                        ) : filteredItems.length > 0 ? (
-                            filteredItems.map((item, idx) => {
-                                const leadId = item.leadID || item.leadId;
-                                const isVisited = hasExistingVisit(leadId);
-                                const isDealed = hasExistingDeal(leadId);
-                                const isClosed = (item.status || '').toLowerCase() === 'closed';
+                {/* CONTENT CARDS */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {!loading && filteredItems.map((item, idx) => {
+                        const leadId = item.leadID || item.leadId;
+                        const isVisited = hasExistingVisit(leadId);
+                        const isDealed = hasExistingDeal(leadId);
+                        const isClosed = (item.status || '').toLowerCase() === 'closed';
 
-                                return (
-                                    <tr key={idx} className="hover:bg-gray-50/50 transition-colors">
-                                        <td className="px-8 py-5">
-                                            <div className="flex flex-col items-start">
-                                                <span className="font-bold text-gray-900">{item.customerName}</span>
-                                                <span className="flex items-center gap-1.5 text-[11px] text-gray-500 font-semibold mt-1">
-                                                    <BuildingOfficeIcon className="w-3.5 h-3.5 text-gray-400" />
-                                                    <span className={item.propertyName?.includes('❌') ? "text-red-500 font-bold" : ""}>{item.propertyName}</span>
-                                                </span>
+                        return (
+                            <div key={idx} className="bg-white rounded-[32px] border border-stone-100 shadow-sm hover:shadow-xl transition-all flex flex-col group relative overflow-hidden">
+                                {/* Top Accent Bar */}
+                                <div className={`h-1.5 w-full ${isClosed ? 'bg-stone-300' : 'bg-[#5B3E59]'}`} />
+                                
+                                <div className="p-8 space-y-6">
+                                    {/* Header */}
+                                    <div className="flex justify-between items-start">
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-14 h-14 bg-gradient-to-br from-[#5B3E59] to-[#7d5d7a] rounded-2xl flex items-center justify-center text-white font-black text-xl shadow-lg uppercase">
+                                                {item.customerName?.charAt(0)}
                                             </div>
-                                        </td>
+                                            <div>
+                                                <div className="flex items-center gap-2">
+                                                    <h4 className="text-lg font-black text-stone-900 leading-tight tracking-tight truncate max-w-[140px]">{item.customerName}</h4>
+                                                    <span className="px-2.5 py-1 bg-stone-100 text-stone-600 text-[9px] font-black uppercase rounded-lg border border-stone-200">
+                                                        {item.interestType || 'BUY'}
+                                                    </span>
+                                                </div>
+                                                <p className="text-stone-500 text-[11px] font-bold flex items-center gap-1.5 mt-1.5 uppercase tracking-widest">
+                                                    <BuildingOfficeIcon className="w-3.5 h-3.5 text-stone-400" /> {item.propertyName}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
 
+                                    {/* Info Panel */}
+                                    <div className="bg-[#fcfbf9] p-5 rounded-2xl border border-stone-100 space-y-4">
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-2.5 text-stone-600">
+                                                <PhoneIcon className="w-4 h-4 text-stone-400" />
+                                                <span className="text-sm font-black tracking-tight">{item.contactInfo}</span>
+                                            </div>
+                                            <span className={`px-3 py-1 rounded-xl text-[9px] font-black uppercase tracking-wider ${getStatusStyles(item.status)}`}>
+                                                {item.status || 'NEW'}
+                                            </span>
+                                        </div>
+                                        {activeTab === 'visits' && (
+                                            <div className="pt-3 border-t border-stone-200/60">
+                                                <p className="text-[9px] font-black text-stone-400 uppercase tracking-widest">Visit Notes</p>
+                                                <p className="text-xs text-stone-700 font-medium mt-1.5 line-clamp-2 leading-relaxed">"{item.notes || 'No notes appended yet'}"</p>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Action Buttons */}
+                                    <div className="flex gap-3 pt-2">
                                         {activeTab === 'leads' && (
-                                            <>
-                                                <td className="px-8 py-5 text-gray-600 text-sm font-medium">{item.contactInfo}</td>
-                                                <td className="px-8 py-5 text-gray-600 text-xs font-bold uppercase">{item.interestType || 'Buy'}</td>
-                                                <td className="px-8 py-5">
-                                                    <div className="flex items-center gap-2">
-                                                        <span className={`w-2 h-2 rounded-full ${getStatusStyle(item.status).dot}`}></span>
-                                                        <span className={`text-sm font-bold ${getStatusStyle(item.status).text}`}>{item.status || 'New'}</span>
-                                                    </div>
-                                                </td>
-                                                <td className="px-4 py-5 text-center">
-                                                    {isClosed ? (
-                                                        <span className="text-[10px] font-black text-red-500 bg-red-50 px-2 py-1 rounded-md uppercase border border-red-100">Closed</span>
-                                                    ) : isVisited ? (
-                                                        <span className="text-[10px] font-bold text-gray-400 bg-gray-100 px-2 py-1 rounded-md uppercase">Visit Added</span>
-                                                    ) : (
-                                                        <button onClick={() => setSelectedLeadForVisit(leadId)} className="text-[11px] font-black text-blue-600 hover:text-blue-800 uppercase tracking-tighter">+ Visit</button>
-                                                    )}
-                                                </td>
-                                                <td className="px-8 py-5 text-right">
-                                                    {isDealed ? (
-                                                        <span className="text-[10px] font-bold text-gray-400 bg-gray-100 px-3 py-1.5 rounded-xl uppercase border border-gray-200">Deal Created</span>
-                                                    ) : (
-                                                        <button onClick={() => setSelectedLeadForDeal(item)} className="bg-green-50 text-green-700 px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-wide hover:bg-green-600 hover:text-white transition-all border border-green-200">Create Deal</button>
-                                                    )}
-                                                </td>
-                                            </>
+                                            <button 
+                                                disabled={isVisited || isClosed}
+                                                onClick={() => setSelectedLeadForVisit(leadId)}
+                                                className="w-full bg-[#5B3E59] text-white py-4 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] hover:bg-[#4a3248] disabled:bg-stone-100 disabled:text-stone-400 transition-all shadow-xl shadow-stone-200/50"
+                                            >
+                                                {isVisited ? 'VISIT ADDED' : 'ADD VISIT'}
+                                            </button>
                                         )}
 
                                         {activeTab === 'visits' && (
                                             <>
-                                                <td className="px-8 py-5 text-gray-900 font-bold text-sm whitespace-nowrap">{item.visitDate || 'N/A'}</td>
-                                                <td colSpan="4" className="px-8 py-5 text-gray-500 text-sm italic">"{item.notes || 'No notes available'}"</td>
-                                                <td className="px-8 py-5 text-right">
-                                                    <button onClick={() => setSelectedVisitForEdit(item)} className="text-[11px] font-black text-[#7c3aed] hover:underline uppercase">Edit Notes</button>
-                                                </td>
+                                                <button 
+                                                    disabled={isDealed}
+                                                    onClick={() => setSelectedLeadForDeal(item.fullLead || item)}
+                                                    className="flex-1 bg-[#5B3E59] text-white py-4 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] hover:bg-[#4a3248] disabled:bg-stone-100 disabled:text-stone-400 transition-all shadow-xl shadow-stone-200/50"
+                                                >
+                                                    {isDealed ? 'DEAL CREATED' : 'CREATE DEAL'}
+                                                </button>
+                                                <button 
+                                                    onClick={() => setSelectedVisitForEdit(item)}
+                                                    className="p-4 rounded-2xl border border-stone-200 text-stone-500 hover:bg-stone-50 transition-all"
+                                                    title="Edit Visit Notes"
+                                                >
+                                                    <PencilSquareIcon className="w-5 h-5" />
+                                                </button>
                                             </>
                                         )}
 
                                         {activeTab === 'deals' && (
-                                            <>
-                                                <td className="px-8 py-5 text-gray-600 text-xs font-bold uppercase">{item.dealType || 'Sale'}</td>
-                                                <td className="px-8 py-5 text-gray-500 text-sm font-medium whitespace-nowrap">{item.expectedClosureDate || 'TBD'}</td>
-                                                <td className="px-8 py-5 font-bold text-gray-900">₹{item.agreedValue?.toLocaleString()}</td>
-                                                <td className="px-8 py-5 text-center">
-                                                    <div onClick={() => setSelectedDealForUpdate(item)} className="group flex items-center justify-center gap-2 cursor-pointer hover:bg-gray-100 py-1.5 px-3 rounded-xl transition-all border border-transparent hover:border-gray-200">
-                                                        <span className={`w-2 h-2 rounded-full ${getStatusStyle(item.status).dot}`}></span>
-                                                        <span className={`text-sm font-bold ${getStatusStyle(item.status).text}`}>{item.status || 'Open'}</span>
-                                                        <PencilSquareIcon className="w-3.5 h-3.5 text-gray-300 group-hover:text-[#7c3aed] transition-colors" />
-                                                    </div>
-                                                </td>
-                                                <td className="px-8 py-5 text-right">
-                                                    <button onClick={() => setSelectedDeal(item.dealID || item.dealId)} className="text-[10px] font-black text-[#7c3aed] uppercase hover:underline whitespace-nowrap">Contract</button>
-                                                </td>
-                                            </>
+                                            <div className="w-full flex gap-3">
+                                                <button 
+                                                    onClick={() => setSelectedDealForUpdate(item)}
+                                                    className="flex-1 bg-[#5B3E59] text-white py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-[#4a3248] transition-all shadow-lg"
+                                                >
+                                                    Update Status
+                                                </button>
+                                                <button 
+                                                    onClick={() => setSelectedDeal(item.dealID || item.dealId)}
+                                                    className="px-6 border border-stone-200 text-stone-500 py-4 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] hover:bg-stone-50 transition-all"
+                                                >
+                                                    Contract
+                                                </button>
+                                            </div>
                                         )}
-                                    </tr>
-                                );
-                            })
-                        ) : (
-                            <tr><td colSpan="7" className="px-8 py-12 text-center text-gray-400 font-bold">No results found in {activeTab}.</td></tr>
-                        )}
-                    </tbody>
-                </table>
+                                    </div>
+                                </div>
+                            </div>
+                        );
+                    })}
+                    {filteredItems.length === 0 && !loading && (
+                        <div className="col-span-full py-20 text-center text-stone-400 font-bold italic">No matching records in {activeTab} phase.</div>
+                    )}
+                </div>
             </div>
 
             {/* Modals Section */}
@@ -311,4 +333,4 @@ const SalesManagementPage = () => {
     );
 };
 
-export default SalesManagementPage;     
+export default SalesManagementPage;
