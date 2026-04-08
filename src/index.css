@@ -2,102 +2,224 @@
 @tailwind components;
 @tailwind utilities;
 
+/* =========================
+   GLOBAL BEHAVIOR
+========================= */
 html {
   scroll-behavior: smooth;
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+  font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    Oxygen, Ubuntu, Cantarell, 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  background: #faf6f9;
+  color: #1f2937;
 }
 
-/* Scrollbar Styling */
+/* =========================
+   SOFT SCROLLBAR
+========================= */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
-
 ::-webkit-scrollbar-track {
   background: transparent;
 }
-
 ::-webkit-scrollbar-thumb {
-  background: rgb(148, 163, 184);
-  border-radius: 4px;
+  background: rgba(91, 62, 89, 0.35);
+  border-radius: 999px;
 }
-
 ::-webkit-scrollbar-thumb:hover {
-  background: rgb(100, 116, 139);
+  background: rgba(91, 62, 89, 0.55);
 }
 
-/* Animation utilities */
-.fade-in {
-  animation: fadeIn 0.3s ease-in-out;
+/* =========================
+   THEME TOKENS
+========================= */
+:root {
+  --brand: #5b3e59;
+  --brand-dark: #4a3248;
+  --brand-soft: #f3eef2;
+
+  --bg-main: #faf6f9;
+  --bg-surface: #ffffff;
+
+  --text-main: #1f2937;
+  --text-muted: #6b7280;
 }
 
-.slide-up {
-  animation: slideUp 0.3s ease-out;
+/* =========================
+   GLOBAL SHADOW SYSTEM
+   (NO LINES, ONLY DEPTH)
+========================= */
+.shadow-xs {
+  box-shadow: 0 2px 6px rgba(0,0,0,0.04);
 }
 
+.shadow-sm {
+  box-shadow: 0 6px 16px rgba(0,0,0,0.06);
+}
+
+.shadow-md {
+  box-shadow: 0 12px 28px rgba(0,0,0,0.08);
+}
+
+.shadow-lg {
+  box-shadow: 0 22px 44px rgba(0,0,0,0.10);
+}
+
+.shadow-xl {
+  box-shadow: 0 32px 64px rgba(0,0,0,0.12);
+}
+
+/* =========================
+   GLOBAL CURVE SYSTEM
+========================= */
+.rounded-soft {
+  border-radius: 16px;
+}
+.rounded-card {
+  border-radius: 24px;
+}
+.rounded-panel {
+  border-radius: 32px;
+}
+
+/* =========================
+   REMOVE HARSH BORDERS
+========================= */
+* {
+  border-color: transparent !important;
+}
+
+/* =========================
+   FILTER BAR / INPUT STYLE
+========================= */
+input,
+select,
+textarea {
+  background: #ffffff;
+  border-radius: 14px;
+  border: 1px solid rgba(91, 62, 89, 0.25);
+  padding: 12px 14px;
+  transition: all 0.25s ease;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px rgba(91, 62, 89, 0.18);
+}
+
+/* =========================
+   CARD BEHAVIOR (GLOBAL)
+========================= */
+.card {
+  background: #ffffff;
+  border-radius: 24px;
+  box-shadow: 0 18px 40px rgba(0,0,0,0.08);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 26px 56px rgba(0,0,0,0.12);
+}
+
+/* =========================
+   SIDEBAR POLISH
+========================= */
+aside {
+  background: #ffffff;
+  box-shadow: 8px 0 32px rgba(0,0,0,0.08);
+}
+
+/* =========================
+   HEADER POLISH
+========================= */
+header {
+  background: var(--brand-soft);
+}
+
+/* =========================
+   BUTTON STYLE
+========================= */
+button {
+  border-radius: 16px;
+  transition: all 0.25s ease;
+}
+
+button:hover {
+  transform: translateY(-1px);
+}
+
+/* =========================
+   ANIMATIONS (KEPT)
+========================= */
+@keyframes fadeSlideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-hero {
+  animation: fadeSlideDown 0.8s ease-out forwards;
+}
+
+.animate-grid {
+  animation: fadeSlideUp 0.7s ease-out forwards;
+}
+
+/* =========================
+   SKELETON LOADER
+========================= */
 .animate-skeleton {
   position: relative;
   overflow: hidden;
-  background-color: #e2e8f0;
+  background-color: #e5e7eb;
 }
 
 .animate-skeleton::before {
   content: '';
   position: absolute;
-  top: 0;
-  left: -160px;
-  height: 100%;
-  width: 160px;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.8), transparent);
-  animation: skeleton 1.5s ease-in-out infinite;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes slideUp {
-  from {
-    transform: translateY(10px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255,255,255,0.7),
+    transparent
+  );
+  animation: skeleton 1.4s infinite;
 }
 
 @keyframes skeleton {
   from {
-    transform: translateX(0);
+    transform: translateX(-100%);
   }
   to {
-    transform: translateX(320px);
+    transform: translateX(100%);
   }
 }
-
-
-/* Custom subtle scrollbar for the form side */
-.custom-scrollbar::-webkit-scrollbar {
-  width: 5px;
-}
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: transparent;
-}
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #E5E7EB;
-  border-radius: 10px;
-}
-

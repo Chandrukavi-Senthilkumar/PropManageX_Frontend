@@ -1,135 +1,193 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { propertyService } from '../../services/propertyService';
+import {
+  MagnifyingGlassIcon,
+  BuildingOffice2Icon,
+} from '@heroicons/react/24/outline';
 
 import PropertyCard from '../../components/PropertyCard/PropertyCard';
 import AddPropertyModal from '../../components/Modals/AddPropertyModal';
 import AddUnitModal from '../../components/Modals/AddUnitModal';
 import AddAmenityModal from '../../components/Modals/AddAmenityModal';
+import { propertyService } from '../../services/propertyService';
 
-import { MagnifyingGlassIcon, BuildingOfficeIcon } from '@heroicons/react/24/outline';
+const ITEMS_PER_PAGE = 9;
 
 const PropertyList = () => {
   const navigate = useNavigate();
 
   const [properties, setProperties] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [showAdd, setShowAdd] = useState(false);
 
-  const [searchTerm, setSearchTerm] = useState('');
+  const [search, setSearch] = useState('');
+  const [location, setLocation] = useState('');
+  const [type, setType] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+
+  /* ✅ MODAL STATE (THIS WAS MISSING BEFORE) */
   const [selectedProperty, setSelectedProperty] = useState(null);
-
-  const [showPropModal, setShowPropModal] = useState(false);
   const [showUnitModal, setShowUnitModal] = useState(false);
   const [showAmenityModal, setShowAmenityModal] = useState(false);
+
+  /* ================= LOAD DATA ================= */
+  useEffect(() => {
+    loadProperties();
+  }, []);
 
   const loadProperties = async () => {
     try {
       setLoading(true);
-      setError(null);
-
-      const data = await propertyService.getProperties();
-      const items = data?.data?.items || data || [];
-
-      setProperties(items);
-    } catch (err) {
-      setError('Failed to load properties');
+      const res = await propertyService.getProperties();
+      setProperties(res?.data?.items || []);
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    loadProperties();
-  }, []);
-
-  const filteredProperties = properties.filter(p =>
-    p.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    p.location?.toLowerCase().includes(searchTerm.toLowerCase())
+  /* ================= FILTER ================= */
+  const filtered = properties.filter(p =>
+    (!search || p.name?.toLowerCase().includes(search.toLowerCase())) &&
+    (!location || p.location?.includes(location)) &&
+    (!type || p.type === type)
   );
 
-  if (error) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div>
-          <p className="text-red-600">{error}</p>
-          <button onClick={loadProperties}>Retry</button>
-        </div>
-      </div>
-    );
-  }
+  /* ================= PAGINATION ================= */
+  const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const paginatedProperties = filtered.slice(startIndex, endIndex);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, location, type]);
 
   return (
-    <div className="min-h-screen bg-slate-100">
-      <div className="bg-white border-b p-6">
-        <h1 className="text-3xl font-bold">My Properties</h1>
+    <div className="min-h-screen bg-[#F6F5F8]">
 
-        <div className="relative mt-4">
-          <MagnifyingGlassIcon className="w-5 h-5 absolute left-3 top-3 text-gray-400" />
-          <input
-            className="pl-10 pr-4 py-2 border rounded w-full"
-            placeholder="Search..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+      {/* HERO */}
+      <section className="bg-[#F3EEF2]">
+        <div className="max-w-7xl mx-auto px-10 py-16 text-center">
+          <h1 className="text-5xl font-extrabold text-[#1F2937]">
+            Explore Properties
+          </h1>
+          <p className="mt-4 text-[#6B7280] max-w-2xl mx-auto">
+            Browse, manage, and grow your real‑estate portfolio across cities,
+            categories, and investment types — all in one place.
+          </p>
+
+          <button
+            onClick={() => setShowAdd(true)}
+            className="mt-10 inline-flex items-center gap-3
+                       bg-[#5B3E59] hover:bg-[#4A3248]
+                       text-white px-8 py-4 rounded-2xl
+                       font-semibold shadow-md hover:shadow-lg transition-all"
+          >
+            <BuildingOffice2Icon className="w-5 h-5" />
+            Add New Property
+          </button>
         </div>
+      </section>
 
-        <button
-          className="mt-4 bg-blue-600 text-white px-4 py-2 rounded"
-          onClick={() => setShowPropModal(true)}
+      {/* FILTER BAR */}
+      <section className="max-w-7xl mx-auto px-10 -mt-10 relative z-10">
+        <div
+          className="bg-white rounded-3xl px-8 py-6
+                     grid grid-cols-1 md:grid-cols-3 gap-4
+                     shadow-lg hover:shadow-xl transition-all"
         >
-          <BuildingOfficeIcon className="w-5 h-5 inline mr-2" />
-          Add Property
-        </button>
-      </div>
+          <div className="relative">
+            <MagnifyingGlassIcon
+              className="absolute left-4 top-1/2 -translate-y-1/2
+                         w-5 h-5 text-gray-400"
+            />
+            <input
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="Search by property name"
+              className="w-full pl-12 py-3 rounded-xl
+                         border border-[#C9B6C8]
+                         focus:border-[#5B3E59]
+                         focus:ring-2 focus:ring-[#5B3E59]/40
+                         outline-none"
+            />
+          </div>
 
-      <div className="p-6">
+          <select
+            value={location}
+            onChange={e => setLocation(e.target.value)}
+            className="py-3 rounded-xl px-4
+                       border border-[#C9B6C8]
+                       focus:border-[#5B3E59]
+                       focus:ring-2 focus:ring-[#5B3E59]/40"
+          >
+            <option value="">All Locations</option>
+            <option value="Chennai">Chennai</option>
+            <option value="Bangalore">Bangalore</option>
+          </select>
+
+          <select
+            value={type}
+            onChange={e => setType(e.target.value)}
+            className="py-3 rounded-xl px-4
+                       border border-[#C9B6C8]
+                       focus:border-[#5B3E59]
+                       focus:ring-2 focus:ring-[#5B3E59]/40"
+          >
+            <option value="">All Property Types</option>
+            <option value="Commercial">Commercial</option>
+            <option value="Residential">Residential</option>
+          </select>
+        </div>
+      </section>
+
+      {/* GRID */}
+      <section className="max-w-7xl mx-auto px-10 py-20">
         {loading ? (
-          <p>Loading...</p>
+          <div className="text-center text-gray-400 font-semibold">
+            Loading properties...
+          </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {filteredProperties.map((property) => (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+            {paginatedProperties.map((p) => (
               <PropertyCard
-                key={property.propertyID}
-                {...property}
-                onImageClick={() => navigate(`/Property/${property.propertyID}`)}
-                onManageUnits={() => {
-                  setSelectedProperty(property);
+                key={p.propertyID}
+                {...p}
+                onImageClick={() => navigate(`/Property/${p.propertyID}`)}
+                onManageUnits={(propertyID) => {
+                  setSelectedProperty(propertyID);
                   setShowUnitModal(true);
                 }}
-                onAddAmenity={() => {
-                  setSelectedProperty(property);
+                onAddAmenity={(propertyID) => {
+                  setSelectedProperty(propertyID);
                   setShowAmenityModal(true);
                 }}
               />
             ))}
           </div>
         )}
-      </div>
+      </section>
 
+      {/* MODALS */}
       <AddPropertyModal
-        isOpen={showPropModal}
-        onClose={() => setShowPropModal(false)}
+        isOpen={showAdd}
+        onClose={() => setShowAdd(false)}
         refreshList={loadProperties}
       />
 
       <AddUnitModal
         isOpen={showUnitModal}
         onClose={() => setShowUnitModal(false)}
-        propertyID={selectedProperty?.propertyID}
+        propertyID={selectedProperty}
       />
 
       <AddAmenityModal
         isOpen={showAmenityModal}
         onClose={() => setShowAmenityModal(false)}
-        propertyID={selectedProperty?.propertyID}
+        propertyID={selectedProperty}
       />
     </div>
   );
 };
 
 export default PropertyList;
-
-//propertyID: 1,
-//name: "Sunset Villas",
-//location: "123 Main St, Springfield",

@@ -1,24 +1,21 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchAdminProfile } from '../redux/slices/adminSlice'; 
+import { fetchAdminProfile } from '../redux/slices/adminSlice';
 import {
   BuildingOfficeIcon,
   BuildingOffice2Icon,
   UserGroupIcon,
-  Cog6ToothIcon,
-  BellIcon,
-  Bars3Icon,
-  XMarkIcon,
-  ArrowLeftOnRectangleIcon,
   CheckBadgeIcon,
+  BellIcon,
+  ArrowLeftOnRectangleIcon,
   UserPlusIcon
 } from '@heroicons/react/24/outline';
 import { authService } from '../services/authService';
 import { showSuccess } from '../redux/slices/notificationSlice';
 
 const DashboardLayout = () => {
-  const [isSidebarOpen, setSidebarOpen] = useState(true);
+  const [isSidebarOpen, setSidebarOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
 
@@ -29,19 +26,17 @@ const DashboardLayout = () => {
   const { profile, loading } = useSelector((state) => state.admin || {});
 
   useEffect(() => {
-    if (!profile) {
-      dispatch(fetchAdminProfile());
-    }
+    if (!profile) dispatch(fetchAdminProfile());
   }, [dispatch, profile]);
 
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+    const handler = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
         setIsDropdownOpen(false);
       }
     };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
   }, []);
 
   const menuItems = [
@@ -50,114 +45,130 @@ const DashboardLayout = () => {
     { name: 'Contract', path: '/contract', icon: UserGroupIcon },
     { name: 'Invoice', path: '/invoice', icon: UserGroupIcon },
     { name: 'Revenue Reports', path: '/revenues', icon: CheckBadgeIcon },
-    { name: 'My Property', path: '/my-property', icon: BuildingOffice2Icon }, 
+    { name: 'My Property', path: '/my-property', icon: BuildingOffice2Icon },
   ];
 
   return (
-    <div className="flex h-screen bg-[#F8F9FA] overflow-hidden font-sans">
-      <aside className={`${isSidebarOpen ? 'w-64' : 'w-20'} bg-white border-r border-slate-200 transition-all duration-300 flex flex-col z-50 shadow-sm`}>
-        <div className="p-6 flex items-center gap-3 border-b border-slate-100">
-          <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-blue-700 rounded-lg flex-shrink-0 flex items-center justify-center text-white font-bold text-lg shadow-lg">P</div>
-          {isSidebarOpen && <span className="font-bold text-lg tracking-tight text-slate-900">PropManage<span className="text-blue-600">X</span></span>}
+    <div className="flex h-screen bg-[#FAF6F9] overflow-hidden">
+
+      {/* SIDEBAR */}
+      <aside
+        onMouseEnter={() => setSidebarOpen(true)}
+        onMouseLeave={() => setSidebarOpen(false)}
+        className={`${isSidebarOpen ? 'w-64' : 'w-20'} bg-white shadow-md transition-all duration-300`}
+      >
+        <div className="px-4 py-6 flex justify-center bg-[#FAF6F9]">
+          <div className="w-12 h-12 bg-[#5B3E57] rounded-xl
+                          flex items-center justify-center
+                          text-white font-bold text-lg shadow">
+            P
+          </div>
         </div>
-        <nav className="flex-grow mt-8 px-3 space-y-1">
-          {menuItems.map((item) => {
-            const isActive = location.pathname === item.path || location.pathname.includes(item.path);
+
+        <nav className="mt-6 px-3 space-y-1">
+          {menuItems.map(item => {
+            const active = location.pathname.startsWith(item.path);
             return (
               <Link
                 key={item.name}
                 to={item.path}
-                className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all font-medium text-sm ${isActive
-                  ? 'bg-gradient-to-r from-blue-50 to-blue-100 text-blue-700 border-l-4 border-blue-600'
-                  : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-                }`}
+                className={`flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition
+                  ${active
+                    ? 'bg-[#5B3E59]/10 text-[#5B3E59]'
+                    : 'text-gray-700 hover:bg-gray-100'
+                  }`}
               >
-                <item.icon className="w-5 h-5 flex-shrink-0" />
-                {isSidebarOpen && <span>{item.name}</span>}
+                <item.icon className="w-5 h-5" />
+                {isSidebarOpen && item.name}
               </Link>
             );
           })}
         </nav>
       </aside>
 
-      <main className="flex-grow flex flex-col min-w-0 overflow-hidden">
-        <div className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8 z-40 shadow-sm relative">
-          <div className="flex items-center gap-4">
-            <button onClick={() => setSidebarOpen(!isSidebarOpen)} className="p-2 hover:bg-slate-100 rounded-lg text-slate-600 transition-colors">
-              {isSidebarOpen ? <XMarkIcon className="w-6 h-6" /> : <Bars3Icon className="w-6 h-6" />}
-            </button>
-          </div>
+      {/* MAIN */}
+      <main className="flex-1 flex flex-col overflow-hidden">
 
-          <div className="flex items-center gap-4">
-          <button
-  onClick={() =>
-    dispatch(showSuccess('No new notifications'))
-  }
-  className="p-2 hover:bg-slate-100 rounded-lg text-slate-600 transition-colors relative"
->
-  <BellIcon className="w-6 h-6" />
-  <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-</button>
+        <header className="bg-[#FAF6F9]">
+          <div className="flex items-center justify-between px-6 py-4 relative">
 
+            <div className="absolute left-1/2 -translate-x-1/2 font-bold text-lg">
+              PropManage<span className="text-[#5B3E59]">X</span>
+            </div>
 
-            <div className="relative" ref={dropdownRef}>
+            <div className="ml-auto flex items-center gap-4">
+
               <button
-                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                className="flex items-center gap-2 px-3 py-1 bg-white border border-slate-200 rounded-lg shadow-sm hover:bg-slate-50 transition-colors focus:outline-none"
+                onClick={() => dispatch(showSuccess('No new notifications'))}
+                className="relative p-2 rounded-full hover:bg-gray-100"
               >
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 overflow-hidden flex items-center justify-center text-white font-black uppercase tracking-tighter">
-                  {profile?.adminName ? (
-                    <img src={`https://ui-avatars.com/api/?name=${profile.adminName}&background=0D8ABC&color=fff`} alt="Profile" />
-                  ) : ( "..." )}
-                </div>
-                <div className="hidden sm:block text-left">
-                  <p className="text-sm font-semibold text-slate-800 leading-tight">
-                    {loading ? "Loading..." : profile?.adminName || "User"}
-                  </p>
-                  <p className="text-xs text-slate-500 leading-tight">
-                    {profile?.role || "Administrator"}
-                  </p>
-                </div>
+                <BellIcon className="w-6 h-6 text-gray-700" />
               </button>
 
-              {isDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-56 bg-white border border-slate-200 rounded-xl shadow-lg py-2 z-50">
-                  <div className="px-4 py-3 border-b border-slate-100 mb-1">
-                    <p className="text-sm font-bold text-slate-800 truncate">{profile?.adminName}</p>
-                    <p className="text-xs text-slate-500 truncate">{profile?.adminEmail}</p>
+              <div className="relative" ref={dropdownRef}>
+                <button
+                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                  className="flex items-center gap-3 px-4 py-2
+                             rounded-2xl bg-[#F3EEF2]
+                             hover:bg-[#E9E1E8]
+                             transition shadow-sm"
+                >
+                  <div className="w-9 h-9 bg-[#5B3E59]
+                                  rounded-full text-white
+                                  font-bold flex items-center justify-center">
+                    {profile?.adminName?.[0] || 'U'}
                   </div>
 
-                  <button
-                    onClick={() => { setIsDropdownOpen(false); navigate('/add-user'); }}
-                    className="w-full text-left px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-blue-50 hover:text-blue-700 flex items-center gap-3 transition-colors"
-                  >
-                    <UserPlusIcon className="w-5 h-5 text-slate-400" />
-                    Add User
-                  </button>
+                  <div className="hidden md:block text-left">
+                    <p className="text-sm font-semibold">
+                      {loading ? 'Loading...' : profile?.adminName || 'User'}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {profile?.role}
+                    </p>
+                  </div>
+                </button>
 
-                  <button
-                    onClick={async () => {
-                      setIsDropdownOpen(false);
-                      await authService.logout();
-                    }}
-                    className="w-full text-left px-4 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 flex items-center gap-3 transition-colors mt-1"
-                  >
-                    <ArrowLeftOnRectangleIcon className="w-5 h-5 text-red-400" />
-                    Logout
-                  </button>
-                </div>
-              )}
+                {isDropdownOpen && (
+                  <div className="absolute right-0 mt-2 w-56 bg-white
+                                  border rounded-xl shadow-lg z-50">
+                    <button
+                      onClick={() => {
+                        setIsDropdownOpen(false);
+                        navigate('/add-user');
+                      }}
+                      className="w-full px-4 py-3 text-left text-sm hover:bg-gray-100 flex gap-2"
+                    >
+                      <UserPlusIcon className="w-5 h-5" />
+                      Add User
+                    </button>
+
+                    <button
+                      onClick={async () => {
+                        setIsDropdownOpen(false);
+                        await authService.logout();
+                      }}
+                      className="w-full px-4 py-3 text-left text-sm text-red-600 hover:bg-red-50 flex gap-2"
+                    >
+                      <ArrowLeftOnRectangleIcon className="w-5 h-5" />
+                      Logout
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
-        </div>
+        </header>
 
-        <section className="flex-grow overflow-y-auto p-6">
-          {/* Outlet is where MyProperty will render */}
-          <Outlet />
+        <section className="flex-1 overflow-y-auto p-6">
+          <div className="bg-white rounded-3xl shadow-xl p-6 min-h-full">
+            <Outlet />
+          </div>
         </section>
+
       </main>
     </div>
   );
 };
 
-export default DashboardLayout; 
+export default DashboardLayout;

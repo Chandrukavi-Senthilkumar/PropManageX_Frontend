@@ -22,6 +22,15 @@ export default {
         }
       }
     },
+    
+colors: {
+      brand: {
+        DEFAULT: '#5B3E59',
+        dark: '#4A3248',
+        light: '#F5EFF4',
+        soft: '#E6DBE4',
+      }
+    },
   },
   plugins: [],
 }

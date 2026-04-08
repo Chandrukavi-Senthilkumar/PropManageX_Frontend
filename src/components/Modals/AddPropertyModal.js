@@ -52,8 +52,19 @@ const AddPropertyModal = ({ isOpen, onClose, refreshList }) => {
         onClose();
         
     } catch (err) {
-        console.error("Upload Failed:", err);
-        alert(err.response?.data?.message || "Failed to save property.");
+  const backendErrors = err.response?.data?.errors;
+
+  if (backendErrors) {
+    formik.setErrors({
+      name: backendErrors.Name?.[0],
+      location: backendErrors.Location?.[0],
+      totalUnits: backendErrors.TotalUnits?.[0],
+    });
+  } else {
+    formik.setStatus('Failed to save property. Please try again.');
+  }
+
+
     } finally {
         setLoading(false);
     }
@@ -66,7 +77,11 @@ const AddPropertyModal = ({ isOpen, onClose, refreshList }) => {
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-[32px] w-full max-w-lg p-10 shadow-2xl">
         <h2 className="text-2xl font-bold mb-6 text-gray-800">Add Property</h2>
-
+        {formik.status && (
+        <div className="mb-4 p-3 bg-red-50 text-red-600 rounded-xl text-xs font-bold text-center">
+         {formik.status}
+        </div>
+          )}
         <form onSubmit={formik.handleSubmit} className="space-y-5">
           {/* Text Inputs */}
           <div>
