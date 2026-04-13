@@ -48,7 +48,7 @@ const EditAmenityModal = ({ isOpen, onClose, amenity, onSuccess }) => {
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-[70]">
-      <div className="bg-white rounded-[32px] w-full max-w-md p-8 shadow-2xl relative">
+      <div className="bg-[#F3EEF2] rounded-[32px] w-full max-w-md p-8 shadow-2xl relative">
         <button onClick={onClose} className="absolute top-6 right-6 text-gray-400 hover:text-gray-600">
           <XMarkIcon className="w-6 h-6" />
         </button>

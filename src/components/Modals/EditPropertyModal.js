@@ -60,8 +60,8 @@ const EditPropertyModal = ({ isOpen, onClose, property, onSuccess }) => {
   if (!isOpen || !property) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-[32px] w-full max-w-lg p-10 shadow-2xl">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+      <div className="bg-[#F3EEF2] rounded-[32px] w-full max-w-lg p-10 shadow-2xl">
         <h2 className="text-2xl font-bold mb-2 text-gray-800">Edit Property</h2>
         <p className="text-sm text-gray-400 mb-6">Update property details</p>
 

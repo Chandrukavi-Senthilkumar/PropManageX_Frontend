@@ -24,7 +24,24 @@ const DashboardLayout = () => {
   const dispatch = useDispatch();
 
   const { profile, loading } = useSelector((state) => state.admin || {});
+  const sidebarRef = useRef(null);
+  const sidebarToggleRef = useRef(null);
+  useEffect(() => {
+  const handleOutsideClick = (e) => {
+    if (
+      isSidebarOpen &&
+      sidebarRef.current &&
+      !sidebarRef.current.contains(e.target) &&
+      sidebarToggleRef.current &&
+      !sidebarToggleRef.current.contains(e.target)
+    ) {
+      setSidebarOpen(false); // ✅ ONLY close
+    }
+  };
 
+  document.addEventListener('mousedown', handleOutsideClick);
+  return () => document.removeEventListener('mousedown', handleOutsideClick);
+}, [isSidebarOpen]);
   useEffect(() => {
     if (!profile) dispatch(fetchAdminProfile());
   }, [dispatch, profile]);
@@ -53,8 +70,7 @@ const DashboardLayout = () => {
 
       {/* SIDEBAR */}
       <aside
-        onMouseEnter={() => setSidebarOpen(true)}
-        onMouseLeave={() => setSidebarOpen(false)}
+        ref={sidebarRef}
         className={`${isSidebarOpen ? 'w-64' : 'w-20'} bg-white shadow-md transition-all duration-300`}
       >
         <div className="px-4 py-6 flex justify-center bg-[#FAF6F9]">
@@ -91,7 +107,13 @@ const DashboardLayout = () => {
 
         <header className="bg-[#FAF6F9]">
           <div className="flex items-center justify-between px-6 py-4 relative">
-
+            <button
+  ref={sidebarToggleRef}
+  onClick={() => setSidebarOpen(prev => !prev)}
+  className="p-2 rounded-lg hover:bg-gray-100"
+>
+  <BuildingOfficeIcon className="w-6 h-6 text-gray-700" />
+</button>
             <div className="absolute left-1/2 -translate-x-1/2 font-bold text-lg">
               PropManage<span className="text-[#5B3E59]">X</span>
             </div>

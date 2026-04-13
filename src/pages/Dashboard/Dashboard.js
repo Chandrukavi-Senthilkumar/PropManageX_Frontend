@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { propertyService } from '../../services/propertyService';
 import PropertyCard from '../../components/PropertyCard/PropertyCard';
 import AddPropertyModal from '../../components/Modals/AddPropertyModal';
+import Toast from '../../components/Toast/Toast';
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -13,6 +14,13 @@ const Dashboard = () => {
   const [type, setType] = useState('');
   const [loading, setLoading] = useState(true);
   const [showPropModal, setShowPropModal] = useState(false);
+
+  // ✅ TOAST STATE
+  const [toast, setToast] = useState(null);
+
+  const showToast = (message, type = 'success') => {
+    setToast({ message, type });
+  };
 
   useEffect(() => {
     loadProperties();
@@ -34,6 +42,15 @@ const Dashboard = () => {
   return (
     <div className="bg-[#F5F3F7] min-h-screen">
 
+      {/* ✅ TOAST */}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
+
       {/* ===== HERO ===== */}
       <div className="bg-gradient-to-b from-[#1C1C1C] to-[#2A2A2A] text-white">
         <div className="max-w-7xl mx-auto px-8 py-14">
@@ -54,11 +71,11 @@ const Dashboard = () => {
 
       {/* ===== FILTER CARD ===== */}
       <div className="max-w-7xl mx-auto px-8 -mt-8 relative z-10">
-        <div className="bg-white rounded-2xl shadow-xl p-6 grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="bg-[#EFE9F0] rounded-2xl shadow-xl p-6 grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="relative">
             <MagnifyingGlassIcon className="absolute left-3 top-3.5 w-5 h-5 text-gray-400" />
             <input
-              className="pl-10 w-full py-3 rounded-xl border focus:ring-2 focus:ring-[#5B3E59]/40"
+              className="pl-10 w-full py-3 rounded-xl border"
               placeholder="Search by name or city"
               value={search}
               onChange={e => setSearch(e.target.value)}
@@ -110,10 +127,12 @@ const Dashboard = () => {
         )}
       </div>
 
+      {/* ✅ MODAL WITH TOAST */}
       <AddPropertyModal
         isOpen={showPropModal}
         onClose={() => setShowPropModal(false)}
         refreshList={loadProperties}
+        showToast={showToast}
       />
     </div>
   );

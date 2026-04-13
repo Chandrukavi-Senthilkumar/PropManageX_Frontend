@@ -10,12 +10,19 @@ import {
   CalendarIcon,
 } from '@heroicons/react/24/outline';
 import { AddInvoiceModal } from '../../components/Modals/AddInvoiceModal';
+import Toast from '../../components/Toast/Toast';
 
 const ContractManagementPage = () => {
   const [contracts, setContracts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedContract, setSelectedContract] = useState(null);
+
+  /* ✅ TOAST STATE (ADDED) */
+  const [toast, setToast] = useState(null);
+  const showToast = (message, type = 'success') => {
+    setToast({ message, type });
+  };
 
   const fetchContracts = async () => {
     try {
@@ -42,6 +49,16 @@ const ContractManagementPage = () => {
 
   return (
     <div className="bg-[#fcfaf8] min-h-screen pb-20">
+
+      {/* ✅ TOAST RENDERED HERE */}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
+
       {/* HERO */}
       <div className="bg-[#FAF6F9] px-8 pt-16 pb-24 text-center rounded-b-[40px] shadow-lg">
         <h1 className="text-4xl md:text-5xl font-black text-white tracking-tight">
@@ -55,7 +72,7 @@ const ContractManagementPage = () => {
       <div className="max-w-7xl mx-auto px-6 -mt-10 relative z-10 space-y-12">
 
         {/* FILTER BAR */}
-        <div className="bg-white p-3 rounded-full shadow-xl border border-stone-100 flex items-center justify-between gap-4">
+        <div className="bg-[#EFE9F0] p-3 rounded-full shadow-xl border border-stone-100 flex items-center justify-between gap-4">
           <div className="relative w-full md:w-1/3 ml-2">
             <MagnifyingGlassIcon className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-stone-400" />
             <input
@@ -98,11 +115,18 @@ const ContractManagementPage = () => {
         )}
       </div>
 
+      {/* ✅ MODAL → CLOSE → TOAST */}
       <AddInvoiceModal
         isOpen={!!selectedContract}
         onClose={() => setSelectedContract(null)}
         contract={selectedContract}
-        onSuccess={fetchContracts}
+        onSuccess={() => {
+          fetchContracts();
+          setSelectedContract(null);
+          setTimeout(() => {
+            showToast('Invoice created successfully!', 'success');
+          }, 0);
+        }}
       />
     </div>
   );
@@ -115,13 +139,10 @@ const ContractCard = ({ contract, onInvoiceClick }) => {
 
   return (
     <div className="bg-white rounded-[32px] border border-stone-100 shadow-sm hover:shadow-xl transition-all flex flex-col overflow-hidden">
-
-      {/* Top Accent */}
       <div className="h-1.5 bg-[#5B3E59]" />
 
       <div className="p-8 space-y-6 flex-grow">
 
-        {/* HEADER */}
         <div className="flex justify-between items-start">
           <div className="flex items-center gap-4">
             <div className="w-14 h-14 bg-gradient-to-br from-[#5B3E59] to-[#7d5d7a] rounded-2xl flex items-center justify-center text-white font-black text-xl shadow-lg uppercase">
@@ -148,9 +169,7 @@ const ContractCard = ({ contract, onInvoiceClick }) => {
           </span>
         </div>
 
-        {/* INFO PANEL */}
         <div className="bg-[#fcfbf9] p-5 rounded-2xl border border-stone-100 space-y-4">
-
           <div className="flex items-center gap-3 text-stone-600">
             <HomeIcon className="w-4 h-4 text-stone-400" />
             <span className="text-sm font-black">
@@ -164,10 +183,8 @@ const ContractCard = ({ contract, onInvoiceClick }) => {
               {contract.tenantName}
             </span>
           </div>
-
         </div>
 
-        {/* DATES */}
         <div className="grid grid-cols-2 gap-4 pt-4">
           <div>
             <p className="text-[9px] font-black text-stone-400 uppercase tracking-widest mb-1 flex items-center gap-1">
@@ -187,10 +204,8 @@ const ContractCard = ({ contract, onInvoiceClick }) => {
             </p>
           </div>
         </div>
-
       </div>
 
-      {/* ACTION */}
       {isSale && (
         <div className="p-6 pt-0">
           <button

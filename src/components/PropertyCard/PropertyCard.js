@@ -22,8 +22,7 @@ const PropertyCard = ({
       {/* Top Accent Bar */}
       <div className="h-1.5 w-full bg-[#5B3E59]" />
 
-      <div className="p-8 space-y-6">
-
+      <div className="p-5 sm:p-6 lg:p-8 space-y-5 sm:space-y-6">
         {/* HEADER */}
         <div className="flex items-center gap-4">
           <div
@@ -36,8 +35,7 @@ const PropertyCard = ({
           </div>
 
           <div className="min-w-0">
-            <h3 className="text-lg font-black text-stone-900 truncate">
-              {name}
+            <h3 className="text-lg sm:text-xl font-black text-stone-900 truncate">              {name}
             </h3>
             <p className="text-[11px] font-bold text-stone-500 uppercase tracking-widest flex items-center gap-1.5 mt-1">
               <MapPinIcon className="w-3.5 h-3.5 text-stone-400" />
@@ -80,12 +78,11 @@ const PropertyCard = ({
         </div>
 
         {/* ACTIONS */}
-        <div className="flex gap-3 pt-2">
-
+        <div className="flex flex-col sm:flex-row gap-3 pt-2">
           <button
             onClick={onImageClick}
             className="
-              flex-1 py-4 rounded-2xl
+              flex-1 py-3 sm:py-4 rounded-2xl
               bg-[#5B3E59] hover:bg-[#4a3248]
               text-white font-black text-[10px]
               uppercase tracking-[0.2em]

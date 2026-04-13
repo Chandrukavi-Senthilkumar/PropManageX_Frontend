@@ -169,7 +169,7 @@ const SalesManagementPage = () => {
             <div className="max-w-7xl mx-auto px-6 -mt-10 relative z-10 space-y-12">
                 
                 {/* FLOATING FILTER BAR */}
-                <div className="bg-white p-3 rounded-full shadow-xl shadow-stone-200 flex flex-col md:flex-row justify-between items-center gap-4 border border-stone-100">
+                <div className="bg-[#EFE9F0] p-3 rounded-full shadow-xl shadow-stone-200 flex flex-col md:flex-row justify-between items-center gap-4 border border-stone-100">
                     
                     {/* Search Input */}
                     <div className="relative w-full md:w-1/3 ml-2">
@@ -200,10 +200,7 @@ const SalesManagementPage = () => {
                         ))}
                     </div>
 
-                    {/* Refresh Button */}
-                    <button onClick={fetchData} className="p-3 mr-2 bg-[#F6F1F3] text-[#5B3E59] rounded-full hover:bg-stone-200 transition-all">
-                        <ArrowPathIcon className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
-                    </button>
+                    
                 </div>
 
                 {/* METRIC STATS */}

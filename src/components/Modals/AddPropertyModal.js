@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
+import { XMarkIcon } from '@heroicons/react/24/outline';
 import { propertyService } from '../../services/propertyService';
 
-const AddPropertyModal = ({ isOpen, onClose, refreshList }) => {
+const AddPropertyModal = ({ isOpen, onClose, refreshList, showToast }) => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [loading, setLoading] = useState(false);
 
@@ -12,130 +13,147 @@ const AddPropertyModal = ({ isOpen, onClose, refreshList }) => {
       name: '',
       type: 'Commercial',
       location: '',
-      totalUnits: 0,
+      totalUnits: '',
       status: 'Active',
       Image: ''
     },
     validationSchema: Yup.object({
       name: Yup.string().required('Property name is required'),
       location: Yup.string().required('Location is required'),
-      totalUnits: Yup.number().min(1, 'At least 1 unit').required('Required'),
+      totalUnits: Yup.number()
+        .typeError('Total units must be a number')
+        .min(1, 'At least 1 unit')
+        .required('Total units is required'),
     }),
- onSubmit: async (values) => {
-    setLoading(true);
-    try {
+    onSubmit: async (values, { resetForm }) => {
+      setLoading(true);
+      try {
         const formData = new FormData();
-        
-        // Ensure these keys match your Backend Model exactly
         formData.append('Name', values.name);
         formData.append('Type', values.type);
         formData.append('Location', values.location);
         formData.append('TotalUnits', values.totalUnits);
         formData.append('Status', values.status);
-        
-        // Check if selectedFile exists and append it
-        if (selectedFile) {
-            // Note: If your backend property is 'Image', use 'Image'
-            formData.append('Image', selectedFile); 
-        }
+        if (selectedFile) formData.append('Image', selectedFile);
 
-        // Debug: Log the FormData to verify (FormData doesn't log easily, so use this:)
-        for (let pair of formData.entries()) {
-            console.log(pair[0]+ ': ' + pair[1]); 
-        }
+        await propertyService.createProperty(formData);
 
-        const createResponse = await propertyService.createProperty(formData);
-        
-        // Success Logic
-        alert("Property created successfully!");
-        refreshList();
+        resetForm();
+        setSelectedFile(null);
+
+        // ✅ CLOSE MODAL FIRST
         onClose();
-        
-    } catch (err) {
-  const backendErrors = err.response?.data?.errors;
 
-  if (backendErrors) {
-    formik.setErrors({
-      name: backendErrors.Name?.[0],
-      location: backendErrors.Location?.[0],
-      totalUnits: backendErrors.TotalUnits?.[0],
-    });
-  } else {
-    formik.setStatus('Failed to save property. Please try again.');
-  }
+        // ✅ SHOW TOAST AFTER MODAL CLOSES
+        setTimeout(() => {
+          showToast?.('Property created successfully!', 'success');
+        }, 0);
 
-
-    } finally {
+        refreshList();
+      } catch {
+        onClose();
+        setTimeout(() => {
+          showToast?.('Failed to save property', 'error');
+        }, 0);
+      } finally {
         setLoading(false);
+      }
     }
-}
   });
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-[32px] w-full max-w-lg p-10 shadow-2xl">
-        <h2 className="text-2xl font-bold mb-6 text-gray-800">Add Property</h2>
-        {formik.status && (
-        <div className="mb-4 p-3 bg-red-50 text-red-600 rounded-xl text-xs font-bold text-center">
-         {formik.status}
-        </div>
-          )}
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[110] p-4">
+      <div className="bg-[#F3EEF2] rounded-[40px] w-full max-w-lg p-8 relative shadow-2xl">
+
+        <button
+          type="button"
+          onClick={onClose}
+          className="absolute top-6 right-6 text-gray-400 hover:text-black"
+        >
+          <XMarkIcon className="w-6 h-6" />
+        </button>
+
+        <h2 className="text-2xl font-black text-gray-800 text-center mb-6">
+          Add Property
+        </h2>
+
         <form onSubmit={formik.handleSubmit} className="space-y-5">
-          {/* Text Inputs */}
-          <div>
-            <label className="text-xs font-bold uppercase text-gray-400">Property Name</label>
-            <input type="text" name="name" {...formik.getFieldProps('name')} className="w-full mt-1 p-3 bg-gray-50 border rounded-xl outline-none focus:ring-2 focus:ring-blue-400" placeholder="e.g. Marina Bay Sands" />
+
+          {/* Property Name */}
+          <div className="space-y-1">
+            <input
+              {...formik.getFieldProps('name')}
+              placeholder="Property Name"
+              className={`w-full p-4 rounded-2xl outline-none transition-all ${
+                formik.touched.name && formik.errors.name
+                  ? 'bg-red-50/50 border border-red-500 text-red-600'
+                  : 'bg-gray-50 border border-transparent'
+              }`}
+            />
           </div>
 
+          {/* Type + Total Units */}
           <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="text-xs font-bold uppercase text-gray-400">Type</label>
-              <select name="type" {...formik.getFieldProps('type')} className="w-full mt-1 p-3 bg-gray-50 border rounded-xl outline-none">
-                <option value="Commercial">Commercial</option>
-                <option value="Residential">Residential</option>
-                {/* <option value="Industrial">Industrial</option> */}
-              </select>
-            </div>
-            <div>
-              <label className="text-xs font-bold uppercase text-gray-400">Total Units</label>
-              <input type="number" name="totalUnits" {...formik.getFieldProps('totalUnits')} className="w-full mt-1 p-3 bg-gray-50 border rounded-xl outline-none" />
-            </div>
+            <select
+              {...formik.getFieldProps('type')}
+              className="p-4 rounded-2xl bg-gray-50 border border-transparent"
+            >
+              <option value="Commercial">Commercial</option>
+              <option value="Residential">Residential</option>
+            </select>
+
+            <input
+              type="number"
+              {...formik.getFieldProps('totalUnits')}
+              placeholder="Total Units"
+              className="w-full p-4 rounded-2xl bg-gray-50"
+            />
           </div>
 
-          <div>
-            <label className="text-xs font-bold uppercase text-gray-400">Location</label>
-            <input type="text" name="location" {...formik.getFieldProps('location')} className="w-full mt-1 p-3 bg-gray-50 border rounded-xl outline-none" placeholder="City, Country" />
-          </div>
+          {/* Location */}
+          <input
+            {...formik.getFieldProps('location')}
+            placeholder="Location"
+            className="w-full p-4 rounded-2xl bg-gray-50"
+          />
 
-          {/* Image Upload Area */}
-          <div className="relative border-2 border-dashed border-gray-200 rounded-2xl p-6 text-center hover:bg-gray-50 transition-colors">
+          {/* Image */}
+          <div className="relative border-2 border-dashed border-gray-300 rounded-2xl p-6 text-center">
             <input
               type="file"
               accept="image/*"
-              onChange={(e) => {
+              className="absolute inset-0 opacity-0 cursor-pointer"
+              onChange={e => {
                 const file = e.target.files[0];
                 setSelectedFile(file);
-                // Optional: Update formik just to keep it aware
                 formik.setFieldValue('Image', file);
               }}
-              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
             />
-            <div className="space-y-1">
-              <p className="text-sm font-semibold text-gray-700">
-                {selectedFile ? selectedFile.name : "Click to upload property image"}
-              </p>
-              <p className="text-xs text-gray-400 font-medium">PNG, JPG up to 10MB</p>
-            </div>
+            <p className="text-sm font-semibold text-gray-700">
+              {selectedFile ? selectedFile.name : 'Click to upload property image'}
+            </p>
           </div>
 
-          <div className="flex gap-4 pt-4">
-            <button type="button" onClick={onClose} className="flex-1 py-3 text-gray-500 font-bold hover:bg-gray-100 rounded-xl transition-all">Cancel</button>
-            <button type="submit" disabled={loading} className="flex-1 py-3 bg-blue-600 text-white rounded-xl font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 active:scale-95 transition-all">
-              {loading ? 'Saving...' : 'Add Property'}
+          {/* Actions */}
+          <div className="flex gap-4 pt-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 py-3 text-gray-500 font-bold rounded-2xl hover:bg-gray-100"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="flex-1 py-3 bg-[#5B3E59] text-white rounded-2xl font-black hover:bg-[#4A3248] shadow-lg"
+            >
+              {loading ? 'Saving…' : 'Add Property'}
             </button>
           </div>
+
         </form>
       </div>
     </div>

@@ -69,9 +69,12 @@ const DocumentModal = ({ isOpen, onClose, document, entityType, entityId, onSucc
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-[32px] w-full max-w-lg p-10 shadow-2xl relative">
-        <button onClick={onClose} className="absolute top-6 right-6 text-gray-400 hover:text-gray-600">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+      <div className="[#F3EEF2] rounded-[32px] w-full max-w-lg p-10 shadow-2xl relative">
+        <button
+          onClick={onClose}
+          className="absolute top-6 right-6 text-gray-400 hover:text-gray-600"
+        >
           <XMarkIcon className="w-6 h-6" />
         </button>
 
@@ -80,8 +83,12 @@ const DocumentModal = ({ isOpen, onClose, document, entityType, entityId, onSucc
             <DocumentDuplicateIcon className="w-6 h-6 text-blue-600" />
           </div>
           <div>
-            <h2 className="text-2xl font-bold text-gray-800">{document ? 'Edit Document' : 'Upload Document'}</h2>
-            <p className="text-sm text-gray-400">Only PDF or image files are allowed..</p>
+            <h2 className="text-2xl font-bold text-gray-800">
+              {document ? 'Edit Document' : 'Upload Document'}
+            </h2>
+            <p className="text-sm text-gray-400">
+              Only PDF or image files are allowed..
+            </p>
           </div>
         </div>
 
@@ -92,24 +99,36 @@ const DocumentModal = ({ isOpen, onClose, document, entityType, entityId, onSucc
         )}
 
         <form onSubmit={formik.handleSubmit} className="space-y-5">
-          <div>
-            <label className="text-xs font-black uppercase text-gray-400 tracking-wider">Document Type</label>
+
+          {/* Document Type */}
+          <div className="space-y-1">
+            <label className="text-xs font-black uppercase text-gray-400 tracking-wider">
+              Document Type
+            </label>
             <select
-              name="documentType"
               {...formik.getFieldProps('documentType')}
-              className="w-full mt-1 p-3 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:ring-2 focus:ring-blue-400"
+              className={`w-full p-3 rounded-xl outline-none transition-all ${
+                formik.touched.documentType && formik.errors.documentType
+                  ? 'bg-red-50/50 border border-red-500 text-red-600'
+                  : 'bg-gray-50 border border-gray-100'
+              }`}
             >
               <option value="Agreement">Agreement</option>
               <option value="KYC">KYC</option>
               <option value="Approval">Approval</option>
             </select>
             {formik.touched.documentType && formik.errors.documentType && (
-              <p className="text-red-500 text-xs mt-1">{formik.errors.documentType}</p>
+              <div className="text-red-500 text-xs font-bold text-center">
+                {formik.errors.documentType}
+              </div>
             )}
           </div>
 
+          {/* File */}
           <div>
-            <label className="text-xs font-black uppercase text-gray-400 tracking-wider">File</label>
+            <label className="text-xs font-black uppercase text-gray-400 tracking-wider">
+              File
+            </label>
             <div className="relative border-2 border-dashed border-gray-200 rounded-2xl p-6 text-center hover:bg-gray-50 transition-colors">
               <input
                 type="file"
@@ -119,29 +138,38 @@ const DocumentModal = ({ isOpen, onClose, document, entityType, entityId, onSucc
               />
               <div className="space-y-1">
                 <p className="text-sm font-semibold text-gray-700">
-                  {selectedFile ? selectedFile.name : document?.uri ? `Current file: ${document.uri}` : 'Click to select a file'}
+                  {selectedFile
+                    ? selectedFile.name
+                    : document?.uri
+                    ? `Current file: ${document.uri}`
+                    : 'Click to select a file'}
                 </p>
                 <p className="text-xs text-gray-400 font-medium">Max 15MB</p>
               </div>
             </div>
           </div>
 
+          {/* Actions */}
           <div className="flex gap-3 pt-2">
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 py-3 text-gray-500 font-bold hover:bg-gray-100 rounded-xl transition-all"
+              className="flex-1 py-3 text-gray-500 font-bold
+                         hover:bg-gray-100 rounded-xl transition-all"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading || (!document && !selectedFile)}
-              className="flex-1 py-3 bg-blue-600 text-white rounded-xl font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 active:scale-95 transition-all disabled:opacity-50"
+              className="flex-1 py-3 bg-blue-600 text-white rounded-xl font-bold
+                         shadow-lg shadow-blue-200 hover:bg-blue-700
+                         active:scale-95 transition-all disabled:opacity-50"
             >
               {loading ? 'Saving...' : document ? 'Update Document' : 'Upload Document'}
             </button>
           </div>
+
         </form>
       </div>
     </div>
