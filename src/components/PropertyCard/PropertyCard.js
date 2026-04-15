@@ -27,7 +27,7 @@ const PropertyCard = ({
         <div className="flex items-center gap-4">
           <div
             className="w-14 h-14 rounded-2xl
-                       bg-gradient-to-br from-[#5B3E59] to-[#7d5d7a]
+                       bg-gradient-to-br from-[#a383a1] to-[#7d5d7a]
                        flex items-center justify-center
                        text-white font-black text-xl shadow-lg uppercase"
           >
@@ -82,8 +82,8 @@ const PropertyCard = ({
           <button
             onClick={onImageClick}
             className="
-              flex-1 py-3 sm:py-4 rounded-2xl
-              bg-[#5B3E59] hover:bg-[#4a3248]
+              flex-1 py-3 sm:py-5 rounded-2xl
+              bg-[#a78ca6] hover:bg-[#4a3248]
               text-white font-black text-[10px]
               uppercase tracking-[0.2em]
               transition-all shadow-xl shadow-stone-200/50

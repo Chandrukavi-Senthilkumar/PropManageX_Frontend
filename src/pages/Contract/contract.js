@@ -135,7 +135,7 @@ const ContractManagementPage = () => {
 /* ================= CONTRACT CARD ================= */
 
 const ContractCard = ({ contract, onInvoiceClick }) => {
-  const isSale = contract.contractType?.toLowerCase() === 'sale';
+  const isLease = contract.contractType?.toLowerCase() === 'sale';
 
   return (
     <div className="bg-white rounded-[32px] border border-stone-100 shadow-sm hover:shadow-xl transition-all flex flex-col overflow-hidden">
@@ -206,7 +206,7 @@ const ContractCard = ({ contract, onInvoiceClick }) => {
         </div>
       </div>
 
-      {isSale && (
+      {isLease && (
         <div className="p-6 pt-0">
           <button
             onClick={onInvoiceClick}

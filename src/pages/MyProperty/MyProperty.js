@@ -183,10 +183,10 @@ const MyProperties = () => {
   if (loading) return <div className="h-screen flex items-center justify-center font-black text-[#4B3856] tracking-widest">LOADING...</div>;
 
   return (
-    <div className="max-w-5xl mx-auto p-6 md:p-10 space-y-8 bg-[#FDFCFD] min-h-screen">
-      <header className="mb-10">
+    <div className="max-w-5xl mx-auto p-6 md:p-10 space-y-8  min-h-screen">
+      <header className="">
         <h1 className="text-4xl font-black text-[#4B3856]">My Home Haven</h1>
-        <p className="text-gray-400 mt-2 font-medium">Manage your active units and service history.</p>
+        <p className="mt-2 font-medium">Manage your active units and service history.</p>
       </header>
 
       <div className="space-y-8">
@@ -199,7 +199,7 @@ const MyProperties = () => {
 
               <div className="p-8 lg:w-2/3 flex flex-col justify-between">
                 <div>
-                  <div className="flex justify-between items-start">
+                  <div className="flex justify-between items-start">  
                     <h2 className="text-2xl font-black text-[#4B3856] leading-tight">{item.property.name}</h2>
                     <span className="bg-green-100 text-green-700 px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter">
                       {item.status}
@@ -209,12 +209,13 @@ const MyProperties = () => {
                     <MapPinIcon className="w-4 h-4 mr-1" />
                     {item.property.location}
                   </div>
-                  <p className="mt-4 font-black text-gray-700">Unit {item.unit.unitNumber} • {item.unit.bedroomCount} BHK</p>
+                  <p className="mt-4 font-semibold text-gray-500">Unit {item.unit.unitNumber} • {item.unit.bedroomCount} BHK</p>
                 </div>
 
                 <div className="mt-8 flex gap-3">
                   <button 
-                    onClick={() => { setSelectedUnitId(item.unitId); setIsModalOpen(true); }}
+                    onClick={() => { setSelectedUnitId(item.unitId); setIsModalOpen(true); }}   style={{ backgroundColor: '#5B3E59', color: '#ffffff' }}
+ 
                     className="flex-1 bg-[#4B3856] text-white px-6 py-4 rounded-[1.5rem] font-black flex items-center justify-center gap-2 hover:bg-[#3a2b42] shadow-lg transition-all active:scale-95"
                   >
                     <PlusIcon className="w-5 h-5" /> Request Fix

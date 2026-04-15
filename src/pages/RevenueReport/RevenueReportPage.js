@@ -1,81 +1,54 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { PlusIcon, PencilSquareIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, PencilSquareIcon, TrashIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
 import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from 'recharts';
-import {
-  fetchRevenueReports,
-  createRevenueReport,
-  updateRevenueReport,
-  deleteRevenueReport,
-  clearRevenueNotification,
-} from '../../redux/slices/revenueSlice';
+import { useFormik } from 'formik';
+import * as Yup from 'yup';
+import Toast from '../../components/Toast/Toast';
+
+// Services
+import { revenueReportService } from '../../services/revenueReportService';
 import { invoiceService } from '../../services/invoiceService';
 
-const initialForm = {
-  scope: 'Property',
-  occupancyRate: 0,
-  rentalYield: 0,
-  collectionRate: 0,
-};
-
-const initialFilters = {
-  scope: 'All',
-  from: '',
-  to: '',
-  propertyId: '',
-};
-
-const toMonthKey = (dtStr) => {
-  const d = new Date(dtStr);
-  if (Number.isNaN(d.getTime())) return null;
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-};
-
-const getQuarter = (month) => Math.floor((month - 1) / 3) + 1;
-
 const RevenueReportPage = () => {
-  const dispatch = useDispatch();
-  const { reports = [], status = 'idle', error = null, notification = null } =
-    useSelector((state) => state.revenue || {});
-
-  const [modalOpen, setModalOpen] = useState(false);
-  const [form, setForm] = useState(initialForm);
-  const [editing, setEditing] = useState(null);
-
-  const [filters, setFilters] = useState(initialFilters);
+  const [reports, setReports] = useState([]);
   const [invoices, setInvoices] = useState([]);
-  const [invoiceLoading, setInvoiceLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editingReport, setEditingReport] = useState(null);
+  const [toast, setToast] = useState(null);
 
-  useEffect(() => {
-    const query = {
-      ...(filters.scope !== 'All' ? { scope: filters.scope } : {}),
-      ...(filters.from ? { from: filters.from } : {}),
-      ...(filters.to ? { to: filters.to } : {}),
-    };
-    dispatch(fetchRevenueReports(query));
-  }, [dispatch, filters]);
+  const [filters, setFilters] = useState({
+    scope: 'All',
+    from: '',
+    to: '',
+  });
 
-  useEffect(() => {
-    if (notification) {
-      const timer = setTimeout(() => dispatch(clearRevenueNotification()), 3000);
-      return () => clearTimeout(timer);
+  const showToast = (message, type = 'success') => {
+    setToast({ message, type });
+  };
+
+  const fetchReports = useCallback(async () => {
+    try {
+      setLoading(true);
+      const query = {
+        ...(filters.scope !== 'All' ? { Scope: filters.scope } : {}),
+        ...(filters.from ? { From: filters.from } : {}),
+        ...(filters.to ? { To: filters.to } : {}),
+      };
+      const res = await revenueReportService.getReports(query);
+      setReports(res?.data?.items || []);
+    } catch (err) {
+      showToast("Failed to load revenue reports", "error");
+    } finally {
+      setLoading(false);
     }
-  }, [notification, dispatch]);
+  }, [filters]);
 
   const fetchInvoices = useCallback(async () => {
     try {
-      setInvoiceLoading(true);
       const invoiceFilter = {
-        ...(filters.propertyId ? { contractID: filters.propertyId } : {}),
         ...(filters.from ? { dueFrom: filters.from } : {}),
         ...(filters.to ? { dueTo: filters.to } : {}),
       };
@@ -84,54 +57,65 @@ const RevenueReportPage = () => {
       setInvoices(Array.isArray(items) ? items : []);
     } catch (err) {
       console.error('Error loading invoices', err);
-      setInvoices([]);
-    } finally {
-      setInvoiceLoading(false);
     }
   }, [filters]);
 
   useEffect(() => {
+    fetchReports();
     fetchInvoices();
-  }, [fetchInvoices]);
+  }, [fetchReports, fetchInvoices]);
 
-  const totalInvoiceRevenue = useMemo(() => invoices.reduce((sum, inv) => sum + (inv.amount || 0), 0), [invoices]);
+  const formik = useFormik({
+    initialValues: {
+      scope: 'Property',
+      occupancyRate: 0,
+      rentalYield: 0,
+      collectionRate: 0,
+    },
+    validationSchema: Yup.object({
+      scope: Yup.string().required('Required'),
+      occupancyRate: Yup.number().min(0).max(100).required('Required'),
+      rentalYield: Yup.number().min(0).required('Required'),
+      collectionRate: Yup.number().min(0).max(100).required('Required'),
+    }),
+    onSubmit: async (values, { resetForm }) => {
+      try {
+        const payload = { ...values, generatedDate: new Date().toISOString() };
+        if (editingReport) {
+          await revenueReportService.updateReport(editingReport.reportID, payload);
+        } else {
+          await revenueReportService.createReport(payload);
+        }
 
-  const monthlyRevenue = useMemo(() => {
-    const map = {};
-    invoices.forEach((inv) => {
-      const k = toMonthKey(inv.dueDate || inv.period);
-      if (!k) return;
-      map[k] = (map[k] || 0) + (inv.amount || 0);
-    });
-    return Object.entries(map)
-      .map(([month, amount]) => ({ month, revenue: amount }))
-      .sort((a, b) => a.month.localeCompare(b.month));
-  }, [invoices]);
+        setModalOpen(false);
+        resetForm();
 
-  const quarterlyRevenue = useMemo(() => {
-    const map = {};
-    invoices.forEach((inv) => {
-      const d = new Date(inv.dueDate || inv.period);
-      if (Number.isNaN(d.getTime())) return;
-      const q = `${d.getFullYear()}-Q${getQuarter(d.getMonth() + 1)}`;
-      map[q] = (map[q] || 0) + (inv.amount || 0);
-    });
-    return Object.entries(map)
-      .map(([quarter, amount]) => ({ quarter, revenue: amount }))
-      .sort((a, b) => a.quarter.localeCompare(b.quarter));
-  }, [invoices]);
+        setTimeout(() => {
+          showToast(
+            editingReport ? 'Report updated successfully!' : 'Report created successfully!', 
+            'success'
+          );
+        }, 0);
 
-  const avgOccupancy = reports.length ? reports.reduce((sum, item) => sum + (item.occupancyRate || 0), 0) / reports.length : 0;
+        fetchReports();
+      } catch (err) {
+        setModalOpen(false);
+        setTimeout(() => {
+          showToast('Failed to save report', 'error');
+        }, 0);
+      }
+    },
+  });
 
   const openNew = () => {
-    setEditing(null);
-    setForm(initialForm);
+    setEditingReport(null);
+    formik.resetForm();
     setModalOpen(true);
   };
 
   const openEdit = (report) => {
-    setEditing(report);
-    setForm({
+    setEditingReport(report);
+    formik.setValues({
       scope: report.scope,
       occupancyRate: report.occupancyRate,
       rentalYield: report.rentalYield,
@@ -140,153 +124,155 @@ const RevenueReportPage = () => {
     setModalOpen(true);
   };
 
-  const onSubmit = async (e) => {
-    e.preventDefault();
-    const payload = {
-      scope: form.scope,
-      occupancyRate: parseFloat(form.occupancyRate),
-      rentalYield: parseFloat(form.rentalYield),
-      collectionRate: parseFloat(form.collectionRate),
-    };
-
-    if (editing) {
-      await dispatch(updateRevenueReport({ id: editing.reportID, values: payload }));
-    } else {
-      await dispatch(createRevenueReport(payload));
-    }
-
-    setModalOpen(false);
-  };
-
-  const onDelete = (id) => {
+  const onDelete = async (id) => {
     if (window.confirm('Delete this revenue report?')) {
-      dispatch(deleteRevenueReport(id));
+      try {
+        await revenueReportService.deleteReport(id);
+        showToast('Report deleted successfully!', 'success');
+        fetchReports();
+      } catch (err) {
+        showToast("Delete failed", "error");
+      }
     }
   };
 
-  const applyFilter = (key, value) => setFilters((prev) => ({ ...prev, [key]: value }));
+  const totalInvoiceRevenue = useMemo(() => invoices.reduce((sum, inv) => sum + (inv.amount || 0), 0), [invoices]);
+
+  const monthlyRevenue = useMemo(() => {
+    const map = {};
+    invoices.forEach((inv) => {
+      const d = new Date(inv.dueDate || inv.period);
+      if (isNaN(d.getTime())) return;
+      const k = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      map[k] = (map[k] || 0) + (inv.amount || 0);
+    });
+    return Object.entries(map)
+      .map(([month, revenue]) => ({ month, revenue }))
+      .sort((a, b) => a.month.localeCompare(b.month));
+  }, [invoices]);
 
   return (
     <div className="min-h-screen bg-slate-50 p-6">
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
+
       <div className="max-w-7xl mx-auto space-y-6">
+        {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold">Revenue Reports</h1>
-            <p className="text-sm text-gray-500">Financial, collection and occupancy KPIs per report period.</p>
+            <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Financial Pipeline</h1>
+            <p className="text-sm font-medium text-slate-500">Occupancy, Yield and Collection KPIs</p>
           </div>
-          <button onClick={openNew} className="inline-flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg font-semibold shadow hover:bg-green-700">
-            <PlusIcon className="w-4 h-4" /> New Report
-          </button>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
-          <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-            <p className="text-xs uppercase tracking-wide text-slate-500">Revenue Reports</p>
-            <p className="text-2xl font-bold">{reports.length}</p>
-          </div>
-          <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-            <p className="text-xs uppercase tracking-wide text-slate-500">Average Occupancy</p>
-            <p className="text-2xl font-bold">{avgOccupancy.toFixed(2)}%</p>
-          </div>
-          <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-            <p className="text-xs uppercase tracking-wide text-slate-500">Total Invoice Revenue</p>
-            <p className="text-2xl font-bold">${totalInvoiceRevenue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
-          </div>
-          <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-            <p className="text-xs uppercase tracking-wide text-slate-500">Current Period Yield (avg)</p>
-            <p className="text-2xl font-bold">{(reports.reduce((a, r) => a + (r.rentalYield || 0), 0) / Math.max(reports.length, 1)).toFixed(2)}%</p>
+          <div className="flex gap-2">
+            <button onClick={fetchReports} className="p-2 bg-white border rounded-lg hover:bg-slate-50">
+              <ArrowPathIcon className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
+            </button>
+            <button onClick={openNew} className="bg-slate-900 text-white px-6 py-2 rounded-xl font-semibold flex items-center gap-2 shadow-lg hover:bg-slate-800 transition-all">
+              <PlusIcon className="w-5 h-5" /> New Report
+            </button>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
-          <div className="flex flex-wrap gap-3 items-center">
-            <label className="flex flex-col text-xs text-slate-500">
-              Scope
-              <select value={filters.scope} onChange={(e) => applyFilter('scope', e.target.value)} className="mt-1 border border-gray-200 rounded-lg px-2 py-1">
-                <option value="All">All</option>
-                <option value="Property">Property</option>
-                <option value="Period">Period</option>
-              </select>
-            </label>
-            <label className="flex flex-col text-xs text-slate-500">
-              From
-              <input type="date" value={filters.from} onChange={(e) => applyFilter('from', e.target.value)} className="mt-1 border border-gray-200 rounded-lg px-2 py-1" />
-            </label>
-            <label className="flex flex-col text-xs text-slate-500">
-              To
-              <input type="date" value={filters.to} onChange={(e) => applyFilter('to', e.target.value)} className="mt-1 border border-gray-200 rounded-lg px-2 py-1" />
-            </label>
-            <label className="flex flex-col text-xs text-slate-500">
-              Property / Contract ID
-              <input type="text" placeholder="GUID" value={filters.propertyId} onChange={(e) => applyFilter('propertyId', e.target.value)} className="mt-1 border border-gray-200 rounded-lg px-2 py-1" />
-            </label>
-            <div className="text-xs text-gray-500 italic">Filters are applied automatically.</div>
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <StatCard title="Total Reports" value={reports.length} />
+          <StatCard title="Avg. Occupancy" value={`${(reports.reduce((a, r) => a + (r.occupancyRate || 0), 0) / Math.max(reports.length, 1)).toFixed(1)}%`} />
+          <StatCard title="Invoice Revenue" value={`$${totalInvoiceRevenue.toLocaleString()}`} />
+          <StatCard title="Avg. Rental Yield" value={`${(reports.reduce((a, r) => a + (r.rentalYield || 0), 0) / Math.max(reports.length, 1)).toFixed(1)}%`} />
+        </div>
+
+        {/* Filters */}
+        <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 flex gap-4 items-end">
+          <div className="flex-1 max-w-xs">
+            <label className="text-[10px] font-bold uppercase text-slate-400 ml-1">Scope</label>
+            <select
+              value={filters.scope}
+              onChange={(e) => setFilters(f => ({ ...f, scope: e.target.value }))}
+              className="w-full mt-1 border-slate-200 rounded-xl px-4 py-2 text-sm font-semibold"
+            >
+              <option value="All">All Scopes</option>
+              <option value="Property">Property</option>
+              <option value="Period">Period</option>
+            </select>
+          </div>
+          <div className="flex-1 max-w-xs">
+            <label className="text-[10px] font-bold uppercase text-slate-400 ml-1">From Date</label>
+            <input
+              type="date"
+              value={filters.from}
+              onChange={(e) => setFilters(f => ({ ...f, from: e.target.value }))}
+              className="w-full mt-1 border-slate-200 rounded-xl px-4 py-2 text-sm font-semibold"
+            />
           </div>
         </div>
 
-        {notification && (
-          <div className={`p-3 rounded-lg text-white ${notification.type === 'success' ? 'bg-green-600' : 'bg-red-600'}`}>
-            {notification.message}
-          </div>
-        )}
-
-        {status === 'loading' && <p className="text-sm text-gray-500">Loading revenue reports...</p>}
-        {invoiceLoading && <p className="text-sm text-gray-500">Loading invoices...</p>}
-        {error && <p className="text-sm text-red-600">{error}</p>}
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <div className="bg-white shadow-sm rounded-xl p-4 border border-gray-100">
-            <h3 className="text-sm font-semibold mb-3">Monthly Invoice Revenue</h3>
-            <ResponsiveContainer width="100%" height={260}>
-              <LineChart data={monthlyRevenue} margin={{ top: 10, right: 20, bottom: 5, left: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
-                <YAxis />
-                <Tooltip formatter={(value) => `$${value.toFixed(2)}`} />
-                <Legend />
-                <Line type="monotone" dataKey="revenue" stroke="#3b82f6" strokeWidth={2} activeDot={{ r: 6 }} />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-
-          <div className="bg-white shadow-sm rounded-xl p-4 border border-gray-100">
-            <h3 className="text-sm font-semibold mb-3">Quarterly Invoice Revenue</h3>
-            <ResponsiveContainer width="100%" height={260}>
-              <LineChart data={quarterlyRevenue} margin={{ top: 10, right: 20, bottom: 5, left: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="quarter" />
-                <YAxis />
-                <Tooltip formatter={(value) => `$${value.toFixed(2)}`} />
-                <Legend />
-                <Line type="monotone" dataKey="revenue" stroke="#10b981" strokeWidth={2} activeDot={{ r: 6 }} />
-              </LineChart>
+        {/* Visibility Improved: Bar Chart instead of Line Chart */}
+        <div className="bg-white rounded-[32px] p-8 border border-slate-100 shadow-sm">
+          <h3 className="text-lg font-bold text-slate-800 mb-6">Monthly Revenue Stream</h3>
+          <div className="h-72">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={monthlyRevenue} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                <XAxis 
+                  dataKey="month" 
+                  axisLine={false} 
+                  tickLine={false} 
+                  tick={{ fontSize: 12, fontWeight: 600, fill: '#94a3b8' }} 
+                  dy={10}
+                />
+                <YAxis 
+                  axisLine={false} 
+                  tickLine={false} 
+                  tick={{ fontSize: 12, fontWeight: 600, fill: '#94a3b8' }} 
+                />
+                <Tooltip 
+                  cursor={{ fill: '#f8fafc' }}
+                  contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }} 
+                />
+                <Bar 
+                  dataKey="revenue" 
+                  fill="#0f172a" 
+                  radius={[8, 8, 0, 0]} 
+                  barSize={40}
+                />
+              </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
 
-        <div className="bg-white shadow-sm rounded-xl overflow-hidden border border-gray-100">
-          <table className="min-w-full text-left">
-            <thead className="bg-gray-50">
+        {/* Table */}
+        <div className="bg-white rounded-[32px] overflow-hidden border border-slate-100 shadow-sm">
+          <table className="w-full text-left">
+            <thead className="bg-slate-50 border-b border-slate-100">
               <tr>
-                <th className="px-4 py-3 text-xs text-gray-500 uppercase">Scope</th>
-                <th className="px-4 py-3 text-xs text-gray-500 uppercase">Occupancy</th>
-                <th className="px-4 py-3 text-xs text-gray-500 uppercase">Rental Yield</th>
-                <th className="px-4 py-3 text-xs text-gray-500 uppercase">Collection</th>
-                <th className="px-4 py-3 text-xs text-gray-500 uppercase">Generated</th>
-                <th className="px-4 py-3 text-xs text-gray-500 uppercase">Actions</th>
+                <th className="px-8 py-5 text-[10px] font-bold uppercase text-slate-400">Scope</th>
+                <th className="px-8 py-5 text-[10px] font-bold uppercase text-slate-400">Occupancy</th>
+                <th className="px-8 py-5 text-[10px] font-bold uppercase text-slate-400">Rental Yield</th>
+                <th className="px-8 py-5 text-[10px] font-bold uppercase text-slate-400">Collection</th>
+                <th className="px-8 py-5 text-[10px] font-bold uppercase text-slate-400">Date</th>
+                <th className="px-8 py-5 text-[10px] font-bold uppercase text-slate-400 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-slate-50">
               {reports.map((report) => (
-                <tr key={report.reportID} className="border-b border-gray-100">
-                  <td className="px-4 py-3">{report.scope}</td>
-                  <td className="px-4 py-3">{(report.occupancyRate || 0).toFixed(2)}%</td>
-                  <td className="px-4 py-3">{(report.rentalYield || 0).toFixed(2)}%</td>
-                  <td className="px-4 py-3">{(report.collectionRate || 0).toFixed(2)}%</td>
-                  <td className="px-4 py-3">{new Date(report.generatedDate).toLocaleDateString()}</td>
-                  <td className="px-4 py-3 flex gap-2">
-                    <button onClick={() => openEdit(report)} className="px-2 py-1 text-blue-600 bg-blue-50 rounded-lg flex items-center gap-1"><PencilSquareIcon className="w-4 h-4" />Edit</button>
-                    <button onClick={() => onDelete(report.reportID)} className="px-2 py-1 text-red-600 bg-red-50 rounded-lg flex items-center gap-1"><TrashIcon className="w-4 h-4" />Delete</button>
+                <tr key={report.reportID} className="hover:bg-slate-50/50 transition-colors">
+                  <td className="px-8 py-5 font-semibold text-slate-700">{report.scope}</td>
+                  <td className="px-8 py-5 font-bold text-blue-600">{report.occupancyRate}%</td>
+                  <td className="px-8 py-5 font-bold text-emerald-600">{report.rentalYield}%</td>
+                  <td className="px-8 py-5 font-bold text-indigo-600">{report.collectionRate}%</td>
+                  <td className="px-8 py-5 text-sm font-medium text-slate-500">{new Date(report.generatedDate).toLocaleDateString()}</td>
+                  <td className="px-8 py-5 text-right space-x-2">
+                    <button onClick={() => openEdit(report)} className="p-2 text-slate-400 hover:text-blue-600 transition-colors">
+                      <PencilSquareIcon className="w-5 h-5" />
+                    </button>
+                    <button onClick={() => onDelete(report.reportID)} className="p-2 text-slate-400 hover:text-red-600 transition-colors">
+                      <TrashIcon className="w-5 h-5" />
+                    </button>
                   </td>
                 </tr>
               ))}
@@ -295,37 +281,38 @@ const RevenueReportPage = () => {
         </div>
       </div>
 
+      {/* Modal */}
       {modalOpen && (
-        <div className="fixed inset-0 bg-black/20 flex items-center justify-center p-4 z-40">
-          <div className="bg-white rounded-xl shadow-2xl max-w-lg w-full p-6">
-            <h2 className="text-xl font-bold mb-4">{editing ? 'Edit Revenue Report' : 'Create Revenue Report'}</h2>
-            <form onSubmit={onSubmit} className="space-y-4">
-              <label className="block">
-                <span className="text-xs font-semibold uppercase text-gray-500">Scope</span>
-                <select value={form.scope} onChange={(e) => setForm({ ...form, scope: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2">
-                  <option value="Property">Property</option>
-                  <option value="Period">Period</option>
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-[40px] shadow-2xl max-w-md w-full p-10 border border-slate-100">
+            <h2 className="text-2xl font-extrabold text-slate-900 mb-2">{editingReport ? 'Edit KPI' : 'New KPI Report'}</h2>
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-8">Manual Performance Entry</p>
+
+            <form onSubmit={formik.handleSubmit} className="space-y-6">
+              <div>
+                <label className="text-[10px] font-bold uppercase text-slate-400 ml-2 mb-1 block">Report Scope</label>
+                <select
+                  name="scope"
+                  {...formik.getFieldProps('scope')}
+                  className="w-full bg-slate-50 border-none rounded-2xl px-6 py-4 font-semibold text-slate-700 focus:ring-2 focus:ring-slate-200 outline-none"
+                >
+                  <option value="Property">Property-Wide</option>
+                  <option value="Period">Period-Based</option>
                 </select>
-              </label>
+              </div>
 
-              <label className="block">
-                <span className="text-xs font-semibold uppercase text-gray-500">Occupancy Rate (%)</span>
-                <input type="number" step="0.01" value={form.occupancyRate} onChange={(e) => setForm({ ...form, occupancyRate: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2" />
-              </label>
+              <div className="grid grid-cols-2 gap-4">
+                <InputField label="Occupancy %" name="occupancyRate" formik={formik} />
+                <InputField label="Yield %" name="rentalYield" formik={formik} />
+              </div>
 
-              <label className="block">
-                <span className="text-xs font-semibold uppercase text-gray-500">Rental Yield (%)</span>
-                <input type="number" step="0.01" value={form.rentalYield} onChange={(e) => setForm({ ...form, rentalYield: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2" />
-              </label>
+              <InputField label="Collection Rate %" name="collectionRate" formik={formik} />
 
-              <label className="block">
-                <span className="text-xs font-semibold uppercase text-gray-500">Collection Rate (%)</span>
-                <input type="number" step="0.01" value={form.collectionRate} onChange={(e) => setForm({ ...form, collectionRate: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2" />
-              </label>
-
-              <div className="flex justify-end gap-2">
-                <button type="button" onClick={() => setModalOpen(false)} className="px-4 py-2 rounded-lg border border-gray-200">Cancel</button>
-                <button type="submit" className="px-4 py-2 rounded-lg bg-blue-600 text-white">{editing ? 'Update' : 'Create'}</button>
+              <div className="flex gap-3 pt-4">
+                <button type="button" onClick={() => setModalOpen(false)} className="flex-1 py-4 text-slate-500 font-bold uppercase text-[10px] tracking-widest hover:bg-slate-50 rounded-2xl">Cancel</button>
+                <button type="submit" className="flex-1 py-4 bg-slate-900 text-white font-bold uppercase text-[10px] tracking-widest rounded-2xl shadow-xl hover:bg-slate-800">
+                  {editingReport ? 'Update' : 'Create'}
+                </button>
               </div>
             </form>
           </div>
@@ -334,5 +321,28 @@ const RevenueReportPage = () => {
     </div>
   );
 };
+
+// Helper Components
+const StatCard = ({ title, value }) => (
+  <div className="bg-white rounded-[32px] p-6 shadow-sm border border-slate-100">
+    <p className="text-[10px] font-bold uppercase text-slate-400 tracking-widest mb-1">{title}</p>
+    <p className={`text-2xl font-bold text-slate-900`}>{value}</p>
+  </div>
+);
+
+const InputField = ({ label, name, formik }) => (
+  <div>
+    <label className="text-[10px] font-bold uppercase text-slate-400 ml-2 mb-1 block">{label}</label>
+    <input
+      type="number"
+      step="0.01"
+      {...formik.getFieldProps(name)}
+      className="w-full bg-slate-50 border-none rounded-2xl px-6 py-4 font-semibold text-slate-700 focus:ring-2 focus:ring-slate-200 outline-none"
+    />
+    {formik.touched[name] && formik.errors[name] && (
+      <div className="text-red-500 text-[9px] font-bold mt-1 ml-2 uppercase">{formik.errors[name]}</div>
+    )}
+  </div>
+);
 
 export default RevenueReportPage;
