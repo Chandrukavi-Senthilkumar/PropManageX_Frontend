@@ -82,7 +82,7 @@ const SalesManagementPage = () => {
             const getLeadId = (obj) => {
                 const id = obj?.leadID || obj?.leadId || obj?.LeadID || obj?.id || obj?.Id;
                 return id ? String(id).toLowerCase() : null;
-            };
+                };
 
             const mappedLeads = rawLeads.map(lead => {
                 const leadId = getLeadId(lead);
@@ -101,12 +101,17 @@ const SalesManagementPage = () => {
             const mappedVisits = rawVisits.map(visit => {
                 const visitLeadId = getLeadId(visit);
                 const matchedLead = mappedLeads.find(l => getLeadId(l) === visitLeadId);
+    
                 return { 
                     ...visit, 
                     customerName: matchedLead ? matchedLead.customerName : 'Unknown Lead', 
                     propertyName: matchedLead ? matchedLead.propertyName : 'Unknown Property',
                     contactInfo: matchedLead ? matchedLead.contactInfo : 'N/A',
                     interestType: matchedLead ? matchedLead.interestType : 'BUY',
+                    
+                    // This is the crucial line: Inherit the dynamic status from the Lead
+                    status: matchedLead ? matchedLead.status : 'NEW', 
+                    
                     fullLead: matchedLead 
                 };
             });
