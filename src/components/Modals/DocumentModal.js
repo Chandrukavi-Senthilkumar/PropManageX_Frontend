@@ -69,8 +69,8 @@ const DocumentModal = ({ isOpen, onClose, document, entityType, entityId, onSucc
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-      <div className="[#F3EEF2] rounded-[32px] w-full max-w-lg p-10 shadow-2xl relative">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[110] p-4">
+      <div className="bg-[#F3EEF2] rounded-[40px] w-full max-w-lg p-8 relative shadow-2xl">
         <button
           onClick={onClose}
           className="absolute top-6 right-6 text-gray-400 hover:text-gray-600"
@@ -160,11 +160,9 @@ const DocumentModal = ({ isOpen, onClose, document, entityType, entityId, onSucc
               Cancel
             </button>
             <button
-              type="submit"
+              type="submit" style={{color:'#FFFFFF'}}
               disabled={loading || (!document && !selectedFile)}
-              className="flex-1 py-3 bg-blue-600 text-white rounded-xl font-bold
-                         shadow-lg shadow-blue-200 hover:bg-blue-700
-                         active:scale-95 transition-all disabled:opacity-50"
+              className="flex-1 py-3 bg-[#5B3E59] text-white rounded-2xl font-black hover:bg-[#4A3248] shadow-lg"
             >
               {loading ? 'Saving...' : document ? 'Update Document' : 'Upload Document'}
             </button>

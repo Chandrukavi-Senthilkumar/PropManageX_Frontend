@@ -147,7 +147,7 @@ const AddPropertyModal = ({ isOpen, onClose, refreshList, showToast }) => {
             </button>
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading} style={{color:'#FFFFFF'}}
               className="flex-1 py-3 bg-[#5B3E59] text-white rounded-2xl font-black hover:bg-[#4A3248] shadow-lg"
             >
               {loading ? 'Saving…' : 'Add Property'}

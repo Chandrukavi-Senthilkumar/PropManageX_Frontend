@@ -43,7 +43,7 @@ export const AddInvoiceModal = ({ isOpen, onClose, contract, onSuccess }) => {
 
         {/* Close */}
         <button
-          onClick={onClose}
+          onClick={onClose} 
           className="absolute top-8 right-8 text-gray-400 hover:text-black transition-all"
         >
           <XMarkIcon className="w-6 h-6" />
@@ -137,10 +137,11 @@ export const AddInvoiceModal = ({ isOpen, onClose, contract, onSuccess }) => {
           </div>
 
           <button
-            type="submit"
-            className="w-full py-5 bg-gray-900 text-white rounded-[24px] font-black shadow-xl hover:bg-black transition-all active:scale-95 mt-4"
-          >
-            Generate &amp; Sync Invoice
+                  type="submit"
+                  // Using inline style to guarantee the exact purple shade and white text
+                  style={{ backgroundColor: '#5B3E59', color: '#ffffff' }}
+                  className="w-full py-5 rounded-[24px] font-black uppercase tracking-widest shadow-xl shadow-[#5B3E59]/20 hover:opacity-90 transition-all active:scale-95 mt-4 border-none" >
+                  Generate Invoice
           </button>
 
         </form>

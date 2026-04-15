@@ -135,8 +135,8 @@ const AddUnitModal = ({
             </button>
 
             <button
-              type="submit"
-              className="flex-1 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition"
+              type="submit" style={{color:'#FFFFFF'}}
+              className="flex-1 py-3 bg-[#5B3E59] text-white rounded-xl font-bold hover:bg-blue-700 transition"
             >
               Save Unit
             </button>

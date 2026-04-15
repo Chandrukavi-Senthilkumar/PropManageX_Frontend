@@ -104,9 +104,9 @@ const EditAmenityModal = ({ isOpen, onClose, amenity, onSuccess }) => {
               Cancel
             </button>
             <button
-              type="submit"
+              type="submit" style={{color:'#FFFFFF'}}
               disabled={loading}
-              className="flex-1 py-3 bg-purple-600 text-white rounded-xl font-bold shadow-lg shadow-purple-200 hover:bg-purple-700 active:scale-95 transition-all disabled:opacity-50"
+              className="flex-1 py-3 bg-[#5B3E59] text-white rounded-xl font-bold shadow-lg shadow-purple-200 hover:bg-purple-700 active:scale-95 transition-all disabled:opacity-50"
             >
               {loading ? 'Saving...' : 'Update Amenity'}
             </button>

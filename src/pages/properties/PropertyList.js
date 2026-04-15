@@ -159,13 +159,13 @@ const PropertyList = () => {
 
       {/* GRID */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 py-12 sm:py-16 lg:py-20 space-y-12 sm:space-y-16">
-      {loading ? (
+        {loading ? (
           <div className="text-center text-gray-400 font-semibold">
             Loading properties...
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 lg:gap-12">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
               {paginatedProperties.map(p => (
                 <PropertyCard
                   key={p.propertyID}
@@ -184,14 +184,15 @@ const PropertyList = () => {
             </div>
 
             {totalPages > 1 && (
-                <div className="flex justify-center items-center gap-3 flex-wrap">                <button
-                  onClick={() => setCurrentPage(p => Math.max(p - 1, 1))}
-                  disabled={currentPage === 1}
-                  className="p-3 rounded-xl bg-white border border-gray-200
+              <div className="flex justify-center items-center gap-3 flex-wrap">               
+               <button
+                onClick={() => setCurrentPage(p => Math.max(p - 1, 1))}
+                disabled={currentPage === 1}
+                className="p-3 rounded-xl bg-white border border-gray-200
                              disabled:opacity-40 disabled:cursor-not-allowed"
-                >
-                  <ChevronLeftIcon className="w-5 h-5" />
-                </button>
+              >
+                <ChevronLeftIcon className="w-5 h-5" />
+              </button>
 
                 {[...Array(totalPages)].map((_, i) => {
                   const page = i + 1;
@@ -200,10 +201,9 @@ const PropertyList = () => {
                       key={page}
                       onClick={() => setCurrentPage(page)}
                       className={`px-4 sm:px-5 py-2 rounded-xl font-semibold text-sm transition
-                        ${
-                          currentPage === page
-                            ? 'bg-[#5B3E59] text-white shadow'
-                            : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-100'
+                        ${currentPage === page
+                          ? 'bg-[#5B3E59] text-white shadow'
+                          : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-100'
                         }`}
                     >
                       {page}
@@ -230,7 +230,7 @@ const PropertyList = () => {
         isOpen={showAdd}
         onClose={() => setShowAdd(false)}
         refreshList={loadProperties}
-        showToast={showToast}   
+        showToast={showToast}
       />
 
       <AddUnitModal

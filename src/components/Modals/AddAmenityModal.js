@@ -3,6 +3,7 @@ import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { unitAmenityService } from '../../services/unitAmenityService';
 import { SparklesIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { color } from 'framer-motion';
 
 const AddAmenityModal = ({
   isOpen,
@@ -64,7 +65,7 @@ const AddAmenityModal = ({
 
         {/* Close Button */}
         <button
-          onClick={onClose}
+          onClick={onClose} 
           className="absolute top-6 right-6 text-gray-400 hover:text-gray-600"
         >
           <XMarkIcon className="w-6 h-6" />
@@ -127,7 +128,7 @@ const AddAmenityModal = ({
           {/* Actions */}
           <div className="flex gap-3 pt-2">
             <button
-              type="button"
+              type="button" 
               onClick={onClose}
               className="flex-1 py-3 text-gray-500 font-bold hover:bg-gray-100 rounded-xl transition-all"
             >
@@ -136,8 +137,8 @@ const AddAmenityModal = ({
 
             <button
               type="submit"
-              disabled={loading}
-              className="flex-1 py-3 bg-purple-600 text-white rounded-xl font-bold
+              disabled={loading} style={{color:'#FFFFFF'}}
+              className="flex-1 py-3 bg-[#5B3E59] text-white rounded-xl font-bold
                          shadow-lg shadow-purple-200 hover:bg-purple-700
                          active:scale-95 transition-all disabled:opacity-50"
             >

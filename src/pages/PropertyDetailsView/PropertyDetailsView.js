@@ -49,7 +49,7 @@ const BookingConfirmModal = ({ isOpen, onClose, onConfirm }) => {
               Cancel
             </button>
             <button
-              onClick={onConfirm}
+              onClick={onConfirm} style={{color:'#FFFFFF'}}
               className="flex-1 py-3 bg-[#5B3E59] text-white rounded-2xl font-semibold hover:bg-[#4A3248]"
             >
               OK, Book Now
@@ -135,15 +135,15 @@ const PropertyDetailsView = ({
 
         <div className="flex gap-3">
           <button
-            onClick={() => setShowLeadModal(true)}
-            className="flex items-center gap-2 px-5 py-2 rounded-xl bg-[#846E83] text-white font-semibold hover:bg-[#5B3E59]"
+            onClick={() => setShowLeadModal(true)} style={{color:'#FFFFFF'}}
+            className="flex items-center gap-2 px-5 py-2 rounded-xl bg-[#5B3E59] text-white font-semibold hover:bg-[#5B3E59]"
           >
             <UserPlusIcon className="w-4 h-4" />
             Add Lead
           </button>
 
           <button
-            onClick={onEditProperty}
+            onClick={onEditProperty} style={{color:'#FFFFFF'}}
             className="bg-[#5B3E59] text-white px-5 py-2 rounded-xl font-semibold hover:bg-[#4A3248]"
           >
             Edit Property
@@ -160,8 +160,20 @@ const PropertyDetailsView = ({
           <MapPinIcon className="w-4 h-4" />
           {property?.location} • {property?.type}
         </p>
+         {/* NEW IMAGE SECTION */}
+  {property?.imageUrl && (
+    <div className="relative w-full h-64 sm:h-80 rounded-2xl overflow-hidden border border-stone-100">
+      <img
+        src={property.imageUrl}
+        alt={property.name}
+        className="w-full h-full object-cover"
+      />
+      {/* Subtle overlay to match your theme */}
+      <div className="absolute inset-0 bg-black/5" />
+    </div>
+  )}
       </div>
-
+     
       {/* TABS */}
       <div className="flex gap-3 bg-[#FEF8FA] p-2 rounded-[24px] shadow-md">
         <TabButton
@@ -225,7 +237,7 @@ const PropertyDetailsView = ({
 
                   {!isBooked && (
                     <button
-                      onClick={() => openBookingModal(unit.unitID)}
+                      onClick={() => openBookingModal(unit.unitID)} style={{color:'#FFFFFF'}}
                       className="flex-1 py-2 rounded-xl bg-[#5B3E59] text-white font-semibold"
                     >
                       Book
@@ -277,7 +289,7 @@ const PropertyDetailsView = ({
         <div className="bg-[#FEF8FA] rounded-[32px] shadow-lg p-8 space-y-6 overflow-x-auto">
           <div className="flex justify-end">
             <button
-              onClick={onUploadDocument}
+              onClick={onUploadDocument} style={{color:'#FFFFFF'}}
               className="flex items-center gap-2 px-5 py-2 rounded-xl bg-[#5B3E59] text-white font-semibold"
             >
               <ArrowUpTrayIcon className="w-4 h-4" />
@@ -298,7 +310,7 @@ const PropertyDetailsView = ({
               {documents.map(doc => (
                 <tr key={doc.documentID} className="hover:bg-white/60">
                   <td className="py-3">{doc.documentType}</td>
-                  <td
+                  <td 
                     className="py-3 text-[#5B3E59] underline cursor-pointer"
                     onClick={() =>
                       window.open(

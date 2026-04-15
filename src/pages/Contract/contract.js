@@ -83,12 +83,12 @@ const ContractManagementPage = () => {
             />
           </div>
 
-          <button
+          {/* <button
             onClick={fetchContracts}
             className="p-3 mr-2 bg-[#F6F1F3] text-[#5B3E59] rounded-full hover:bg-stone-200 transition-all"
           >
             <ArrowPathIcon className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
-          </button>
+          </button> */}
         </div>
 
         {/* CONTENT */}
@@ -145,9 +145,9 @@ const ContractCard = ({ contract, onInvoiceClick }) => {
 
         <div className="flex justify-between items-start">
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 bg-gradient-to-br from-[#5B3E59] to-[#7d5d7a] rounded-2xl flex items-center justify-center text-white font-black text-xl shadow-lg uppercase">
-              {contract.tenantName?.charAt(0)}
-            </div>
+            <div className="w-14 h-14 bg-gradient-to-br from-[#5B3E59] to-[#7d5d7a] rounded-2xl flex items-center justify-center font-black text-xl shadow-lg uppercase border-none"style={{ color: '#ffffff' }}>
+                    {contract.tenantName?.charAt(0)}
+                  </div>
             <div>
               <h4 className="text-lg font-black text-stone-900">
                 {contract.contractType} Contract
@@ -206,17 +206,19 @@ const ContractCard = ({ contract, onInvoiceClick }) => {
         </div>
       </div>
 
-      {isLease && (
-        <div className="p-6 pt-0">
-          <button
-            onClick={onInvoiceClick}
-            className="w-full bg-[#5B3E59] text-white py-4 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] hover:bg-[#4a3248] transition-all shadow-xl shadow-stone-200/50 flex items-center justify-center gap-2"
-          >
-            <BanknotesIcon className="w-4 h-4" />
-            Create Invoice
-          </button>
-        </div>
-      )}
+      {isSale && (
+            <div className="p-6 pt-0">
+              <button
+                onClick={onInvoiceClick}
+                // style={{ color: '#ffffff' }} guarantees the white text color
+                style={{ color: '#ffffff' }}
+                className="w-full bg-[#5B3E59] py-4 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] hover:bg-[#4a3248] transition-all shadow-xl shadow-stone-200/50 flex items-center justify-center gap-2 border-none"
+              >
+                <BanknotesIcon className="w-4 h-4" />
+                Create Invoice
+              </button>
+            </div>
+          )}
     </div>
   );
 };

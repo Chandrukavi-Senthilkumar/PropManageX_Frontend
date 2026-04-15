@@ -13,20 +13,25 @@ const formatToBackendDate = (dateString) => {
   return `${day}-${month}-${year}`;
 };
 
+// UI CHANGE: Soft gray background, no borders, deeper shadow
 const ModalWrapper = ({ isOpen, onClose, title, children }) => {
   if (!isOpen) return null;
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[110] p-4">
-      <div className="bg-white rounded-[40px] w-full max-w-md p-8 relative shadow-2xl border border-gray-100">
-        <button type="button" onClick={onClose} className="absolute top-6 right-6 text-gray-400 hover:text-black transition-colors">
+    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-[110] p-4">
+      <div className="bg-[#F0EDF1] rounded-[2.5rem] w-full max-w-md p-8 pt-10 relative shadow-2xl border-none">
+        <button type="button" onClick={onClose} className="absolute top-6 right-6 text-gray-500 hover:text-black transition-colors">
           <XMarkIcon className="w-6 h-6" />
         </button>
-        <h2 className="text-2xl font-black mb-6 text-gray-800 tracking-tight text-center">{title}</h2>
+        <h2 className="text-3xl font-black mb-8 text-[#1c1c1e] tracking-tight text-center">{title}</h2>
         {children}
       </div>
     </div>
   );
 };
+
+// Reusable Input styles to match the pure white, borderless look
+const inputClasses = "w-full p-4 bg-white rounded-2xl border-none outline-none font-medium text-gray-700 placeholder:text-gray-400 shadow-sm focus:ring-2 focus:ring-[#5B3E59]/20 transition-all";
+const inputErrorClasses = "w-full p-4 bg-red-50 rounded-2xl border-none outline-none font-medium text-red-600 placeholder:text-red-400 shadow-sm focus:ring-2 focus:ring-red-500/20 transition-all";
 
 export const UpdateDealStatusModal = ({ isOpen, onClose, deal, onSuccess, showToast }) => {
     const formik = useFormik({
@@ -48,21 +53,16 @@ export const UpdateDealStatusModal = ({ isOpen, onClose, deal, onSuccess, showTo
     });
 
     return (
-        <ModalWrapper isOpen={isOpen} onClose={onClose} title="Change Deal Status">
-            <form onSubmit={formik.handleSubmit} className="space-y-6">
-                <div className="p-4 bg-purple-50 rounded-2xl border border-purple-100 text-center">
-                    <p className="text-[10px] font-bold text-purple-400 uppercase tracking-widest">Client</p>
-                    <p className="font-bold text-gray-800">{deal?.customerName}</p>
+        <ModalWrapper isOpen={isOpen} onClose={onClose} title="Update Status">
+            <form onSubmit={formik.handleSubmit} className="space-y-5">
+                <div className="p-4 bg-white rounded-2xl shadow-sm text-center border-none">
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Client</p>
+                    <p className="font-black text-[#1c1c1e] text-lg">{deal?.customerName}</p>
                 </div>
                 <div className="space-y-1">
-                    <label className="block text-[10px] font-bold text-gray-400 uppercase ml-2 mb-1">Update To</label>
                     <select 
                         {...formik.getFieldProps('status')} 
-                        className={`w-full p-4 rounded-2xl outline-none font-bold transition-all ${
-                            formik.touched.status && formik.errors.status 
-                            ? 'bg-red-50/50 border border-red-500 text-red-600' 
-                            : 'bg-gray-50 border border-transparent text-gray-700'
-                        }`}
+                        className={formik.touched.status && formik.errors.status ? inputErrorClasses : inputClasses}
                     >
                         <option value="Open">Open</option>
                         <option value="Booked">Booked</option>
@@ -72,9 +72,16 @@ export const UpdateDealStatusModal = ({ isOpen, onClose, deal, onSuccess, showTo
                         <div className="text-red-500 text-xs font-bold mt-1 text-center">{formik.errors.status}</div>
                     )}
                 </div>
-                <button type="submit" className="w-full py-4 bg-[#5B3E59] text-white rounded-2xl font-black hover:bg-[#4a3248] transition-all shadow-lg shadow-[#5B3E59]/20">
-                    Save Changes
-                </button>
+                
+                {/* UI CHANGE: Cancel & Submit Layout */}
+                <div className="flex items-center justify-between pt-6">
+                    <button type="button" onClick={onClose} className="px-4 font-black text-[#1c1c1e] hover:text-gray-500 transition-colors">
+                        Cancel
+                    </button>
+                    <button type="submit" style={{ color: '#ffffff' }} className="py-4 px-8 bg-[#5B3E59] text-white rounded-2xl font-black hover:bg-[#4a3248] transition-all shadow-md">
+                        Save Status
+                    </button>
+                </div>
             </form>
         </ModalWrapper>
     );
@@ -109,11 +116,7 @@ export const AddLeadModal = ({ isOpen, onClose, propertyID, unitID, onSuccess, s
             <input 
                 {...formik.getFieldProps('customerName')} 
                 placeholder="Customer Name" 
-                className={`w-full p-4 rounded-2xl outline-none transition-all ${
-                    formik.touched.customerName && formik.errors.customerName 
-                    ? 'bg-red-50/50 border border-red-500 text-red-600 placeholder:text-red-400' 
-                    : 'bg-gray-50 border border-transparent'
-                }`} 
+                className={formik.touched.customerName && formik.errors.customerName ? inputErrorClasses : inputClasses} 
             />
             {formik.touched.customerName && formik.errors.customerName && (
                 <div className="text-red-500 text-xs font-bold text-center">{formik.errors.customerName}</div>
@@ -124,11 +127,7 @@ export const AddLeadModal = ({ isOpen, onClose, propertyID, unitID, onSuccess, s
             <input 
                 {...formik.getFieldProps('contactInfo')} 
                 placeholder="Contact Info (Email or Phone)" 
-                className={`w-full p-4 rounded-2xl outline-none transition-all ${
-                    formik.touched.contactInfo && formik.errors.contactInfo 
-                    ? 'bg-red-50/50 border border-red-500 text-red-600 placeholder:text-red-400' 
-                    : 'bg-gray-50 border border-transparent'
-                }`} 
+                className={formik.touched.contactInfo && formik.errors.contactInfo ? inputErrorClasses : inputClasses} 
             />
             {formik.touched.contactInfo && formik.errors.contactInfo && (
                 <div className="text-red-500 text-xs font-bold text-center">{formik.errors.contactInfo}</div>
@@ -136,15 +135,20 @@ export const AddLeadModal = ({ isOpen, onClose, propertyID, unitID, onSuccess, s
         </div>
 
         <div className="space-y-1">
-            <select {...formik.getFieldProps('interestType')} className="w-full p-4 bg-gray-50 rounded-2xl border border-transparent outline-none text-gray-600 font-medium">
+            <select {...formik.getFieldProps('interestType')} className={inputClasses}>
                 <option value="Buy">Buy</option>
                 <option value="Rent">Rent</option>
             </select>
         </div>
 
-        <button type="submit" className="w-full py-4 bg-[#5B3E59] text-white rounded-2xl font-bold hover:bg-[#4a3248] transition-all shadow-lg shadow-[#5B3E59]/20 mt-4">
-            Create Lead
-        </button>
+        <div className="flex items-center justify-between pt-6">
+            <button type="button" onClick={onClose} className="px-4 font-black text-[#1c1c1e] hover:text-gray-500 transition-colors">
+                Cancel
+            </button>
+            <button type="submit" style={{ color: '#ffffff' }} className="py-4 px-8 bg-[#5B3E59] text-white rounded-2xl font-black hover:bg-[#4a3248] transition-all shadow-md">
+                Create Lead
+            </button>
+        </div>
       </form>
     </ModalWrapper>
   );
@@ -172,17 +176,13 @@ export const AddSiteVisitModal = ({ isOpen, onClose, leadID, onSuccess, showToas
   });
 
   return (
-    <ModalWrapper isOpen={isOpen} onClose={onClose} title="Schedule Site Visit">
+    <ModalWrapper isOpen={isOpen} onClose={onClose} title="Schedule Visit">
       <form onSubmit={formik.handleSubmit} className="space-y-4">
         <div className="space-y-1">
             <input 
                 type="date" 
                 {...formik.getFieldProps('visitDate')} 
-                className={`w-full p-4 rounded-2xl outline-none transition-all ${
-                    formik.touched.visitDate && formik.errors.visitDate 
-                    ? 'bg-red-50/50 border border-red-500 text-red-600' 
-                    : 'bg-gray-50 border border-transparent text-gray-600'
-                }`} 
+                className={formik.touched.visitDate && formik.errors.visitDate ? inputErrorClasses : inputClasses} 
             />
             {formik.touched.visitDate && formik.errors.visitDate && (
                 <div className="text-red-500 text-xs font-bold text-center">{formik.errors.visitDate}</div>
@@ -193,13 +193,18 @@ export const AddSiteVisitModal = ({ isOpen, onClose, leadID, onSuccess, showToas
             <textarea 
                 {...formik.getFieldProps('notes')} 
                 placeholder="Additional Notes (Optional)" 
-                className="w-full p-4 bg-gray-50 rounded-2xl border border-transparent outline-none h-24 resize-none" 
+                className={`${inputClasses} h-28 resize-none`} 
             />
         </div>
 
-        <button type="submit" className="w-full py-4 bg-[#5B3E59] text-white rounded-2xl font-bold hover:bg-[#4a3248] transition-all shadow-lg shadow-[#5B3E59]/20">
-            Confirm Visit
-        </button>
+        <div className="flex items-center justify-between pt-6">
+            <button type="button" onClick={onClose} className="px-4 font-black text-[#1c1c1e] hover:text-gray-500 transition-colors">
+                Cancel
+            </button>
+            <button type="submit" style={{ color: '#ffffff' }} className="py-4 px-8 bg-[#5B3E59] text-white rounded-2xl font-black hover:bg-[#4a3248] transition-all shadow-md">
+                Confirm
+            </button>
+        </div>
       </form>
     </ModalWrapper>
   );
@@ -227,30 +232,32 @@ export const EditSiteVisitModal = ({ isOpen, onClose, visit, onSuccess, showToas
   });
 
   return (
-    <ModalWrapper isOpen={isOpen} onClose={onClose} title="Update Visit Notes">
+    <ModalWrapper isOpen={isOpen} onClose={onClose} title="Update Notes">
       <form onSubmit={formik.handleSubmit} className="space-y-4">
-        <div className="w-full p-4 bg-gray-100 rounded-2xl text-gray-500 font-medium border border-gray-200 text-center">
-            Scheduled Date: {formik.values.visitDate || 'N/A'}
+        <div className="w-full p-4 bg-white rounded-2xl shadow-sm border-none text-center">
+            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Scheduled Date</p>
+            <p className="font-black text-[#1c1c1e]">{formik.values.visitDate || 'N/A'}</p>
         </div>
 
         <div className="space-y-1">
             <textarea 
                 {...formik.getFieldProps('notes')} 
                 placeholder="Update Notes..." 
-                className={`w-full p-4 rounded-2xl outline-none h-32 resize-none transition-all ${
-                    formik.touched.notes && formik.errors.notes 
-                    ? 'bg-red-50/50 border border-red-500 text-red-600 placeholder:text-red-400' 
-                    : 'bg-gray-50 border border-transparent text-gray-700'
-                }`} 
+                className={`${formik.touched.notes && formik.errors.notes ? inputErrorClasses : inputClasses} h-32 resize-none`} 
             />
             {formik.touched.notes && formik.errors.notes && (
                 <div className="text-red-500 text-xs font-bold text-center">{formik.errors.notes}</div>
             )}
         </div>
 
-        <button type="submit" className="w-full py-4 bg-[#5B3E59] text-white rounded-2xl font-bold hover:bg-[#4a3248] transition-all shadow-lg shadow-[#5B3E59]/20">
-            Update Notes
-        </button>
+        <div className="flex items-center justify-between pt-6">
+            <button type="button" onClick={onClose} className="px-4 font-black text-[#1c1c1e] hover:text-gray-500 transition-colors">
+                Cancel
+            </button>
+            <button type="submit"  style={{ color: '#ffffff' }} className="py-4 px-8 bg-[#5B3E59] text-white rounded-2xl font-black hover:bg-[#4a3248] transition-all shadow-md">
+                Update Notes
+            </button>
+        </div>
       </form>
     </ModalWrapper>
   );
@@ -279,56 +286,56 @@ export const AddDealModal = ({ isOpen, onClose, lead, onSuccess, showToast }) =>
   });
 
   return (
-    <ModalWrapper isOpen={isOpen} onClose={onClose} title="Create New Deal">
+    <ModalWrapper isOpen={isOpen} onClose={onClose} title="Create Deal">
       <form onSubmit={formik.handleSubmit} className="space-y-4">
-        <div className="p-4 bg-purple-50 rounded-2xl text-xs font-bold text-purple-700 border border-purple-100 text-center">
-            Client: {lead?.customerName}
+        
+        <div className="p-4 bg-white rounded-2xl shadow-sm text-center border-none mb-2">
+            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Client</p>
+            <p className="font-black text-[#1c1c1e] text-lg">{lead?.customerName}</p>
         </div>
 
-        <div className="space-y-1">
-            <label className="block text-[10px] font-bold uppercase text-gray-400 ml-2 mb-1">Deal Type</label>
-            <select {...formik.getFieldProps('dealType')} className="w-full p-4 bg-gray-50 border border-transparent rounded-2xl outline-none text-gray-600">
-                <option value="Sale">Sale</option>
-                <option value="Lease">Lease</option>
-            </select>
-        </div>
+        {/* 2-Column Grid matching the sample image UI style */}
+        <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1">
+                <select {...formik.getFieldProps('dealType')} className={inputClasses}>
+                    <option value="Sale">Sale</option>
+                    <option value="Lease">Lease</option>
+                </select>
+            </div>
 
-        <div className="space-y-1">
-            <label className="block text-[10px] font-bold uppercase text-gray-400 ml-2 mb-1">Agreed Value (₹)</label>
+            <div className="space-y-1">
+                <input 
+                    type="date" 
+                    {...formik.getFieldProps('expectedClosureDate')} 
+                    className={formik.touched.expectedClosureDate && formik.errors.expectedClosureDate ? inputErrorClasses : inputClasses} 
+                />
+                
+            </div>
+            
+        </div>
+        
+        {/* Full width input for value */}
+        <div className="space-y-1 pt-2">
             <input 
                 type="number" 
                 {...formik.getFieldProps('agreedValue')} 
-                placeholder="₹ Value" 
-                className={`w-full p-4 rounded-2xl outline-none font-bold transition-all ${
-                    formik.touched.agreedValue && formik.errors.agreedValue 
-                    ? 'bg-red-50/50 border border-red-500 text-red-600 placeholder:text-red-400' 
-                    : 'bg-gray-50 border border-transparent'
-                }`} 
+                placeholder="Agreed Value (₹)" 
+                className={formik.touched.agreedValue && formik.errors.agreedValue ? inputErrorClasses : inputClasses} 
             />
             {formik.touched.agreedValue && formik.errors.agreedValue && (
-                <div className="text-red-500 text-xs font-bold text-center">{formik.errors.agreedValue}</div>
+                <div className="text-red-500 text-xs font-bold text-center mt-1">{formik.errors.agreedValue}</div>
             )}
+           
         </div>
 
-        <div className="space-y-1">
-            <label className="block text-[10px] font-bold uppercase text-gray-400 ml-2 mb-1">Closure Date</label>
-            <input 
-                type="date" 
-                {...formik.getFieldProps('expectedClosureDate')} 
-                className={`w-full p-4 rounded-2xl outline-none transition-all ${
-                    formik.touched.expectedClosureDate && formik.errors.expectedClosureDate 
-                    ? 'bg-red-50/50 border border-red-500 text-red-600' 
-                    : 'bg-gray-50 border border-transparent text-gray-600'
-                }`} 
-            />
-            {formik.touched.expectedClosureDate && formik.errors.expectedClosureDate && (
-                <div className="text-red-500 text-xs font-bold text-center">{formik.errors.expectedClosureDate}</div>
-            )}
+        <div className="flex items-center justify-between pt-6">
+            <button type="button" onClick={onClose} className="px-4 font-black text-[#1c1c1e] hover:text-gray-500 transition-colors">
+                Cancel
+            </button>
+                  <button type="submit" style={{ color: '#ffffff' }} className="py-4 px-8 bg-[#5B3E59] rounded-2xl font-black hover:bg-[#4a3248] transition-all shadow-md border-none">
+                        Create Deal
+                    </button>
         </div>
-
-        <button type="submit" className="w-full py-4 bg-[#5B3E59] text-white rounded-2xl font-bold hover:bg-[#4a3248] transition-all shadow-lg shadow-[#5B3E59]/20 mt-2">
-            Confirm Deal
-        </button>
       </form>
     </ModalWrapper>
   );

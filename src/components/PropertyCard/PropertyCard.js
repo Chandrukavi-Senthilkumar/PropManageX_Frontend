@@ -25,7 +25,7 @@ const PropertyCard = ({
       <div className="p-5 sm:p-6 lg:p-8 space-y-5 sm:space-y-6">
         {/* HEADER */}
         <div className="flex items-center gap-4">
-          <div
+          <div style={{color:'#FFFFFF'}}
             className="w-14 h-14 rounded-2xl
                        bg-gradient-to-br from-[#a383a1] to-[#7d5d7a]
                        flex items-center justify-center
@@ -80,13 +80,13 @@ const PropertyCard = ({
         {/* ACTIONS */}
         <div className="flex flex-col sm:flex-row gap-3 pt-2">
           <button
-            onClick={onImageClick}
+            onClick={onImageClick} style={{color:'#FFFFFF'}}
             className="
-              flex-1 py-3 sm:py-5 rounded-2xl
-              bg-[#a78ca6] hover:bg-[#4a3248]
-              text-white font-black text-[10px]
-              uppercase tracking-[0.2em]
-              transition-all shadow-xl shadow-stone-200/50
+              flex-1 py-3 sm:py-4 rounded-2xl
+    bg-[#5B3E59] hover:bg-[#4a3248]
+    text-White font-black text-[10px]   
+    uppercase tracking-[0.2em] 
+    transition-all shadow-xl shadow-stone-200/50
             "
           >
             View Property

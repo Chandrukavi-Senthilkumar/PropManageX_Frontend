@@ -10,6 +10,7 @@ import {
     CalendarIcon,
     ChartBarIcon,
     PhoneIcon,
+    MapPinIcon,
     PencilSquareIcon,
     BriefcaseIcon 
 } from '@heroicons/react/24/outline';
@@ -82,7 +83,7 @@ const SalesManagementPage = () => {
             const getLeadId = (obj) => {
                 const id = obj?.leadID || obj?.leadId || obj?.LeadID || obj?.id || obj?.Id;
                 return id ? String(id).toLowerCase() : null;
-            };
+                };
 
             const mappedLeads = rawLeads.map(lead => {
                 const leadId = getLeadId(lead);
@@ -101,12 +102,17 @@ const SalesManagementPage = () => {
             const mappedVisits = rawVisits.map(visit => {
                 const visitLeadId = getLeadId(visit);
                 const matchedLead = mappedLeads.find(l => getLeadId(l) === visitLeadId);
+    
                 return { 
                     ...visit, 
                     customerName: matchedLead ? matchedLead.customerName : 'Unknown Lead', 
                     propertyName: matchedLead ? matchedLead.propertyName : 'Unknown Property',
                     contactInfo: matchedLead ? matchedLead.contactInfo : 'N/A',
                     interestType: matchedLead ? matchedLead.interestType : 'BUY',
+                    
+                    // This is the crucial line: Inherit the dynamic status from the Lead
+                    status: matchedLead ? matchedLead.status : 'NEW', 
+                    
                     fullLead: matchedLead 
                 };
             });
@@ -169,7 +175,7 @@ const SalesManagementPage = () => {
             <div className="max-w-7xl mx-auto px-6 -mt-10 relative z-10 space-y-12">
                 
                 {/* FLOATING FILTER BAR */}
-                <div className="bg-[#EFE9F0] p-3 rounded-full shadow-xl shadow-stone-200 flex flex-col md:flex-row justify-between items-center gap-4 border border-stone-100">
+                <div className="bg-[#EFE9F0] p-3 rounded-full shadow-md shadow-stone-200 flex flex-col md:flex-row justify-between items-center gap-4 border border-stone-100">
                     
                     {/* Search Input */}
                     <div className="relative w-full md:w-1/3 ml-2">
@@ -183,41 +189,53 @@ const SalesManagementPage = () => {
                         />
                     </div>
 
-                    {/* Tab Navigation Pill */}
-                    <div className="flex bg-stone-50 p-1.5 rounded-full border border-stone-100">
-                        {['leads', 'visits', 'deals'].map((tab) => (
-                            <button 
-                                key={tab}
-                                onClick={() => setActiveTab(tab)}
-                                className={`px-8 py-2.5 rounded-full text-xs font-black uppercase tracking-widest transition-all ${
-                                    activeTab === tab 
-                                    ? 'bg-[#5B3E59] text-white shadow-md' 
-                                    : 'text-stone-500 hover:text-[#5B3E59] hover:bg-stone-200/50'
-                                }`}
-                            >
-                                {tab}
-                            </button>
-                        ))}
+                
+            {/* Tab Navigation Pill */}
+                    <div className="flex items-center justify-center flex-1 gap-1">
+                        {['leads', 'visits', 'deals'].map((tab) => {
+                            const isActive = activeTab === tab;
+                            return (
+                                <button 
+                                    key={tab}
+                                    onClick={() => setActiveTab(tab)}
+                                    // Use a standard style for the active state to guarantee it applies
+                                    style={isActive ? { color: '#ffffff', backgroundColor: '#5B3E59' } : {}}
+                                    className={`px-8 py-3 rounded-full text-xs font-black uppercase tracking-widest transition-all border-none ${
+                                        isActive 
+                                        ? 'shadow-md' // Removed text and bg classes here since inline styles handle them
+                                        : 'bg-transparent text-[#1c1c1e] hover:bg-gray-100/80'
+                                    }`}
+                                >
+                                    {tab}
+                                </button>
+                            );
+                        })}
                     </div>
 
                     
                 </div>
 
                 {/* METRIC STATS */}
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     {[
-                        { label: 'Total Leads', val: data.leads.length, icon: CalendarIcon, color: 'text-[#5B3E59]', bg: 'bg-[#F6F1F3]' },
-                        { label: 'Total Deals', val: data.deals.length, icon: BriefcaseIcon, color: 'text-orange-600', bg: 'bg-orange-50' }, 
-                        { label: 'Site Visits', val: data.visits.length, icon: BuildingOfficeIcon, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-                        { label: 'Conversion', val: 'Active', icon: ChartBarIcon, color: 'text-blue-600', bg: 'bg-blue-50' },
+                        { label: 'Total Leads', val: data.leads.length, icon: UserGroupIcon },
+                        { label: 'Total Deals', val: data.deals.length, icon: BriefcaseIcon }, 
+                        { label: 'Total Visits', val: data.visits.length, icon: MapPinIcon },
                     ].map((stat, i) => (
-                        <div key={i} className="bg-white p-6 rounded-[28px] shadow-sm border border-stone-100 flex items-center justify-between hover:shadow-md transition-shadow">
+                        <div key={i} className="bg-white p-7 rounded-[2.5rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex items-center justify-between hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-all border-none">
                             <div>
-                                <p className="text-stone-400 text-[10px] font-black uppercase tracking-widest">{stat.label}</p>
-                                <h3 className="text-2xl font-black text-stone-800 mt-1">{stat.val}</h3>
+                                {/* Text color matched to sidebar theme with slight opacity for label */}
+                                <p className="text-[#5B3E59] text-[10px] font-black uppercase tracking-[0.15em] mb-1 opacity-60">
+                                    {stat.label}
+                                </p>
+                                <h3 className="text-[32px] leading-none font-black text-[#1c1c1e]">
+                                    {stat.val}
+                                </h3>
                             </div>
-                            <div className={`p-3.5 ${stat.bg} ${stat.color} rounded-2xl`}>
-                                <stat.icon className="w-6 h-6" />
+                            
+                            <div className="w-14 h-14 flex items-center justify-center bg-transparent">
+                                {/* Icon color matched exactly to your sidebar primary purple */}
+                                <stat.icon className="w-7 h-7 text-[#5B3E59]" strokeWidth={1.5} />
                             </div>
                         </div>
                     ))}
@@ -240,9 +258,10 @@ const SalesManagementPage = () => {
                                     {/* Header */}
                                     <div className="flex justify-between items-start">
                                         <div className="flex items-center gap-4">
-                                            <div className="w-14 h-14 bg-gradient-to-br from-[#5B3E59] to-[#7d5d7a] rounded-2xl flex items-center justify-center text-white font-black text-xl shadow-lg uppercase">
-                                                {item.customerName?.charAt(0)}
-                                            </div>
+                                            <div className="w-14 h-14 bg-gradient-to-br from-[#5B3E59] to-[#7d5d7a] rounded-2xl flex items-center justify-center font-black text-xl shadow-lg uppercase border-none"
+                                                    style={{ color: '#ffffff' }} >
+                                                    {item.customerName?.charAt(0)}
+                                                </div>
                                             <div>
                                                 <div className="flex items-center gap-2">
                                                     <h4 className="text-lg font-black text-stone-900 leading-tight tracking-tight truncate max-w-[140px]">{item.customerName}</h4>
@@ -277,52 +296,72 @@ const SalesManagementPage = () => {
                                     </div>
 
                                     {/* Action Buttons */}
-                                    <div className="flex gap-3 pt-2">
-                                        {activeTab === 'leads' && (
+                                   <div className="mt-10 flex gap-3 mt-auto border-none">
+    
+                                {/* LEADS TAB BUTTON */}
+                                {activeTab === 'leads' && (
+                                    <button 
+                                        disabled={isVisited || isClosed}
+                                        onClick={() => setSelectedLeadForVisit(leadId)}
+                                        // This forces the colors to change dynamically
+                                        style={
+                                            (isVisited || isClosed) 
+                                            ? { backgroundColor: '#F4F4F5', color: '#A1A1AA', boxShadow: 'none' } // Light greyish background, grey text
+                                            : { backgroundColor: '#5B3E59', color: '#ffffff' } // Active purple background, white text
+                                        }
+                                        className="w-full py-4 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] transition-all cursor-pointer disabled:cursor-not-allowed border-none"
+                                    >
+                                        {isVisited ? 'VISIT ADDED' : 'ADD VISIT'}
+                                    </button>
+                                )}
+
+
+                      {activeTab === 'visits' && (
+                                <>
+                                    <button 
+                                        disabled={isDealed}
+                                        onClick={() => setSelectedLeadForDeal(item.fullLead || item)}
+                                        // This forces the colors to change dynamically
+                                        style={
+                                            isDealed 
+                                            ? { backgroundColor: '#F4F4F5', color: '#A1A1AA', boxShadow: 'none' } // Light greyish background, grey text
+                                            : { backgroundColor: '#5B3E59', color: '#ffffff' } // Active purple background, white text
+                                        }
+                                        className="flex-1 py-4 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] transition-all cursor-pointer disabled:cursor-not-allowed border-none"
+                                    >
+                                        {isDealed ? 'DEAL CREATED' : 'CREATE DEAL'}
+                                    </button>
+                                    <button 
+                                        onClick={() => setSelectedVisitForEdit(item)}
+                                        className="p-4 rounded-2xl bg-gray-50 text-gray-500 hover:bg-gray-200 hover:text-gray-800 transition-all border-none"
+                                        title="Edit Visit Notes"
+                                    >
+                                        <PencilSquareIcon className="w-5 h-5" />
+                                    </button>
+                                </>
+                            )}
+
+                           {/* DEALS TAB BUTTONS */}
+                                    {activeTab === 'deals' && (
+                                        <div className="w-full flex gap-3 border-none">
                                             <button 
-                                                disabled={isVisited || isClosed}
-                                                onClick={() => setSelectedLeadForVisit(leadId)}
-                                                className="w-full bg-[#5B3E59] text-white py-4 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] hover:bg-[#4a3248] disabled:bg-stone-100 disabled:text-stone-400 transition-all shadow-xl shadow-stone-200/50"
+                                                onClick={() => setSelectedDealForUpdate(item)}
+                                                style={{ backgroundColor: '#5B3E59', color: '#ffffff' }}
+                                                className="flex-1 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:opacity-90 transition-all shadow-xl shadow-[#5B3E59]/20 border-none"
                                             >
-                                                {isVisited ? 'VISIT ADDED' : 'ADD VISIT'}
+                                                Update Status
                                             </button>
-                                        )}
+                                            <button 
+                                                onClick={() => setSelectedDeal(item.dealID || item.dealId)}
+                                                // Style changed to match Update Status button
+                                                style={{ backgroundColor: '#5B3E59', color: '#ffffff' }}
+                                                className="flex-1 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:opacity-90 transition-all shadow-xl shadow-[#5B3E59]/20 border-none"
+                                            >
+                                                Contract
+                                            </button>
+                                        </div>
+                                    )}
 
-                                        {activeTab === 'visits' && (
-                                            <>
-                                                <button 
-                                                    disabled={isDealed}
-                                                    onClick={() => setSelectedLeadForDeal(item.fullLead || item)}
-                                                    className="flex-1 bg-[#5B3E59] text-white py-4 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] hover:bg-[#4a3248] disabled:bg-stone-100 disabled:text-stone-400 transition-all shadow-xl shadow-stone-200/50"
-                                                >
-                                                    {isDealed ? 'DEAL CREATED' : 'CREATE DEAL'}
-                                                </button>
-                                                <button 
-                                                    onClick={() => setSelectedVisitForEdit(item)}
-                                                    className="p-4 rounded-2xl border border-stone-200 text-stone-500 hover:bg-stone-50 transition-all"
-                                                    title="Edit Visit Notes"
-                                                >
-                                                    <PencilSquareIcon className="w-5 h-5" />
-                                                </button>
-                                            </>
-                                        )}
-
-                                        {activeTab === 'deals' && (
-                                            <div className="w-full flex gap-3">
-                                                <button 
-                                                    onClick={() => setSelectedDealForUpdate(item)}
-                                                    className="flex-1 bg-[#5B3E59] text-white py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-[#4a3248] transition-all shadow-lg"
-                                                >
-                                                    Update Status
-                                                </button>
-                                                <button 
-                                                    onClick={() => setSelectedDeal(item.dealID || item.dealId)}
-                                                    className="px-6 border border-stone-200 text-stone-500 py-4 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] hover:bg-stone-50 transition-all"
-                                                >
-                                                    Contract
-                                                </button>
-                                            </div>
-                                        )}
                                     </div>
                                 </div>
                             </div>
