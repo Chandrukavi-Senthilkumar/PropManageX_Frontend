@@ -154,8 +154,8 @@ export const AddContractModal = ({
           {/* Submit */}
           <button
             disabled={loading}
-            type="submit"
-            className="w-full bg-blue-600 text-white py-5 rounded-[24px]
+            type="submit" style={{color:'#FFFFFF'}}
+            className="w-full bg-[#5B3E59] text-white py-5 rounded-[24px]
                        font-black uppercase tracking-widest shadow-lg
                        shadow-blue-100 hover:bg-blue-700 transition-all
                        active:scale-95 mt-4 disabled:opacity-50"

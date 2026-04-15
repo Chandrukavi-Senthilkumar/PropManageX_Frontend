@@ -51,7 +51,7 @@ const InvoiceManagementPage = () => {
       <div className="max-w-7xl mx-auto px-6 -mt-10 space-y-12">
 
         {/* STATS */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <StatCard
             label="Total Invoices"
             value={stats.total}
@@ -67,18 +67,10 @@ const InvoiceManagementPage = () => {
             value={`₹ ${totalAmount.toLocaleString()}`}
             icon={BanknotesIcon}
           />
-          <div className="bg-white p-6 rounded-[28px] border border-stone-100 shadow-sm flex items-center justify-between">
-            <p className="text-stone-400 text-[10px] font-black uppercase tracking-widest">
-              Refresh Data
-            </p>
-            <button
-              onClick={fetchInvoices}
-              className="p-3 bg-[#F6F1F3] text-[#5B3E59] rounded-full"
-            >
-              <ArrowPathIcon className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
-            </button>
-          </div>
+          
+
         </div>
+       
 
         {/* GRID */}
         {loading ? (
@@ -137,9 +129,7 @@ const InvoiceCard = ({ invoice }) => {
         {/* HEADER */}
         <div className="flex items-center gap-4 justify-between">
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 bg-gradient-to-br from-[#5B3E59] to-[#7d5d7a] rounded-2xl flex items-center justify-center text-white font-black text-lg shadow">
-              I
-            </div>
+          
             <div>
               <h4 className="text-lg font-black text-stone-900">
                 Billing {invoice.period}
@@ -157,12 +147,7 @@ const InvoiceCard = ({ invoice }) => {
 
         {/* INFO PANEL */}
         <div className="bg-[#fcfbf9] p-5 rounded-2xl border border-stone-100 space-y-4">
-          <div className="flex items-center gap-2 text-stone-600">
-            <DocumentTextIcon className="w-4 h-4 text-stone-400" />
-            <span className="text-sm font-black">
-              Contract {invoice.contractID.slice(0, 13)}…
-            </span>
-          </div>
+         
           <div className="flex items-center gap-2 text-stone-600">
             <CalendarIcon className="w-4 h-4 text-stone-400" />
             <span className="text-sm font-black">

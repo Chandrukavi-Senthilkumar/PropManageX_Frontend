@@ -159,7 +159,7 @@ const EditUnitModal = ({ isOpen, onClose, unit, onSuccess }) => {
               Cancel
             </button>
             <button 
-              type="submit" 
+              type="submit" style={{color:'#FFFFFF'}}
               disabled={loading || !formik.dirty}
               className="flex-1 py-3 bg-blue-600 text-white rounded-xl font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >

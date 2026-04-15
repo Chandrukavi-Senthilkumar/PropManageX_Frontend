@@ -43,7 +43,7 @@ export const AddInvoiceModal = ({ isOpen, onClose, contract, onSuccess }) => {
 
         {/* Close */}
         <button
-          onClick={onClose}
+          onClick={onClose} 
           className="absolute top-8 right-8 text-gray-400 hover:text-black transition-all"
         >
           <XMarkIcon className="w-6 h-6" />

@@ -287,7 +287,7 @@ const SalesManagementPage = () => {
                                             <button 
                                                 disabled={isVisited || isClosed}
                                                 onClick={() => setSelectedLeadForVisit(leadId)}
-                                                className="w-full bg-[#5B3E59] text-white py-4 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] hover:bg-[#4a3248] disabled:bg-stone-100 disabled:text-stone-400 transition-all shadow-xl shadow-stone-200/50"
+                                                className="w-full  bg-[#5B3E59] text-white py-4 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] hover:bg-[#4a3248] disabled:bg-stone-100 disabled:text-stone-400 transition-all shadow-xl shadow-stone-200/50"
                                             >
                                                 {isVisited ? 'VISIT ADDED' : 'ADD VISIT'}
                                             </button>
