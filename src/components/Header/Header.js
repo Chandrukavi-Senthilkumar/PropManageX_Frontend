@@ -15,7 +15,7 @@ const Header = () => {
 
         {/* LOGO */}
         <Link to="/" className="flex items-center gap-3">
-          <div className="w-12 h-12 bg-[#5B3E59] rounded-2xl
+          <div style={{color:'#FFFFFF'}} className="w-12 h-12 bg-[#5B3E59] rounded-2xl
                           text-white font-black flex items-center justify-center">
             P
           </div>
