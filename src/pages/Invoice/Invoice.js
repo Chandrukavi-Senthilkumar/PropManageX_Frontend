@@ -137,7 +137,7 @@ const InvoiceCard = ({ invoice }) => {
         {/* HEADER */}
         <div className="flex items-center gap-4 justify-between">
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 bg-gradient-to-br from-[#5B3E59] to-[#7d5d7a] rounded-2xl flex items-center justify-center text-white font-black text-lg shadow">
+            <div style={{ color: '#FFFFFF' }} className="w-14 h-14 bg-gradient-to-br from-[#5B3E59] to-[#7d5d7a] rounded-2xl flex items-center justify-center text-white font-black text-lg shadow">
               I
             </div>
             <div>

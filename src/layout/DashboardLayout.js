@@ -5,10 +5,12 @@ import { fetchAdminProfile } from '../redux/slices/adminSlice';
 import {
   BuildingOfficeIcon,
   BuildingOffice2Icon,
-  UserGroupIcon,
+  DocumentCheckIcon,
   CheckBadgeIcon,
   BellIcon,
+  ReceiptPercentIcon,
   ArrowLeftOnRectangleIcon,
+  BriefcaseIcon,
   UserPlusIcon
 } from '@heroicons/react/24/outline';
 import { authService } from '../services/authService';
@@ -58,9 +60,9 @@ const DashboardLayout = () => {
 
   const menuItems = [
     { name: 'Properties', path: '/Property', icon: BuildingOfficeIcon },
-    { name: 'Deals', path: '/deals', icon: UserGroupIcon },
-    { name: 'Contract', path: '/contract', icon: UserGroupIcon },
-    { name: 'Invoice', path: '/invoice', icon: UserGroupIcon },
+    { name: 'Deals', path: '/deals', icon: BriefcaseIcon },
+    { name: 'Contract', path: '/contract', icon: DocumentCheckIcon},
+    { name: 'Invoice', path: '/invoice', icon: ReceiptPercentIcon },
     { name: 'Revenue Reports', path: '/revenues', icon: CheckBadgeIcon },
     { name: 'My Property', path: '/my-property', icon: BuildingOffice2Icon },
   ];
@@ -152,31 +154,35 @@ const DashboardLayout = () => {
                 </button>
 
                 {isDropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-56 bg-white
-                                  border rounded-xl shadow-lg z-50">
-                    <button
-                      onClick={() => {
-                        setIsDropdownOpen(false);
-                        navigate('/add-user');
-                      }}
-                      className="w-full px-4 py-3 text-left text-sm hover:bg-gray-100 flex gap-2"
-                    >
-                      <UserPlusIcon className="w-5 h-5" />
-                      Add User
-                    </button>
+                      <div 
+                        className="absolute right-0 mt-3 w-56 rounded-2xl shadow-[0_15px_40px_rgba(0,0,0,0.15)] border border-gray-100 z-[9999] overflow-hidden isolate"
+                        style={{ backgroundColor: '#ffffff' }} /* Forces pure white globally */
+                      >
+                        <button
+                          onClick={() => {
+                            setIsDropdownOpen(false);
+                            navigate('/add-user');
+                          }}
+                          className="w-full px-5 py-4 text-left text-sm font-bold text-gray-700 hover:bg-gray-50 flex items-center gap-3 transition-colors bg-white"
+                        >
+                          <UserPlusIcon className="w-5 h-5 text-gray-500" />
+                          Add User
+                        </button>
 
-                    <button
-                      onClick={async () => {
-                        setIsDropdownOpen(false);
-                        await authService.logout();
-                      }}
-                      className="w-full px-4 py-3 text-left text-sm text-red-600 hover:bg-red-50 flex gap-2"
-                    >
-                      <ArrowLeftOnRectangleIcon className="w-5 h-5" />
-                      Logout
-                    </button>
-                  </div>
-                )}
+                        <div className="h-[1px] w-full bg-gray-100"></div>
+
+                        <button
+                          onClick={async () => {
+                            setIsDropdownOpen(false);
+                            await authService.logout();
+                          }}
+                          className="w-full px-5 py-4 text-left text-sm font-bold text-red-600 hover:bg-red-50 flex items-center gap-3 transition-colors bg-white"
+                        >
+                          <ArrowLeftOnRectangleIcon className="w-5 h-5 text-red-500" />
+                          Logout
+                        </button>
+                      </div>
+                    )}
               </div>
             </div>
           </div>
