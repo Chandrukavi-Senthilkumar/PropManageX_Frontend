@@ -206,7 +206,7 @@ const ContractCard = ({ contract, onInvoiceClick }) => {
         </div>
       </div>
 
-      {isSale && (
+      {isLease && (
             <div className="p-6 pt-0">
               <button
                 onClick={onInvoiceClick}

@@ -3,7 +3,6 @@ import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { unitAmenityService } from '../../services/unitAmenityService';
 import { SparklesIcon, XMarkIcon } from '@heroicons/react/24/outline';
-import { color } from 'framer-motion';
 
 const AddAmenityModal = ({
   isOpen,

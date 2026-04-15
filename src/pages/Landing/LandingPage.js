@@ -32,6 +32,7 @@ const LandingPage = () => {
 
             <button
               onClick={() => navigate('/Property')}
+                style={{ backgroundColor: '#5B3E59', color: '#ffffff' }}
               className="mt-10 bg-[var(--brand)]
                          hover:bg-[var(--brand-dark)]
                          text-white px-8 py-4 rounded-2xl font-bold shadow-soft transition"

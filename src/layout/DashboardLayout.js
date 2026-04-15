@@ -14,7 +14,6 @@ import {
   ArrowLeftOnRectangleIcon,
   UserPlusIcon,
   Bars3Icon, // New Toggle Icon
-  ReceiptPercentIcon
 } from '@heroicons/react/24/outline';
 import { authService } from '../services/authService';
 import { showSuccess } from '../redux/slices/notificationSlice';

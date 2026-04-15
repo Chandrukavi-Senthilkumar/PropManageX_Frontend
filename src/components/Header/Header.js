@@ -46,6 +46,8 @@ const Header = () => {
         {/* CTA */}
         <Link
           to="/login"
+            style={{ backgroundColor: '#5B3E59', color: '#ffffff' }}
+ 
           className="bg-[#5B3E59] hover:bg-[#4A3248]
                      text-white px-6 py-3 rounded-2xl
                      font-semibold transition"
