@@ -83,12 +83,12 @@ const ContractManagementPage = () => {
             />
           </div>
 
-          <button
+          {/* <button
             onClick={fetchContracts}
             className="p-3 mr-2 bg-[#F6F1F3] text-[#5B3E59] rounded-full hover:bg-stone-200 transition-all"
           >
             <ArrowPathIcon className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
-          </button>
+          </button> */}
         </div>
 
         {/* CONTENT */}
