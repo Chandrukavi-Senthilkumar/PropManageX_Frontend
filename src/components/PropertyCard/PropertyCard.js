@@ -12,10 +12,13 @@ const PropertyCard = ({
   type,
   totalUnits,
   imageUrl,
+  userRole, // ✅ Added userRole prop
   onImageClick,
   onManageUnits,
   onAddAmenity,
 }) => {
+  // ✅ Check if the user is a Buyer or Tenant
+  const isRestricted = userRole === 'BuyerAndTenant' 
   return (
     <div className="bg-white rounded-[32px] border border-stone-100 shadow-sm hover:shadow-xl transition-all flex flex-col group overflow-hidden">
 
@@ -25,7 +28,7 @@ const PropertyCard = ({
       <div className="p-5 sm:p-6 lg:p-8 space-y-5 sm:space-y-6">
         {/* HEADER */}
         <div className="flex items-center gap-4">
-          <div style={{color:'#FFFFFF'}}
+          <div style={{ color: '#FFFFFF' }}
             className="w-14 h-14 rounded-2xl
                        bg-gradient-to-br from-[#a383a1] to-[#7d5d7a]
                        flex items-center justify-center
@@ -35,7 +38,8 @@ const PropertyCard = ({
           </div>
 
           <div className="min-w-0">
-            <h3 className="text-lg sm:text-xl font-black text-stone-900 truncate">              {name}
+            <h3 className="text-lg sm:text-xl font-black text-stone-900 truncate">
+              {name}
             </h3>
             <p className="text-[11px] font-bold text-stone-500 uppercase tracking-widest flex items-center gap-1.5 mt-1">
               <MapPinIcon className="w-3.5 h-3.5 text-stone-400" />
@@ -60,7 +64,6 @@ const PropertyCard = ({
 
         {/* INFO PANEL */}
         <div className="bg-[#fcfbf9] p-5 rounded-2xl border border-stone-100 space-y-4">
-
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-stone-600">
               <BuildingOfficeIcon className="w-4 h-4 text-stone-400" />
@@ -74,49 +77,54 @@ const PropertyCard = ({
               </span>
             </div>
           </div>
-
         </div>
 
         {/* ACTIONS */}
         <div className="flex flex-col sm:flex-row gap-3 pt-2">
           <button
-            onClick={onImageClick} style={{color:'#FFFFFF'}}
+            onClick={onImageClick} style={{ color: '#FFFFFF' }}
             className="
               flex-1 py-3 sm:py-4 rounded-2xl
-    bg-[#5B3E59] hover:bg-[#4a3248]
-    text-White font-black text-[10px]   
-    uppercase tracking-[0.2em] 
-    transition-all shadow-xl shadow-stone-200/50
+              bg-[#5B3E59] hover:bg-[#4a3248]
+              text-white font-black text-[10px]   
+              uppercase tracking-[0.2em] 
+              transition-all shadow-xl shadow-stone-200/50
             "
           >
             View Property
           </button>
 
-          <button
-            onClick={() => onManageUnits(propertyID)}
-            className="
-              p-4 rounded-2xl
-              border border-stone-200
-              text-stone-500 hover:bg-stone-50
-              transition-all
-            "
-            title="Add / Manage Units"
-          >
-            <HomeModernIcon className="w-5 h-5" />
-          </button>
+          {/* ✅ RESTRICED ACTION: Manage Units */}
+          {!isRestricted && (
+            <button
+              onClick={() => onManageUnits(propertyID)}
+              className="
+                p-4 rounded-2xl
+                border border-stone-200
+                text-stone-500 hover:bg-stone-50
+                transition-all
+              "
+              title="Add / Manage Units"
+            >
+              <HomeModernIcon className="w-5 h-5" />
+            </button>
+          )}
 
-          <button
-            onClick={() => onAddAmenity(propertyID)}
-            className="
-              p-4 rounded-2xl
-              border border-stone-200
-              text-stone-500 hover:bg-stone-50
-              transition-all
-            "
-            title="Add Amenities"
-          >
-            <Squares2X2Icon className="w-5 h-5" />
-          </button>
+          {/* ✅ RESTRICED ACTION: Add Amenities */}
+          {!isRestricted && (
+            <button
+              onClick={() => onAddAmenity(propertyID)}
+              className="
+                p-4 rounded-2xl
+                border border-stone-200
+                text-stone-500 hover:bg-stone-50
+                transition-all
+              "
+              title="Add Amenities"
+            >
+              <Squares2X2Icon className="w-5 h-5" />
+            </button>
+          )}
 
         </div>
       </div>

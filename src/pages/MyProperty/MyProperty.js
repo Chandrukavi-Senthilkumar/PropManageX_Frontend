@@ -63,7 +63,7 @@ const CreateRequestModal = ({ isOpen, onClose, unitID, onSuccess, showToast }) =
 
   return (
     <div className="fixed inset-0 bg-[#4B3856]/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-white p-8 rounded-[2.5rem] w-full max-w-md relative shadow-2xl transition-all">
+      <div className="bg-[#F3EEF2] p-8 rounded-[2.5rem] w-full max-w-md relative shadow-2xl transition-all">
         <button onClick={onClose} className="absolute top-6 right-6 text-gray-400 hover:text-black">
           <XMarkIcon className="w-6 h-6" />
         </button>
@@ -112,6 +112,7 @@ const CreateRequestModal = ({ isOpen, onClose, unitID, onSuccess, showToast }) =
 
           <button 
             disabled={loading}
+              style={{ backgroundColor: '#5B3E59', color: '#ffffff' }}
             className="w-full bg-[#4B3856] text-white py-4 rounded-2xl font-black hover:bg-[#3a2b42] shadow-lg transition-all active:scale-95 disabled:opacity-50"
           >
             {loading ? 'Submitting...' : 'Confirm Request'}

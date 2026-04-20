@@ -13,7 +13,7 @@ const Toast = ({ message, type = 'success', onClose }) => {
 
   const config = {
     success: {
-      bg: 'bg-[#4B3856]',
+      bg: 'bg-[#F3EEF2]',
       icon: <CheckCircleIcon className="w-6 h-6 text-white" />,
       label: 'Success'
     },
@@ -29,7 +29,7 @@ const Toast = ({ message, type = 'success', onClose }) => {
   return (
     /* Changed positioning from bottom-center to top-right */
     <div className={`fixed top-8 right-8 z-[100] flex items-center gap-4 px-6 py-4 rounded-[1.5rem] shadow-2xl animate-in slide-in-from-right-10 duration-300 ${active.bg} text-white min-w-[320px] max-w-sm`}>
-      <div className="bg-white/20 p-2 rounded-xl">
+      <div className="bg-white p-2 rounded-xl">
         {active.icon}
       </div>
       <div className="flex-1">
