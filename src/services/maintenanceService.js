@@ -15,11 +15,21 @@ apiClient.interceptors.request.use((config) => {
 }, (error) => Promise.reject(error));
 
 export const maintenanceService = {
-    // Fetch requests filtered by propertyID
+    // Admin: Fetch all requests
+    getAllRequests: () => 
+        apiClient.get('/Maintenance').then(res => res.data),
+
     getRequestsByProperty: (propertyID) => 
         apiClient.get(`/Maintenance?propertyID=${propertyID}`).then(res => res.data),
 
-    // POST: Only sends unitID, category, description, priority, status, and raisedDate
     createRequest: (data) => 
-        apiClient.post('/Maintenance', data).then(res => res.data)
+        apiClient.post('/Maintenance', data).then(res => res.data),
+
+    // NEW: Update Status
+    updateStatus: (id, status) => 
+        apiClient.put(`/Maintenance/${id}/status`, { status }).then(res => res.data),
+
+    // NEW: Assign Vendor/Details
+    assignVendor: (payload) => 
+        apiClient.post('/Maintenance/vendor', payload).then(res => res.data)
 };
