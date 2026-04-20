@@ -114,15 +114,17 @@ const PropertyDetailsView = ({
 
         <div className="flex gap-3">
           {/* ✅ ONLY STAFF ROLES CAN ADD LEADS OR EDIT PROPERTY */}
-          {isStaff && (
-            <>
-              <button
+
+           <button
                 onClick={() => setShowLeadModal(true)}
                 style={{ color: '#FFFFFF' }}
                 className="flex items-center gap-2 px-5 py-2 rounded-xl bg-[#5B3E59] text-white font-semibold hover:opacity-90"
               >
                 <UserPlusIcon className="w-4 h-4" /> Add Lead
               </button>
+          {isStaff && (
+            <>
+             
               <button
                 onClick={onEditProperty}
                 style={{ color: '#FFFFFF' }}
