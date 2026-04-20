@@ -111,7 +111,7 @@ const PropertyDetailsView = ({
         <button onClick={onBack} className="flex items-center gap-2 text-[#5B3E59] font-semibold hover:underline">
           <ArrowLeftIcon className="w-4 h-4" /> Back to Portfolio
         </button>
-
+ 
         <div className="flex gap-3">
           {/* ✅ ONLY STAFF ROLES CAN ADD LEADS OR EDIT PROPERTY */}
 
