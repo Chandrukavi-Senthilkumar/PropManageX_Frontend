@@ -3,7 +3,7 @@ import { contractService } from '../../services/contractService';
 import {
   DocumentTextIcon,
   UserIcon,
-  HomeIcon,
+  CurrencyRupeeIcon,
   MagnifyingGlassIcon,
   ArrowPathIcon,
   BanknotesIcon,
@@ -11,6 +11,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { AddInvoiceModal } from '../../components/Modals/AddInvoiceModal';
 import Toast from '../../components/Toast/Toast';
+
 
 const ContractManagementPage = () => {
   const [contracts, setContracts] = useState([]);
@@ -169,11 +170,11 @@ const ContractCard = ({ contract, onInvoiceClick }) => {
           </span>
         </div>
 
-        <div className="bg-[#fcfbf9] p-5 rounded-2xl border border-stone-100 space-y-4">
+        <div  className="bg-[#fcfbf9] p-5 rounded-2xl border border-stone-100 space-y-4">
           <div className="flex items-center gap-3 text-stone-600">
-            <HomeIcon className="w-4 h-4 text-stone-400" />
+            <CurrencyRupeeIcon className="w-4 h-4 text-[#5B3E59] opacity-70" />
             <span className="text-sm font-black">
-              Unit {contract.unitNumber}
+             {contract.contractValue?.toLocaleString('en-IN') || '0.00'}
             </span>
           </div>
 
