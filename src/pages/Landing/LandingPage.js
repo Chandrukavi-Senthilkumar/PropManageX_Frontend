@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../../components/Header/Header';
 import Footer from '../../components/Footer/Footer';
-
+import { Link } from 'react-router-dom';
 const LandingPage = () => {
   const navigate = useNavigate();
 
@@ -28,17 +28,20 @@ const LandingPage = () => {
             <p className="mt-6 text-xl text-[var(--text-muted)] max-w-xl">
               A modern real‑estate platform with analytics, automation,
               and enterprise‑grade security.
-            </p>
 
-            <button
-              onClick={() => navigate('/Property')}
+            </p>
+            <div className="mt-10">
+            <Link
+              to="/login"
                 style={{ backgroundColor: '#5B3E59', color: '#ffffff' }}
               className="mt-10 bg-[var(--brand)]
                          hover:bg-[var(--brand-dark)]
                          text-white px-8 py-4 rounded-2xl font-bold shadow-soft transition"
             >
+
               Get Started Free →
-            </button>
+            </Link>
+            </div>
           </div>
 
           {/* Analytics Card */}
