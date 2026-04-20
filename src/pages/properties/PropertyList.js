@@ -198,7 +198,7 @@ const PropertyList = () => {
                       onClick={() => setCurrentPage(page)}
                       className={`px-5 py-2 rounded-xl font-bold text-sm transition ${
                         currentPage === page
-                          ? 'bg-[#1F2937] text-white shadow-lg'
+                          ? 'bg-[#5B3E59] text-white shadow-2xl'
                           : 'bg-white border border-gray-200 text-gray-500 hover:bg-gray-50'
                       }`}
                     >
