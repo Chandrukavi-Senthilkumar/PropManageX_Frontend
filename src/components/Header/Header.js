@@ -52,7 +52,7 @@ const Header = () => {
                      text-white px-6 py-3 rounded-2xl
                      font-semibold transition"
         >
-          Get Started
+          Login/Signup
         </Link>
 
       </div>
