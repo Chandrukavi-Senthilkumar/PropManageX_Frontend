@@ -5,8 +5,8 @@ import notificationReducer from './slices/notificationSlice';
 export const store = configureStore({
     reducer: {
         admin: adminReducer,
-       notification: notificationReducer,
-        reveny:RevenueReducer
+        notification: notificationReducer,
+        reveny: RevenueReducer
 
     },
 });

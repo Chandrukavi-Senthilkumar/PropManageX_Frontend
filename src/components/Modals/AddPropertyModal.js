@@ -40,21 +40,16 @@ const AddPropertyModal = ({ isOpen, onClose, refreshList, showToast }) => {
 
         resetForm();
         setSelectedFile(null);
-
-        // ✅ CLOSE MODAL FIRST
         onClose();
 
-        // ✅ SHOW TOAST AFTER MODAL CLOSES
         setTimeout(() => {
           showToast?.('Property created successfully!', 'success');
         }, 0);
 
         refreshList();
-      } catch {
-        onClose();
-        setTimeout(() => {
-          showToast?.('Failed to save property', 'error');
-        }, 0);
+      } catch (error) {
+        // Don't close modal on error so user can fix it
+        showToast?.('Failed to save property', 'error');
       } finally {
         setLoading(false);
       }
@@ -63,61 +58,73 @@ const AddPropertyModal = ({ isOpen, onClose, refreshList, showToast }) => {
 
   if (!isOpen) return null;
 
+  // Helper to render error messages
+  const ErrorMsg = ({ name }) => (
+    formik.touched[name] && formik.errors[name] ? (
+      <div className="text-red-500 text-xs mt-1 ml-2 font-semibold">{formik.errors[name]}</div>
+    ) : null
+  );
+
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[110] p-4">
       <div className="bg-[#F3EEF2] rounded-[40px] w-full max-w-lg p-8 relative shadow-2xl">
-
-        <button
-          type="button"
-          onClick={onClose}
-          className="absolute top-6 right-6 text-gray-400 hover:text-black"
-        >
+        
+        <button type="button" onClick={onClose} className="absolute top-6 right-6 text-gray-400 hover:text-black">
           <XMarkIcon className="w-6 h-6" />
         </button>
 
-        <h2 className="text-2xl font-black text-gray-800 text-center mb-6">
-          Add Property
-        </h2>
+        <h2 className="text-2xl font-black text-gray-800 text-center mb-6">Add Property</h2>
 
-        <form onSubmit={formik.handleSubmit} className="space-y-5">
-
+        <form onSubmit={formik.handleSubmit} className="space-y-4">
+          
           {/* Property Name */}
-          <div className="space-y-1">
+          <div>
             <input
               {...formik.getFieldProps('name')}
               placeholder="Property Name"
-              className={`w-full p-4 rounded-2xl outline-none transition-all ${
-                formik.touched.name && formik.errors.name
-                  ? 'bg-red-50/50 border border-red-500 text-red-600'
-                  : 'bg-gray-50 border border-transparent'
+              className={`w-full p-4 rounded-2xl outline-none border transition-all ${
+                formik.touched.name && formik.errors.name ? 'border-red-500 bg-red-50' : 'border-transparent bg-gray-50'
               }`}
             />
+            <ErrorMsg name="name" />
           </div>
 
           {/* Type + Total Units */}
           <div className="grid grid-cols-2 gap-4">
-            <select
-              {...formik.getFieldProps('type')}
-              className="p-4 rounded-2xl bg-gray-50 border border-transparent"
-            >
-              <option value="Commercial">Commercial</option>
-              <option value="Residential">Residential</option>
-            </select>
+            <div>
+              <select
+                {...formik.getFieldProps('type')}
+                className="w-full p-4 rounded-2xl bg-gray-50 border border-transparent outline-none"
+              >
+                <option value="Commercial">Commercial</option>
+                <option value="Residential">Residential</option>
+              </select>
+            </div>
 
-            <input
-              type="number"
-              {...formik.getFieldProps('totalUnits')}
-              placeholder="Total Units"
-              className="w-full p-4 rounded-2xl bg-gray-50"
-            />
+            <div>
+              <input
+                type="number"
+                {...formik.getFieldProps('totalUnits')}
+                placeholder="Total Units"
+                className={`w-full p-4 rounded-2xl outline-none border transition-all ${
+                  formik.touched.totalUnits && formik.errors.totalUnits ? 'border-red-500 bg-red-50' : 'border-transparent bg-gray-50'
+                }`}
+              />
+              <ErrorMsg name="totalUnits" />
+            </div>
           </div>
 
           {/* Location */}
-          <input
-            {...formik.getFieldProps('location')}
-            placeholder="Location"
-            className="w-full p-4 rounded-2xl bg-gray-50"
-          />
+          <div>
+            <input
+              {...formik.getFieldProps('location')}
+              placeholder="Location"
+              className={`w-full p-4 rounded-2xl outline-none border transition-all ${
+                formik.touched.location && formik.errors.location ? 'border-red-500 bg-red-50' : 'border-transparent bg-gray-50'
+              }`}
+            />
+            <ErrorMsg name="location" />
+          </div>
 
           {/* Image */}
           <div className="relative border-2 border-dashed border-gray-300 rounded-2xl p-6 text-center">
@@ -138,22 +145,17 @@ const AddPropertyModal = ({ isOpen, onClose, refreshList, showToast }) => {
 
           {/* Actions */}
           <div className="flex gap-4 pt-2">
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex-1 py-3 text-gray-500 font-bold rounded-2xl hover:bg-gray-100"
-            >
+            <button type="button" onClick={onClose} className="flex-1 py-3 text-gray-500 font-bold rounded-2xl hover:bg-gray-100">
               Cancel
             </button>
             <button
               type="submit"
-              disabled={loading} style={{color:'#FFFFFF'}}
-              className="flex-1 py-3 bg-[#5B3E59] text-white rounded-2xl font-black hover:bg-[#4A3248] shadow-lg"
+              disabled={loading}
+              className="flex-1 py-3 bg-[#5B3E59] text-white rounded-2xl font-black hover:bg-[#4A3248] shadow-lg disabled:opacity-50"
             >
               {loading ? 'Saving…' : 'Add Property'}
             </button>
           </div>
-
         </form>
       </div>
     </div>
